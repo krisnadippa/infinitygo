@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { MapPin, Car, Home, Wifi, Star, Menu, X, ArrowRight, Phone, Mail, Globe, ChevronRight, Users, Calendar, ChevronDown, User, ArrowUpRight, ShoppingBag, ShoppingCart } from "lucide-react";
+import { MapPin, Car, Home, Wifi, Star, Menu, X, ArrowRight, Phone, Mail, Globe, ChevronRight, Users, Calendar, ChevronDown, User, ArrowUpRight, ShoppingBag, ShoppingCart, Check } from "lucide-react";
 import { IconBrandX, IconBrandFacebook, IconBrandLinkedin, IconBrandInstagram } from "@tabler/icons-react";
 import { 
   Navbar, 
@@ -16,6 +16,7 @@ import {
   MobileNavToggle, 
   MobileNavMenu 
 } from "@/components/ui/resizable-navbar";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLElement>(null);
@@ -43,6 +44,10 @@ export default function Page() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
+  const handleAccommodationClick = () => {
+    window.location.href = "/destinasi#akomodasi";
+  };
+
   const services = [
     { Icon: Globe,  label: "Tur & Paket",       desc: "Nikmati perjalanan tanpa beban bersama guide profesional kami di seluruh destinasi Bali." },
     { Icon: Car,    label: "Sewa Kendaraan",     desc: "Armada mobil & motor terawat siap mengantar Anda menjelajahi setiap sudut Bali." },
@@ -60,9 +65,11 @@ export default function Page() {
   ];
 
   const accommodations = [
-    { name: "Alaya Resort",    cat: "Villa Private",  img: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=800&auto=format&fit=crop" },
-    { name: "Hanging Gardens", cat: "Jungle Resort",  img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=800&auto=format&fit=crop" },
-    { name: "The Layar",       cat: "Beachfront",     img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop" },
+    { id: 1, title: "The Edge Bali Villa", location: "Bali", type: "Villa", rating: 5.0, reviews: 312, image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop", highlights: ["Private Pool", "Ocean View", "Butler Service"] },
+    { id: 2, title: "Alaya Resort Ubud", location: "Bali", type: "Resort", rating: 4.8, reviews: 845, image: "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?q=80&w=800&auto=format&fit=crop", highlights: ["Spa & Wellness", "Rice Terrace View", "Free Breakfast"] },
+    { id: 3, title: "Hotel Kempinski Jakarta", location: "Jakarta", type: "Hotel", rating: 4.9, reviews: 1250, image: "/images/jakarta.jpg", highlights: ["City Center", "Luxury Dining", "Rooftop Pool"] },
+    { id: 4, title: "Ayana Resort Komodo", location: "Labuan Bajo", type: "Resort", rating: 4.9, reviews: 456, image: "/images/labuanbajo.jpg", highlights: ["Private Beach", "Sunset Deck", "Dive Center"] },
+    { id: 5, title: "Amanjiwo Resort", location: "Yogyakarta", type: "Resort", rating: 5.0, reviews: 210, image: "/images/yogyakarta.jpg", highlights: ["Borobudur View", "Private Pool", "Cultural Tour"] },
   ];
 
   const testimonials = [
@@ -99,7 +106,8 @@ export default function Page() {
             ]} 
             className="text-slate-600"
           />
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
+            <LanguageSwitcher />
             <NavbarButton variant="gradient" href="/kontak">
               Pesan Sekarang
             </NavbarButton>
@@ -122,32 +130,40 @@ export default function Page() {
           </MobileNavHeader>
 
           <MobileNavMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)}>
-            <div className="flex flex-col gap-4 p-4">
-              {[
-                { name: "Beranda", link: "/" },
-                { name: "Layanan", link: "/layanan" },
-                { name: "Destinasi", link: "/destinasi" },
-                { name: "Akomodasi", link: "/#akomodasi" },
-                { name: "Testimoni", link: "/#testimoni" },
-                { name: "Kontak", link: "/kontak" },
-              ].map((item, idx) => (
-                <a
-                  key={`mobile-link-${idx}`}
-                  href={item.link}
+            <div className="flex flex-col h-full py-2">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                <span className="font-medium text-slate-500 text-sm">Pengaturan Bahasa:</span>
+                <LanguageSwitcher />
+              </div>
+              <div className="flex flex-col gap-6">
+                {[
+                  { name: "Beranda", link: "/" },
+                  { name: "Layanan", link: "/layanan" },
+                  { name: "Destinasi", link: "/destinasi" },
+                  { name: "Akomodasi", link: "/#akomodasi" },
+                  { name: "Testimoni", link: "/#testimoni" },
+                  { name: "Kontak", link: "/kontak" },
+                ].map((item, idx) => (
+                  <a
+                    key={`mobile-link-${idx}`}
+                    href={item.link}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-xl font-bold text-slate-800 hover:text-[#40B5AD] transition-colors"
+                  >
+                    {item.name}
+                  </a>
+                ))}
+              </div>
+              <div className="mt-auto pt-10">
+                <NavbarButton 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-lg font-semibold text-slate-800 hover:text-[#40B5AD] transition-colors"
+                  variant="gradient" 
+                  className="w-full text-center py-4 text-base shadow-lg shadow-[#40B5AD]/25" 
+                  href="/kontak"
                 >
-                  {item.name}
-                </a>
-              ))}
-              <NavbarButton 
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="gradient" 
-                className="w-full text-center mt-4" 
-                href="/kontak"
-              >
-                Pesan Sekarang
-              </NavbarButton>
+                  Pesan Sekarang
+                </NavbarButton>
+              </div>
             </div>
           </MobileNavMenu>
         </MobileNav>
@@ -293,30 +309,48 @@ export default function Page() {
         <div className="max-w-7xl mx-auto px-5 md:px-10">
           <div className="text-center mb-12">
             <span className="text-[#40B5AD] text-xs font-bold tracking-widest uppercase block mb-3">Penginapan Pilihan</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1a3636] mb-4">Akomodasi Terbaik di Bali</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1a3636] mb-4">Akomodasi Pilihan Terbaik</h2>
             <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
-              Temukan rumah kedua Anda di Bali. Kami menghadirkan villa private, resort mewah, dan hotel berbintang dengan harga terbaik.
+              Temukan rumah kedua Anda di berbagai destinasi terindah Indonesia. Kami menghadirkan villa private, resort mewah, dan hotel berbintang dengan fasilitas premium.
             </p>
           </div>
 
           <motion.div ref={accomRef as React.RefObject<HTMLDivElement>} variants={stagger} initial="hidden" animate={accomIn ? "visible" : "hidden"}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {accommodations.map(({ name, cat, img }) => (
-              <motion.div key={name} variants={fadeUp} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-100">
-                <div className="relative h-56 overflow-hidden">
-                  <Image src={img} alt={name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-white/90 backdrop-blur-sm text-[#1a3636] text-xs font-bold px-3 py-1.5 rounded-full">{cat}</span>
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {accommodations.slice(0, 4).map((acc) => (
+              <motion.div
+                variants={fadeUp}
+                key={acc.id} 
+                onClick={handleAccommodationClick}
+                className="bg-white border border-slate-100 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col hover:-translate-y-1 cursor-pointer"
+              >
+                <div className="relative h-56 w-full overflow-hidden">
+                  <Image src={acc.image} alt={acc.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full text-xs font-bold text-slate-800 flex items-center gap-1.5 shadow-sm border border-white/20">
+                    <MapPin size={12} className="text-[#40B5AD]" /> {acc.location}
                   </div>
                 </div>
-                <div className="p-5 flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-slate-800">{name}</h3>
-                    <p className="text-slate-500 text-xs mt-0.5 flex items-center gap-1"><MapPin size={11} /> Bali, Indonesia</p>
+                <div className="p-6 flex flex-col flex-1">
+                  <div className="flex items-center gap-4 mb-4 text-xs font-semibold text-slate-500">
+                    <div className="flex items-center gap-1.5"><Home size={14} className="text-[#40B5AD]" /> {acc.type}</div>
+                    <div className="flex items-center gap-1.5 text-amber-500"><Star size={14} fill="currentColor" /> {acc.rating} <span className="text-slate-400 font-normal">({acc.reviews})</span></div>
                   </div>
-                  <a href="/kontak" className="bg-[#40B5AD]/10 hover:bg-[#40B5AD] text-[#40B5AD] hover:text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors">
-                    Pesan
-                  </a>
+                  <h3 className="font-bold text-lg text-slate-900 mb-5 leading-snug group-hover:text-[#40B5AD] transition-colors">{acc.title}</h3>
+                  <div className="mb-8 space-y-3 flex-1">
+                    {acc.highlights.map((hlt, i) => (
+                      <div key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                        <div className="w-5 h-5 rounded-full bg-[#40B5AD]/10 flex items-center justify-center flex-shrink-0"><Check size={12} className="text-[#40B5AD]" /></div>
+                        <span className="font-medium">{hlt}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="pt-5 border-t border-slate-100 flex items-center justify-between mt-auto">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold block uppercase tracking-wider mb-0.5">Ketersediaan</span>
+                      <span className="font-bold text-[#40B5AD] text-sm">Tersedia untuk Dipesan</span>
+                    </div>
+                    <button className="w-12 h-12 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm"><ArrowRight size={20} /></button>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -389,8 +423,15 @@ export default function Page() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-white pt-20 pb-10">
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
+      <footer className="bg-white pt-20 pb-6 relative overflow-hidden">
+        {/* Giant Faded Background Text Watermark */}
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center items-end select-none pointer-events-none z-0 w-full">
+          <span className="text-[14vw] font-black tracking-tight bg-gradient-to-b from-slate-900/[0.08] via-slate-900/[0.04] to-slate-900/[0.01] bg-clip-text text-transparent leading-[0.8] whitespace-nowrap">
+            INFINITY GO
+          </span>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
             {/* Logo & Description */}
             <div className="lg:col-span-3">

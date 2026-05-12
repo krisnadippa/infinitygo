@@ -16,6 +16,7 @@ import {
   MobileNavToggle, 
   MobileNavMenu 
 } from "@/components/ui/resizable-navbar";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 const servicesData = [
   {
@@ -113,7 +114,8 @@ export default function LayananPage() {
             ]} 
             className="text-slate-600"
           />
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
+            <LanguageSwitcher />
             <NavbarButton variant="gradient" href="/kontak">
               Pesan Sekarang
             </NavbarButton>
@@ -134,32 +136,40 @@ export default function LayananPage() {
             />
           </MobileNavHeader>
           <MobileNavMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)}>
-            <div className="flex flex-col gap-4 p-4">
-              {[
-                { name: "Beranda", link: "/" },
-                { name: "Layanan", link: "/layanan" },
-                { name: "Destinasi", link: "/destinasi" },
-                { name: "Akomodasi", link: "/#akomodasi" },
-                { name: "Testimoni", link: "/#testimoni" },
-                { name: "Kontak", link: "/kontak" },
-              ].map((item, idx) => (
-                <a
-                  key={`mobile-link-${idx}`}
-                  href={item.link}
+            <div className="flex flex-col h-full py-2">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                <span className="font-medium text-slate-500 text-sm">Pengaturan Bahasa:</span>
+                <LanguageSwitcher />
+              </div>
+              <div className="flex flex-col gap-6">
+                {[
+                  { name: "Beranda", link: "/" },
+                  { name: "Layanan", link: "/layanan" },
+                  { name: "Destinasi", link: "/destinasi" },
+                  { name: "Akomodasi", link: "/#akomodasi" },
+                  { name: "Testimoni", link: "/#testimoni" },
+                  { name: "Kontak", link: "/kontak" },
+                ].map((item, idx) => (
+                  <a
+                    key={`mobile-link-${idx}`}
+                    href={item.link}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="text-xl font-bold text-slate-800 hover:text-[#40B5AD] transition-colors"
+                  >
+                    {item.name}
+                  </a>
+                ))}
+              </div>
+              <div className="mt-auto pt-10">
+                <NavbarButton 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-lg font-semibold text-slate-800 hover:text-[#40B5AD] transition-colors"
+                  variant="gradient" 
+                  className="w-full text-center py-4 text-base shadow-lg shadow-[#40B5AD]/25" 
+                  href="/kontak"
                 >
-                  {item.name}
-                </a>
-              ))}
-              <NavbarButton 
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="gradient" 
-                className="w-full text-center mt-4" 
-                href="/kontak"
-              >
-                Pesan Sekarang
-              </NavbarButton>
+                  Pesan Sekarang
+                </NavbarButton>
+              </div>
             </div>
           </MobileNavMenu>
         </MobileNav>
@@ -280,8 +290,15 @@ export default function LayananPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-white pt-20 pb-10 border-t border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 md:px-10">
+      <footer className="bg-white pt-20 pb-6 border-t border-slate-100 relative overflow-hidden">
+        {/* Giant Faded Background Text Watermark */}
+        <div className="absolute bottom-0 left-0 right-0 flex justify-center items-end select-none pointer-events-none z-0 w-full">
+          <span className="text-[14vw] font-black tracking-tight bg-gradient-to-b from-slate-900/[0.08] via-slate-900/[0.04] to-slate-900/[0.01] bg-clip-text text-transparent leading-[0.8] whitespace-nowrap">
+            INFINITY GO
+          </span>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
             {/* Logo & Description */}
             <div className="lg:col-span-3">
