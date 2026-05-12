@@ -26,6 +26,8 @@ export const metadata: Metadata = {
   },
 };
 
+import SmoothScroll from "@/components/smooth-scroll";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,12 +36,14 @@ export default function RootLayout({
   return (
     <html
       lang="id"
-      className={`${outfit.variable} scroll-smooth antialiased`}
+      className={`${outfit.variable} antialiased`}
     >
       <head>
         <link rel="icon" href="/images/logo.png" type="image/png" sizes="any" />
       </head>
-      <body className="font-outfit bg-white text-slate-800">{children}</body>
+      <body className="font-outfit bg-white text-slate-800">
+        <SmoothScroll>{children}</SmoothScroll>
+      </body>
     </html>
   );
 }
