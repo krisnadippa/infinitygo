@@ -1,0 +1,294 @@
+"use client";
+
+import Image from "next/image";
+import { Invoice, formatRupiah } from "@/lib/admin-data";
+
+interface InvoicePrintProps {
+  invoice: Invoice;
+}
+
+export default function InvoicePrint({ invoice }: InvoicePrintProps) {
+  const statusLabel =
+    invoice.paymentType === "DP" && !invoice.paidFull
+      ? "DP / PARTIAL"
+      : invoice.status === "Paid"
+      ? "LUNAS"
+      : invoice.status === "Pending"
+      ? "BELUM DIBAYAR"
+      : invoice.status === "Cancelled"
+      ? "DIBATALKAN"
+      : "DRAFT";
+
+  const statusColor =
+    invoice.status === "Paid"
+      ? "border-green-600 text-green-700"
+      : invoice.status === "DP"
+      ? "border-blue-500 text-blue-600"
+      : invoice.status === "Pending"
+      ? "border-amber-500 text-amber-600"
+      : invoice.status === "Cancelled"
+      ? "border-red-500 text-red-600"
+      : "border-slate-400 text-slate-500";
+
+  const companyInfo = {
+    name: "Infinity Go Bali",
+    address: "Jl. Raya Kuta No. 88, Kuta, Badung",
+    city: "Bali 80361, Indonesia",
+    phone: "+62 812 3456 7890",
+    email: "admin@infinitygo.id",
+    bank: "Bank BCA",
+    accountName: "Infinity Go Bali",
+    accountNumber: "1234 5678 9012",
+  };
+
+  return (
+    <div
+      id="invoice-print-area"
+      className="bg-white w-full max-w-[794px] mx-auto font-sans text-[13px] text-slate-800"
+      style={{ fontFamily: "'Inter', 'Outfit', sans-serif" }}
+    >
+      {/* ===== HEADER ===== */}
+      <div className="flex items-start justify-between pb-6 border-b-2 border-slate-800 mb-6">
+        <div className="flex items-center gap-4">
+          <div className="relative w-14 h-14 flex-shrink-0">
+            <Image
+              src="/images/logo.png"
+              alt="Infinity Go"
+              fill
+              className="object-contain"
+              sizes="56px"
+            />
+          </div>
+          <div>
+            <h1 className="text-[22px] font-black text-slate-900 leading-tight tracking-tight">
+              {companyInfo.name}
+            </h1>
+            <p className="text-[11.5px] text-slate-500 mt-0.5">{companyInfo.address}</p>
+            <p className="text-[11.5px] text-slate-500">{companyInfo.city}</p>
+            <p className="text-[11.5px] text-slate-500">{companyInfo.phone}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+            INVOICE
+          </p>
+          <p className="text-[18px] font-black text-slate-900">{invoice.invoiceNumber}</p>
+          <div
+            className={`inline-block mt-2 px-3 py-1 border-2 rounded text-[11px] font-bold uppercase tracking-wide ${statusColor}`}
+          >
+            {statusLabel}
+          </div>
+        </div>
+      </div>
+
+      {/* ===== BILL FROM / BILL TO / DATES ===== */}
+      <div className="grid grid-cols-3 gap-6 mb-7">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+            Dari
+          </p>
+          <p className="font-bold text-slate-800">{companyInfo.name}</p>
+          <p className="text-slate-500 text-[12px] mt-0.5">{companyInfo.address}</p>
+          <p className="text-slate-500 text-[12px]">{companyInfo.city}</p>
+          <p className="text-slate-500 text-[12px]">{companyInfo.email}</p>
+        </div>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+            Tagihan Kepada
+          </p>
+          <p className="font-bold text-slate-800">{invoice.customerName}</p>
+          <p className="text-slate-500 text-[12px] mt-0.5">{invoice.customerPhone}</p>
+          {invoice.customerEmail && (
+            <p className="text-slate-500 text-[12px]">{invoice.customerEmail}</p>
+          )}
+        </div>
+        <div className="text-right">
+          <div className="mb-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              Tanggal Invoice
+            </p>
+            <p className="font-semibold text-slate-800">{invoice.invoiceDate}</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              Jatuh Tempo
+            </p>
+            <p className="font-semibold text-slate-800">{invoice.dueDate}</p>
+          </div>
+          <div className="mt-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
+              Metode Pembayaran
+            </p>
+            <p className="font-semibold text-slate-800">{invoice.paymentMethod}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== ITEMS TABLE ===== */}
+      <table className="w-full mb-5 border-collapse">
+        <thead>
+          <tr className="bg-slate-900 text-white">
+            <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wide rounded-tl-lg">
+              Deskripsi
+            </th>
+            <th className="text-center px-4 py-3 text-[11px] font-bold uppercase tracking-wide w-16">
+              Qty
+            </th>
+            <th className="text-right px-4 py-3 text-[11px] font-bold uppercase tracking-wide w-36">
+              Harga Satuan
+            </th>
+            <th className="text-right px-4 py-3 text-[11px] font-bold uppercase tracking-wide w-36 rounded-tr-lg">
+              Total
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {invoice.items.map((item, i) => (
+            <tr
+              key={item.id}
+              className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}
+            >
+              <td className="px-4 py-3 border-b border-slate-200">
+                <p className="font-semibold text-slate-800 text-[13px]">{item.name}</p>
+                {item.description && (
+                  <p className="text-[11.5px] text-slate-400 mt-0.5">{item.description}</p>
+                )}
+                <span className="text-[10.5px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 mt-1 inline-block">
+                  {item.type}
+                </span>
+              </td>
+              <td className="px-4 py-3 text-center border-b border-slate-200 text-slate-700">
+                {item.quantity}
+              </td>
+              <td className="px-4 py-3 text-right border-b border-slate-200 text-slate-700">
+                {formatRupiah(item.price)}
+              </td>
+              <td className="px-4 py-3 text-right border-b border-slate-200 font-semibold text-slate-800">
+                {formatRupiah(item.subtotal)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* ===== SUMMARY ===== */}
+      <div className="flex justify-end mb-7">
+        <div className="w-72 space-y-1.5">
+          <div className="flex justify-between py-1.5 border-b border-slate-200">
+            <span className="text-slate-500">Subtotal</span>
+            <span className="font-medium text-slate-800">{formatRupiah(invoice.subtotal)}</span>
+          </div>
+          {invoice.discount > 0 && (
+            <div className="flex justify-between py-1.5 border-b border-slate-200">
+              <span className="text-slate-500">Diskon</span>
+              <span className="font-medium text-red-500">- {formatRupiah(invoice.discount)}</span>
+            </div>
+          )}
+          {invoice.tax > 0 && (
+            <div className="flex justify-between py-1.5 border-b border-slate-200">
+              <span className="text-slate-500">Pajak</span>
+              <span className="font-medium text-slate-800">{formatRupiah(invoice.tax)}</span>
+            </div>
+          )}
+          <div className="flex justify-between py-2.5 border-b-2 border-slate-800 mt-2">
+            <span className="font-bold text-slate-800 text-[14px]">Total</span>
+            <span className="font-black text-slate-900 text-[15px]">
+              {formatRupiah(invoice.grandTotal)}
+            </span>
+          </div>
+
+          {/* DP Section */}
+          {invoice.paymentType === "DP" && (
+            <>
+              <div className="flex justify-between py-1.5 border-b border-slate-200 bg-blue-50 px-2 rounded">
+                <span className="text-blue-700 font-medium">
+                  DP Dibayar
+                  {invoice.dpDate && (
+                    <span className="text-[11px] text-blue-400 ml-1">({invoice.dpDate})</span>
+                  )}
+                </span>
+                <span className="font-bold text-blue-700">
+                  - {formatRupiah(invoice.dpAmount)}
+                </span>
+              </div>
+              <div className="flex justify-between py-2.5 mt-1 rounded-lg px-2 bg-slate-100">
+                <span className="font-bold text-slate-800 text-[13px]">
+                  {invoice.paidFull ? "Sisa (LUNAS)" : "Sisa Tagihan"}
+                </span>
+                <span
+                  className={`font-black text-[14px] ${
+                    invoice.paidFull ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  {invoice.paidFull ? "Rp 0" : formatRupiah(invoice.remainingAmount)}
+                </span>
+              </div>
+              {invoice.paidFull && (
+                <div className="text-center py-1.5 bg-green-50 rounded-lg border border-green-200">
+                  <span className="text-green-700 font-bold text-[12px] uppercase tracking-wide">
+                    Pembayaran Lunas
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Full payment paid */}
+          {invoice.paymentType === "Full" && invoice.status === "Paid" && (
+            <div className="flex justify-between py-1.5">
+              <span className="text-slate-500">Jumlah Dibayar</span>
+              <span className="font-bold text-green-600">{formatRupiah(invoice.grandTotal)}</span>
+            </div>
+          )}
+          {invoice.paymentType === "Full" && invoice.status !== "Paid" && (
+            <div className="flex justify-between py-1.5">
+              <span className="font-bold text-slate-800">Sisa Tagihan</span>
+              <span className="font-black text-red-600">{formatRupiah(invoice.grandTotal)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ===== NOTES + PAYMENT INFO ===== */}
+      <div className="grid grid-cols-2 gap-6 pt-5 border-t-2 border-slate-800">
+        <div>
+          {invoice.notes && (
+            <>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                Catatan
+              </p>
+              <p className="text-[12.5px] text-slate-600 leading-relaxed">{invoice.notes}</p>
+            </>
+          )}
+          <div className="mt-3">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+              Syarat Pembayaran
+            </p>
+            <p className="text-[12px] text-slate-500">
+              Pembayaran harap dilakukan sebelum jatuh tempo. Terima kasih telah menggunakan layanan Infinity Go Bali.
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+            Informasi Pembayaran
+          </p>
+          <p className="font-bold text-slate-800 text-[13px]">{companyInfo.name}</p>
+          <p className="text-slate-600 text-[12.5px]">{companyInfo.bank}</p>
+          <p className="text-slate-600 text-[12.5px]">a.n. {companyInfo.accountName}</p>
+          <p className="font-mono font-bold text-slate-800 text-[14px] mt-1">
+            {companyInfo.accountNumber}
+          </p>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-8 pt-4 border-t border-slate-200 text-center">
+        <p className="text-[11px] text-slate-400">
+          Dibuat oleh <span className="font-semibold text-slate-500">Infinity Go Bali</span> &bull;{" "}
+          {companyInfo.email} &bull; {companyInfo.phone}
+        </p>
+      </div>
+    </div>
+  );
+}
