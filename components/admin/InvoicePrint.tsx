@@ -211,9 +211,22 @@ export default function InvoicePrint({ invoice }: InvoicePrintProps) {
                   - {formatRupiah(invoice.dpAmount)}
                 </span>
               </div>
+              {invoice.paidFull && (
+                <div className="flex justify-between py-1.5 border-b border-slate-200 bg-green-50 px-2 rounded">
+                  <span className="text-green-700 font-medium">
+                    Pelunasan Sisa
+                    {invoice.paidRemainingDate && (
+                      <span className="text-[11px] text-green-500 ml-1">({invoice.paidRemainingDate})</span>
+                    )}
+                  </span>
+                  <span className="font-bold text-green-700">
+                    - {formatRupiah(invoice.paidRemainingAmount ?? invoice.remainingAmount)}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between py-2.5 mt-1 rounded-lg px-2 bg-slate-100">
                 <span className="font-bold text-slate-800 text-[13px]">
-                  {invoice.paidFull ? "Sisa (LUNAS)" : "Sisa Tagihan"}
+                  {invoice.paidFull ? "Sisa Tagihan" : "Sisa Tagihan"}
                 </span>
                 <span
                   className={`font-black text-[14px] ${
@@ -224,9 +237,9 @@ export default function InvoicePrint({ invoice }: InvoicePrintProps) {
                 </span>
               </div>
               {invoice.paidFull && (
-                <div className="text-center py-1.5 bg-green-50 rounded-lg border border-green-200">
-                  <span className="text-green-700 font-bold text-[12px] uppercase tracking-wide">
-                    Pembayaran Lunas
+                <div className="text-center py-1.5 bg-green-100 rounded-lg border border-green-300 mt-1">
+                  <span className="text-green-800 font-bold text-[11px] uppercase tracking-wider">
+                    ✓ PEMBAYARAN LUNAS
                   </span>
                 </div>
               )}

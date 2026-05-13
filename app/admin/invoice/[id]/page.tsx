@@ -23,6 +23,9 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   const [confirmLunas, setConfirmLunas] = useState(false);
   const [lunasDone, setLunasDone] = useState(false);
 
+  const [settleDate, setSettleDate] = useState("");
+  const [settleAmount, setSettleAmount] = useState(0);
+
   const invoice = invoices.find((inv) => inv.id === id);
 
   if (!invoice) {
@@ -36,10 +39,23 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
+  const openConfirmLunas = () => {
+    const today = new Date().toISOString().split("T")[0];
+    setSettleDate(today);
+    setSettleAmount(invoice.remainingAmount);
+    setConfirmLunas(true);
+  };
+
   const handleBayarLunas = () => {
     const updated = invoices.map((inv) =>
       inv.id === id
-        ? { ...inv, paidFull: true, status: "Paid" as const, remainingAmount: 0 }
+        ? {
+            ...inv,
+            paidFull: true,
+            status: "Paid" as const,
+            paidRemainingDate: settleDate,
+            paidRemainingAmount: settleAmount,
+          }
         : inv
     );
     setInvoices(updated);
@@ -77,7 +93,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
             <Button
               variant="primary"
               icon={<CheckCircle size={15} />}
-              onClick={() => setConfirmLunas(true)}
+              onClick={openConfirmLunas}
             >
               Bayar Sisa ({formatRupiah(currentInvoice.remainingAmount)})
             </Button>
@@ -108,26 +124,48 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
         size="sm"
       >
         <div className="space-y-4">
-          <p className="text-[13.5px] text-slate-600">
-            Konfirmasi bahwa customer <strong>{currentInvoice.customerName}</strong> telah membayar sisa tagihan:
+          <p className="text-[13px] text-slate-600">
+            Catat pelunasan sisa tagihan untuk <strong>{currentInvoice.customerName}</strong>:
           </p>
-          <div className="bg-slate-50 rounded-xl p-4 space-y-2">
-            <div className="flex justify-between text-[13px]">
+          <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
+            <div className="flex justify-between text-[12.5px]">
               <span className="text-slate-500">Total Invoice</span>
-              <span className="font-semibold">{formatRupiah(currentInvoice.grandTotal)}</span>
+              <span className="font-semibold text-slate-700">{formatRupiah(currentInvoice.grandTotal)}</span>
             </div>
-            <div className="flex justify-between text-[13px]">
+            <div className="flex justify-between text-[12.5px]">
               <span className="text-slate-500">DP Sudah Dibayar</span>
               <span className="font-semibold text-blue-600">- {formatRupiah(currentInvoice.dpAmount)}</span>
             </div>
-            <div className="flex justify-between text-[13px] border-t border-slate-200 pt-2">
-              <span className="font-bold text-slate-800">Sisa yang Dibayar</span>
-              <span className="font-black text-green-600">{formatRupiah(currentInvoice.remainingAmount)}</span>
+            <div className="flex justify-between text-[13px] border-t border-slate-200 pt-1.5 mt-1">
+              <span className="font-bold text-slate-800">Sisa Tagihan</span>
+              <span className="font-bold text-red-600">{formatRupiah(currentInvoice.remainingAmount)}</span>
             </div>
           </div>
+
+          <div className="space-y-3 pt-1">
+            <div>
+              <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Nominal Dilunasi (Rp)</label>
+              <input
+                type="number"
+                value={settleAmount || ""}
+                onChange={(e) => setSettleAmount(Number(e.target.value))}
+                className="w-full px-3 py-2 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+            <div>
+              <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Tanggal Pelunasan</label>
+              <input
+                type="date"
+                value={settleDate}
+                onChange={(e) => setSettleDate(e.target.value)}
+                className="w-full px-3 py-2 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              />
+            </div>
+          </div>
+
           <div className="flex gap-3 pt-2">
             <Button className="flex-1" icon={<CheckCircle size={15} />} onClick={handleBayarLunas}>
-              Konfirmasi Lunas
+              Simpan Lunas
             </Button>
             <Button variant="outline" className="flex-1" onClick={() => setConfirmLunas(false)}>
               Batal

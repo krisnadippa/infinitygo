@@ -49,6 +49,8 @@ export interface Invoice {
   dpDate: string;             // tanggal DP dibayar
   remainingAmount: number;    // grandTotal - dpAmount
   paidFull: boolean;          // true jika sisa sudah dibayar
+  paidRemainingDate?: string; // tanggal pelunasan sisa
+  paidRemainingAmount?: number; // nominal pelunasan sisa
   notes: string;
   items: InvoiceItem[];
   subtotal: number;
