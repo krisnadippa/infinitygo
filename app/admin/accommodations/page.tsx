@@ -125,7 +125,33 @@ export default function AccommodationsPage() {
           <Select label="Status" id="acc-status" options={[{ value: "Active", label: "Active" }, { value: "Inactive", label: "Inactive" }]} value={form.status || "Active"} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as "Active" | "Inactive" }))} />
           <div className="sm:col-span-2"><Textarea label="Deskripsi" rows={3} value={form.description || ""} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} id="acc-desc" /></div>
           <div className="sm:col-span-2"><Input label="Fasilitas (pisahkan dengan koma)" placeholder="AC, WiFi, Kolam Renang" value={facilitiesText} onChange={(e) => setFacilitiesText(e.target.value)} id="acc-facilities" /></div>
-          <div className="sm:col-span-2"><Input label="URL Gambar" placeholder="https://..." value={form.image || ""} onChange={(e) => setForm((p) => ({ ...p, image: e.target.value }))} id="acc-image" /></div>
+          <div className="sm:col-span-2">
+            <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Upload Gambar</label>
+            <div className="flex items-center gap-4">
+              {form.image && (
+                <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0">
+                  <Image src={form.image} alt="Preview" fill className="object-cover" sizes="64px" />
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                id="acc-image-upload"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setForm((p) => ({ ...p, image: reader.result as string }));
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                }}
+                className="w-full text-[13px] text-slate-500 file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[12.5px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+              />
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">Pilih file gambar dari komputer Anda (.jpg, .png)</p>
+          </div>
           <div className="sm:col-span-2 flex gap-3 pt-2">
             <Button className="flex-1" onClick={handleSave}>Simpan</Button>
             <Button variant="outline" className="flex-1" onClick={() => setModalOpen(false)}>Batal</Button>
