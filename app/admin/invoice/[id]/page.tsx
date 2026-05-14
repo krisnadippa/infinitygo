@@ -6,7 +6,7 @@ import InvoicePrint from "@/components/admin/InvoicePrint";
 import Button from "@/components/admin/Button";
 import { StatusBadge } from "@/components/admin/Badge";
 import Modal from "@/components/admin/Modal";
-import { Printer, ArrowLeft, CheckCircle, Edit2 } from "lucide-react";
+import { Printer, ArrowLeft, CheckCircle, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 
@@ -22,6 +22,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   const [invoices, setInvoices] = useState<Invoice[]>(invoiceStore);
   const [confirmLunas, setConfirmLunas] = useState(false);
   const [lunasDone, setLunasDone] = useState(false);
+  const [showExpense, setShowExpense] = useState(false);
 
   const [settleDate, setSettleDate] = useState("");
   const [settleAmount, setSettleAmount] = useState(0);
@@ -99,6 +100,21 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
             </Button>
           )}
 
+          {/* Toggle Expense — hanya muncul jika invoice punya expense */}
+          {currentInvoice.expenses && currentInvoice.expenses.length > 0 && (
+            <button
+              onClick={() => setShowExpense((v) => !v)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[13px] font-medium border transition-all ${
+                showExpense
+                  ? "bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100"
+                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+              }`}
+            >
+              {showExpense ? <EyeOff size={15} /> : <Eye size={15} />}
+              {showExpense ? "Sembunyikan Expense" : "Tampilkan Expense"}
+            </button>
+          )}
+
           <Button variant="outline" icon={<Printer size={15} />} onClick={handlePrint}>
             Cetak / Print
           </Button>
@@ -113,7 +129,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
 
       {/* Print area */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 print:shadow-none print:border-none print:rounded-none print:p-6">
-        <InvoicePrint invoice={currentInvoice} />
+        <InvoicePrint invoice={currentInvoice} showExpense={showExpense} />
       </div>
 
       {/* Confirm modal */}

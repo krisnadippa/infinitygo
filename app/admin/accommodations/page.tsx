@@ -33,16 +33,18 @@ const defaultForm: Partial<Accommodation> = {
 export default function AccommodationsPage() {
   const [items, setItems] = useState<Accommodation[]>(dummyAccommodations);
   const [search, setSearch] = useState("");
+  const [filterLocation, setFilterLocation] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Accommodation | null>(null);
   const [form, setForm] = useState<Partial<Accommodation>>(defaultForm);
   const [facilitiesText, setFacilitiesText] = useState("");
 
-  const filtered = items.filter((a) =>
-    a.name.toLowerCase().includes(search.toLowerCase()) ||
-    a.location.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = items.filter((a) => {
+    const matchSearch = a.name.toLowerCase().includes(search.toLowerCase()) || a.location.toLowerCase().includes(search.toLowerCase());
+    const matchLocation = filterLocation === "All" || a.location === filterLocation;
+    return matchSearch && matchLocation;
+  });
 
   const openCreate = () => { setEditing(null); setForm(defaultForm); setFacilitiesText(""); setModalOpen(true); };
   const openEdit = (a: Accommodation) => { setEditing(a); setForm({ ...a }); setFacilitiesText(a.facilities.join(", ")); setModalOpen(true); };
@@ -81,12 +83,20 @@ export default function AccommodationsPage() {
         <Button icon={<PlusCircle size={15} />} onClick={openCreate}>Tambah Akomodasi</Button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-        <div className="relative max-w-md">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input type="text" placeholder="Cari akomodasi..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-[13.5px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
         </div>
+        <select 
+          value={filterLocation}
+          onChange={(e) => setFilterLocation(e.target.value)}
+          className="px-3 py-2.5 text-[13.5px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 sm:w-48 bg-white"
+        >
+          <option value="All">Semua Lokasi</option>
+          {locationOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+        </select>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-5">

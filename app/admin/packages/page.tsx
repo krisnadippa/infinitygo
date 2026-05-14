@@ -26,16 +26,18 @@ const defaultForm: Partial<TourPackage> = {
 export default function PackagesPage() {
   const [packages, setPackages] = useState<TourPackage[]>(dummyTourPackages);
   const [search, setSearch] = useState("");
+  const [filterLocation, setFilterLocation] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editing, setEditing] = useState<TourPackage | null>(null);
   const [form, setForm] = useState<Partial<TourPackage>>(defaultForm);
   const [facilitiesText, setFacilitiesText] = useState("");
 
-  const filtered = packages.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.location.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = packages.filter((p) => {
+    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.location.toLowerCase().includes(search.toLowerCase());
+    const matchLocation = filterLocation === "All" || p.location === filterLocation;
+    return matchSearch && matchLocation;
+  });
 
   const openCreate = () => {
     setEditing(null);
@@ -86,9 +88,9 @@ export default function PackagesPage() {
         <Button icon={<PlusCircle size={15} />} onClick={openCreate}>Tambah Paket</Button>
       </div>
 
-      {/* Search */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-        <div className="relative max-w-md">
+      {/* Search & Filter */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
@@ -98,6 +100,14 @@ export default function PackagesPage() {
             className="w-full pl-9 pr-3 py-2.5 text-[13.5px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
           />
         </div>
+        <select 
+          value={filterLocation}
+          onChange={(e) => setFilterLocation(e.target.value)}
+          className="px-3 py-2.5 text-[13.5px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 sm:w-48 bg-white"
+        >
+          <option value="All">Semua Lokasi</option>
+          {locationOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+        </select>
       </div>
 
       {/* Cards grid */}

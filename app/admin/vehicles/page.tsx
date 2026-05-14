@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlusCircle, Edit2, Trash2, Search, Users, Check, X as XIcon } from "lucide-react";
+import { PlusCircle, Edit2, Trash2, Search, Users, Check, X as XIcon, MapPin } from "lucide-react";
 import { StatusBadge } from "@/components/admin/Badge";
 import Button from "@/components/admin/Button";
 import Modal from "@/components/admin/Modal";
@@ -40,15 +40,17 @@ const typeColors: Record<string, string> = {
 export default function VehiclesPage() {
   const [items, setItems] = useState<Vehicle[]>(dummyVehicles);
   const [search, setSearch] = useState("");
+  const [filterLocation, setFilterLocation] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Vehicle | null>(null);
   const [form, setForm] = useState<Partial<Vehicle>>(defaultForm);
 
-  const filtered = items.filter((v) =>
-    v.name.toLowerCase().includes(search.toLowerCase()) ||
-    v.brand.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = items.filter((v) => {
+    const matchSearch = v.name.toLowerCase().includes(search.toLowerCase()) || v.brand.toLowerCase().includes(search.toLowerCase());
+    const matchLocation = filterLocation === "All" || v.location === filterLocation;
+    return matchSearch && matchLocation;
+  });
 
   const openCreate = () => { setEditing(null); setForm(defaultForm); setModalOpen(true); };
   const openEdit = (v: Vehicle) => { setEditing(v); setForm({ ...v }); setModalOpen(true); };
@@ -82,70 +84,87 @@ export default function VehiclesPage() {
         <Button icon={<PlusCircle size={15} />} onClick={openCreate}>Tambah Kendaraan</Button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-        <div className="relative max-w-md">
+      {/* Search & Filter */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input type="text" placeholder="Cari kendaraan..." value={search} onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2.5 text-[13.5px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
         </div>
+        <select 
+          value={filterLocation}
+          onChange={(e) => setFilterLocation(e.target.value)}
+          className="px-3 py-2.5 text-[13.5px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 sm:w-48 bg-white"
+        >
+          <option value="All">Semua Lokasi</option>
+          {locationOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+        </select>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
-                {["Kendaraan", "Tipe", "Lokasi", "Kapasitas", "Harga/Hari", "Driver", "Status", "Aksi"].map((h) => (
-                  <th key={h} className="text-left px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-slate-400 whitespace-nowrap">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filtered.map((veh) => (
-                <tr key={veh.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-14 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
-                        <Image src={veh.image} alt={veh.name} fill className="object-cover" sizes="56px" />
-                      </div>
-                      <div>
-                        <p className="text-[13px] font-medium text-slate-700">{veh.name}</p>
-                        <p className="text-[11.5px] text-slate-400">{veh.brand}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className={`text-[11.5px] px-2.5 py-0.5 rounded-full border font-medium ${typeColors[veh.type]}`}>{veh.type}</span>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <span className="text-[12.5px] text-slate-600">{veh.location}</span>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-1 text-[13px] text-slate-600">
-                      <Users size={13} className="text-slate-400" /> {veh.capacity}
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <p className="text-[13px] font-semibold text-slate-800">{formatRupiah(veh.pricePerDay)}</p>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    {veh.driverIncluded
-                      ? <span className="flex items-center gap-1 text-[12.5px] text-green-600 font-medium"><Check size={13} /> Ya</span>
-                      : <span className="flex items-center gap-1 text-[12.5px] text-slate-400"><XIcon size={13} /> Tidak</span>}
-                  </td>
-                  <td className="px-5 py-3.5"><StatusBadge status={veh.status} /></td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => openEdit(veh)} className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors"><Edit2 size={14} /></button>
-                      <button onClick={() => setDeleteId(veh.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Cards grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+        {filtered.map((veh) => (
+          <div key={veh.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+            <div className="relative h-44">
+              <Image
+                src={veh.image}
+                alt={veh.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 33vw"
+                priority
+              />
+              <div className="absolute top-3 right-3">
+                <StatusBadge status={veh.status} />
+              </div>
+            </div>
+            <div className="p-4 space-y-2.5">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <h3 className="text-[14px] font-semibold text-slate-800 leading-tight">{veh.name}</h3>
+                  <p className="text-[11.5px] text-slate-500 mt-0.5 font-medium">{veh.brand}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 text-[12px] text-slate-500">
+                <span className="flex items-center gap-1"><MapPin size={12} /> {veh.location}</span>
+                <span className="flex items-center gap-1"><Users size={12} /> {veh.capacity} org</span>
+              </div>
+              
+              <p className="text-[12.5px] text-slate-500 line-clamp-2">{veh.description}</p>
+              
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                <span className={`text-[10.5px] px-2 py-0.5 rounded-full border font-medium ${typeColors[veh.type]}`}>
+                  {veh.type}
+                </span>
+                {veh.driverIncluded ? (
+                  <span className="flex items-center gap-1 text-[10.5px] bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">
+                    <Check size={11} /> Plus Driver
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-[10.5px] bg-slate-50 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
+                    <XIcon size={11} /> Lepas Kunci
+                  </span>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-between pt-1 border-t border-slate-100 mt-2">
+                <div>
+                  <p className="text-[15px] font-bold text-blue-600">{formatRupiah(veh.pricePerDay)}</p>
+                  <p className="text-[10.5px] text-slate-400">per hari</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => openEdit(veh)} className="p-1.5 rounded-lg hover:bg-blue-50 text-slate-400 hover:text-blue-600 transition-colors">
+                    <Edit2 size={14} />
+                  </button>
+                  <button onClick={() => setDeleteId(veh.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
 
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? "Edit Kendaraan" : "Tambah Kendaraan"} size="lg">

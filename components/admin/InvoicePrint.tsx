@@ -5,9 +5,10 @@ import { Invoice, formatRupiah } from "@/lib/admin-data";
 
 interface InvoicePrintProps {
   invoice: Invoice;
+  showExpense?: boolean;
 }
 
-export default function InvoicePrint({ invoice }: InvoicePrintProps) {
+export default function InvoicePrint({ invoice, showExpense = false }: InvoicePrintProps) {
   const statusLabel =
     invoice.paymentType === "DP" && !invoice.paidFull
       ? "DP / PARTIAL"
@@ -267,6 +268,56 @@ export default function InvoicePrint({ invoice }: InvoicePrintProps) {
         </div>
       </div>
 
+      {/* ===== EXPENSE SECTION ===== */}
+      {showExpense && invoice.expenses && invoice.expenses.length > 0 && (
+        <div className="mt-7 mb-4">
+          <div className="flex items-center gap-3 mb-3">
+            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+              Rincian Biaya Operasional
+            </p>
+            <div className="flex-1 h-px bg-slate-200" />
+          </div>
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b-2 border-slate-700 text-slate-700">
+                <th className="text-left px-3 py-2 text-[11px] font-bold uppercase tracking-widest">Keterangan</th>
+                <th className="text-left px-3 py-2 text-[11px] font-bold uppercase tracking-widest w-36">Kategori</th>
+                <th className="text-left px-3 py-2 text-[11px] font-bold uppercase tracking-widest w-24">Tanggal</th>
+                <th className="text-right px-3 py-2 text-[11px] font-bold uppercase tracking-widest w-36">Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>
+              {invoice.expenses.map((exp, i) => (
+                <tr key={exp.id} className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                  <td className="px-3 py-2.5 border-b border-slate-100">
+                    <p className="text-[12.5px] font-medium text-slate-700">{exp.name}</p>
+                    {exp.notes && <p className="text-[11px] text-slate-400 mt-0.5">{exp.notes}</p>}
+                  </td>
+                  <td className="px-3 py-2.5 border-b border-slate-100">
+                    <span className="text-[11px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full border border-amber-100">
+                      {exp.category}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2.5 border-b border-slate-100 text-[12px] text-slate-500">{exp.date}</td>
+                  <td className="px-3 py-2.5 border-b border-slate-100 text-right font-semibold text-slate-700">
+                    {formatRupiah(exp.amount)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {/* Expense summary row */}
+          <div className="flex justify-end mt-3 gap-12 pr-3">
+            <span className="text-[12px] text-slate-500 font-medium">Total Biaya Operasional</span>
+            <span className="text-[13px] font-bold text-amber-700">{formatRupiah(invoice.totalExpense)}</span>
+          </div>
+          <div className="flex justify-end mt-1.5 gap-12 pr-3 pb-3 border-b-2 border-slate-700">
+            <span className="text-[12px] text-slate-500 font-medium">Net Profit</span>
+            <span className="text-[13px] font-bold text-green-700">{formatRupiah(invoice.netProfit)}</span>
+          </div>
+        </div>
+      )}
+
       {/* ===== BOTTOM SECTION (NOTES + FOOTER) ===== */}
       <div className="mt-auto">
         <div className="grid grid-cols-2 gap-6 pt-5 border-t-2 border-slate-800">
@@ -300,8 +351,6 @@ export default function InvoicePrint({ invoice }: InvoicePrintProps) {
             </p>
           </div>
         </div>
-
-
       </div>
     </div>
   );
