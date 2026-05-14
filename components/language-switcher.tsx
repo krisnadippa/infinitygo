@@ -38,12 +38,22 @@ export function LanguageSwitcher() {
     setCurrentLang(lang);
     setIsOpen(false);
     
-    // Set cookie googtrans
-    // Pola: /pageLanguage/targetLanguage
     const domain = window.location.hostname;
-    document.cookie = `googtrans=/id/${lang}; path=/; domain=${domain}`;
+    
+    // 1. Bersihkan semua kemungkinan cookie googtrans lama agar tidak bentrok (stuck)
+    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
     if (domain !== 'localhost') {
-      document.cookie = `googtrans=/id/${lang}; path=/; domain=.${domain}`;
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${domain}`;
+    }
+
+    // 2. Jika bukan bahasa default (id), set cookie bahasa tujuan yang baru
+    if (lang !== "id") {
+      document.cookie = `googtrans=/id/${lang}; path=/;`;
+      document.cookie = `googtrans=/id/${lang}; path=/; domain=${domain}`;
+      if (domain !== 'localhost') {
+        document.cookie = `googtrans=/id/${lang}; path=/; domain=.${domain}`;
+      }
     }
     
     // Reload agar terjemahan aktif dengan mulus
