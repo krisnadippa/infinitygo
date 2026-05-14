@@ -9,33 +9,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] flex">
+    <div className="min-h-screen bg-[#f1f5f9] flex print:bg-white print:block print:min-h-0">
       {/* Sidebar */}
-      <AdminSidebar
-        isOpen={sidebarOpen}
-        mobileOpen={mobileSidebarOpen}
-        onMobileClose={() => setMobileSidebarOpen(false)}
-      />
+      <div className="print:hidden">
+        <AdminSidebar
+          isOpen={sidebarOpen}
+          mobileOpen={mobileSidebarOpen}
+          onMobileClose={() => setMobileSidebarOpen(false)}
+        />
+      </div>
 
       {/* Mobile overlay */}
       {mobileSidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/40 lg:hidden print:hidden"
           onClick={() => setMobileSidebarOpen(false)}
         />
       )}
 
       {/* Main content */}
       <div
-        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${
+        className={`flex-1 flex flex-col min-h-screen transition-all duration-300 print:min-h-0 print:ml-0 print:block ${
           sidebarOpen ? "lg:ml-64" : "lg:ml-0"
         }`}
       >
-        <AdminTopbar
-          onToggleSidebar={() => setSidebarOpen((v) => !v)}
-          onToggleMobileSidebar={() => setMobileSidebarOpen((v) => !v)}
-        />
-        <main className="flex-1 p-4 lg:p-6 xl:p-8">{children}</main>
+        <div className="print:hidden">
+          <AdminTopbar
+            onToggleSidebar={() => setSidebarOpen((v) => !v)}
+            onToggleMobileSidebar={() => setMobileSidebarOpen((v) => !v)}
+          />
+        </div>
+        <main className="flex-1 p-4 lg:p-6 xl:p-8 print:p-0 print:block">{children}</main>
       </div>
     </div>
   );

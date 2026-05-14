@@ -145,8 +145,9 @@ export default function CreateInvoicePage() {
   const previewInvoice = buildInvoice();
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-6 print:space-y-0">
+      <div className="print:hidden space-y-6">
+        <div>
         <h1 className="text-[20px] font-bold text-slate-800">Create Invoice</h1>
         <p className="text-[13px] text-slate-500 mt-0.5">Buat invoice baru untuk customer</p>
       </div>
@@ -379,13 +380,14 @@ export default function CreateInvoicePage() {
           </div>
         </div>
       </div>
+      </div>
 
       {/* Preview Modal */}
       <Modal isOpen={previewOpen} onClose={() => setPreviewOpen(false)} title="Preview Invoice" size="xl">
-        <div className="overflow-auto max-h-[75vh]">
+        <div className="overflow-auto max-h-[75vh] print:max-h-none print:overflow-visible">
           <InvoicePrint invoice={previewInvoice} />
         </div>
-        <div className="flex gap-3 pt-4 border-t border-slate-100 mt-4">
+        <div className="flex gap-3 pt-4 border-t border-slate-100 mt-4 print:hidden">
           <Button className="flex-1" icon={<Download size={15} />} onClick={() => window.print()}>Cetak / Download PDF</Button>
           <Button variant="outline" className="flex-1" onClick={() => setPreviewOpen(false)}>Tutup</Button>
         </div>

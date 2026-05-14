@@ -22,10 +22,10 @@ export default function Modal({ isOpen, onClose, title, children, size = "md" }:
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className={`relative bg-white rounded-2xl shadow-xl w-full ${sizeStyles[size]} max-h-[90vh] flex flex-col`}>
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 flex-shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 print:static print:block print:p-0 print:bg-white print:z-auto">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm print:hidden" onClick={onClose} />
+      <div className={`relative bg-white rounded-2xl shadow-xl w-full ${sizeStyles[size]} max-h-[90vh] flex flex-col print:shadow-none print:border-none print:max-h-none print:w-full print:max-w-none print:flex-none print:rounded-none`}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 flex-shrink-0 print:hidden">
           <h2 className="text-[15px] font-semibold text-slate-800">{title}</h2>
           <button
             onClick={onClose}
@@ -34,7 +34,7 @@ export default function Modal({ isOpen, onClose, title, children, size = "md" }:
             <X size={18} />
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 px-6 py-5">{children}</div>
+        <div className="overflow-y-auto flex-1 px-6 py-5 print:overflow-visible print:flex-none print:px-0 print:py-0">{children}</div>
       </div>
     </div>
   );

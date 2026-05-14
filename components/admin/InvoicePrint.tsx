@@ -44,7 +44,7 @@ export default function InvoicePrint({ invoice }: InvoicePrintProps) {
   return (
     <div
       id="invoice-print-area"
-      className="bg-white w-full max-w-[794px] mx-auto font-sans text-[13px] text-slate-800"
+      className="bg-white w-full max-w-[794px] mx-auto font-sans text-[13px] text-slate-800 pt-8 flex flex-col min-h-[970px]"
       style={{ fontFamily: "'Inter', 'Outfit', sans-serif" }}
     >
       {/* ===== HEADER ===== */}
@@ -127,17 +127,20 @@ export default function InvoicePrint({ invoice }: InvoicePrintProps) {
       {/* ===== ITEMS TABLE ===== */}
       <table className="w-full mb-5 border-collapse">
         <thead>
-          <tr className="bg-slate-900 text-white">
-            <th className="text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wide rounded-tl-lg">
+          <tr className="border-b-2 border-slate-800 text-slate-800">
+            <th className="text-left px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest">
               Deskripsi
             </th>
-            <th className="text-center px-4 py-3 text-[11px] font-bold uppercase tracking-wide w-16">
+            <th className="text-left px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest w-28">
+              Tipe
+            </th>
+            <th className="text-center px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest w-14">
               Qty
             </th>
-            <th className="text-right px-4 py-3 text-[11px] font-bold uppercase tracking-wide w-36">
+            <th className="text-right px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest w-36">
               Harga Satuan
             </th>
-            <th className="text-right px-4 py-3 text-[11px] font-bold uppercase tracking-wide w-36 rounded-tr-lg">
+            <th className="text-right px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest w-36">
               Total
             </th>
           </tr>
@@ -153,7 +156,9 @@ export default function InvoicePrint({ invoice }: InvoicePrintProps) {
                 {item.description && (
                   <p className="text-[11.5px] text-slate-400 mt-0.5">{item.description}</p>
                 )}
-                <span className="text-[10.5px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 mt-1 inline-block">
+              </td>
+              <td className="px-4 py-3 border-b border-slate-200">
+                <span className="text-[10.5px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 whitespace-nowrap">
                   {item.type}
                 </span>
               </td>
@@ -262,45 +267,41 @@ export default function InvoicePrint({ invoice }: InvoicePrintProps) {
         </div>
       </div>
 
-      {/* ===== NOTES + PAYMENT INFO ===== */}
-      <div className="grid grid-cols-2 gap-6 pt-5 border-t-2 border-slate-800">
-        <div>
-          {invoice.notes && (
-            <>
+      {/* ===== BOTTOM SECTION (NOTES + FOOTER) ===== */}
+      <div className="mt-auto">
+        <div className="grid grid-cols-2 gap-6 pt-5 border-t-2 border-slate-800">
+          <div>
+            {invoice.notes && (
+              <>
+                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
+                  Catatan
+                </p>
+                <p className="text-[12.5px] text-slate-600 leading-relaxed">{invoice.notes}</p>
+              </>
+            )}
+            <div className="mt-3">
               <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                Catatan
+                Syarat Pembayaran
               </p>
-              <p className="text-[12.5px] text-slate-600 leading-relaxed">{invoice.notes}</p>
-            </>
-          )}
-          <div className="mt-3">
+              <p className="text-[12px] text-slate-500">
+                Pembayaran harap dilakukan sebelum jatuh tempo. Terima kasih telah menggunakan layanan Infinity Go Bali.
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-              Syarat Pembayaran
+              Informasi Pembayaran
             </p>
-            <p className="text-[12px] text-slate-500">
-              Pembayaran harap dilakukan sebelum jatuh tempo. Terima kasih telah menggunakan layanan Infinity Go Bali.
+            <p className="font-bold text-slate-800 text-[13px]">{companyInfo.name}</p>
+            <p className="text-slate-600 text-[12.5px]">{companyInfo.bank}</p>
+            <p className="text-slate-600 text-[12.5px]">a.n. {companyInfo.accountName}</p>
+            <p className="font-mono font-bold text-slate-800 text-[14px] mt-1">
+              {companyInfo.accountNumber}
             </p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-            Informasi Pembayaran
-          </p>
-          <p className="font-bold text-slate-800 text-[13px]">{companyInfo.name}</p>
-          <p className="text-slate-600 text-[12.5px]">{companyInfo.bank}</p>
-          <p className="text-slate-600 text-[12.5px]">a.n. {companyInfo.accountName}</p>
-          <p className="font-mono font-bold text-slate-800 text-[14px] mt-1">
-            {companyInfo.accountNumber}
-          </p>
-        </div>
-      </div>
 
-      {/* Footer */}
-      <div className="mt-8 pt-4 border-t border-slate-200 text-center">
-        <p className="text-[11px] text-slate-400">
-          Dibuat oleh <span className="font-semibold text-slate-500">Infinity Go Bali</span> &bull;{" "}
-          {companyInfo.email} &bull; {companyInfo.phone}
-        </p>
+
       </div>
     </div>
   );
