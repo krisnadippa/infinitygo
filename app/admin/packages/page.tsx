@@ -11,8 +11,15 @@ import Image from "next/image";
 
 function generateId() { return Math.random().toString(36).slice(2, 9); }
 
+const locationOptions = [
+  { value: "Bali", label: "Bali" },
+  { value: "Jakarta", label: "Jakarta" },
+  { value: "Labuan Bajo", label: "Labuan Bajo" },
+  { value: "Yogyakarta", label: "Yogyakarta" },
+];
+
 const defaultForm: Partial<TourPackage> = {
-  name: "", location: "", duration: "", price: 0,
+  name: "", location: "Bali", duration: "", price: 0,
   description: "", facilities: [], image: "", status: "Active",
 };
 
@@ -155,7 +162,7 @@ export default function PackagesPage() {
           <div className="sm:col-span-2">
             <Input label="Nama Paket" placeholder="Nama paket tour" value={form.name || ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} id="pkg-name" />
           </div>
-          <Input label="Lokasi" placeholder="Contoh: Ubud, Gianyar" value={form.location || ""} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} id="pkg-location" />
+          <Select label="Lokasi" id="pkg-location" options={locationOptions} value={form.location || "Bali"} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
           <Input label="Durasi" placeholder="Contoh: 3 Hari 2 Malam" value={form.duration || ""} onChange={(e) => setForm((p) => ({ ...p, duration: e.target.value }))} id="pkg-duration" />
           <Input label="Harga (Rp)" type="number" value={form.price || ""} onChange={(e) => setForm((p) => ({ ...p, price: Number(e.target.value) }))} id="pkg-price" />
           <Select

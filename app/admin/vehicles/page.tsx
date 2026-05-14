@@ -18,8 +18,15 @@ const typeOptions = [
   { value: "Motorcycle", label: "Motorcycle" },
 ];
 
+const locationOptions = [
+  { value: "Bali", label: "Bali" },
+  { value: "Jakarta", label: "Jakarta" },
+  { value: "Labuan Bajo", label: "Labuan Bajo" },
+  { value: "Yogyakarta", label: "Yogyakarta" },
+];
+
 const defaultForm: Partial<Vehicle> = {
-  name: "", type: "Car", brand: "", capacity: 4, pricePerDay: 0,
+  name: "", type: "Car", brand: "", location: "Bali", capacity: 4, pricePerDay: 0,
   driverIncluded: false, description: "", image: "", status: "Active",
 };
 
@@ -52,6 +59,7 @@ export default function VehiclesPage() {
       name: form.name || "",
       type: form.type as Vehicle["type"] || "Car",
       brand: form.brand || "",
+      location: form.location || "Bali",
       capacity: form.capacity || 4,
       pricePerDay: form.pricePerDay || 0,
       driverIncluded: form.driverIncluded || false,
@@ -88,7 +96,7 @@ export default function VehiclesPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
-                {["Kendaraan", "Tipe", "Kapasitas", "Harga/Hari", "Driver", "Status", "Aksi"].map((h) => (
+                {["Kendaraan", "Tipe", "Lokasi", "Kapasitas", "Harga/Hari", "Driver", "Status", "Aksi"].map((h) => (
                   <th key={h} className="text-left px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-slate-400 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -109,6 +117,9 @@ export default function VehiclesPage() {
                   </td>
                   <td className="px-5 py-3.5">
                     <span className={`text-[11.5px] px-2.5 py-0.5 rounded-full border font-medium ${typeColors[veh.type]}`}>{veh.type}</span>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <span className="text-[12.5px] text-slate-600">{veh.location}</span>
                   </td>
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-1 text-[13px] text-slate-600">
@@ -142,6 +153,7 @@ export default function VehiclesPage() {
           <div className="sm:col-span-2"><Input label="Nama Kendaraan" placeholder="Contoh: Toyota Innova Reborn" value={form.name || ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} id="veh-name" /></div>
           <Select label="Tipe Kendaraan" id="veh-type" options={typeOptions} value={form.type || "Car"} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as Vehicle["type"] }))} />
           <Input label="Brand" placeholder="Toyota, Honda, dll" value={form.brand || ""} onChange={(e) => setForm((p) => ({ ...p, brand: e.target.value }))} id="veh-brand" />
+          <Select label="Lokasi" id="veh-location" options={locationOptions} value={form.location || "Bali"} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
           <Input label="Kapasitas Penumpang" type="number" value={form.capacity || ""} onChange={(e) => setForm((p) => ({ ...p, capacity: Number(e.target.value) }))} id="veh-capacity" />
           <Input label="Harga per Hari (Rp)" type="number" value={form.pricePerDay || ""} onChange={(e) => setForm((p) => ({ ...p, pricePerDay: Number(e.target.value) }))} id="veh-price" />
           <Select label="Driver Included" id="veh-driver" options={[{ value: "true", label: "Ya" }, { value: "false", label: "Tidak" }]} value={String(form.driverIncluded || false)} onChange={(e) => setForm((p) => ({ ...p, driverIncluded: e.target.value === "true" }))} />

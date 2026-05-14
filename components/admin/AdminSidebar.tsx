@@ -50,7 +50,6 @@ const navItems: NavItem[] = [
   { label: "Paket Tour", href: "/admin/packages", icon: <MapPin size={18} /> },
   { label: "Akomodasi", href: "/admin/accommodations", icon: <Building2 size={18} /> },
   { label: "Kendaraan", href: "/admin/vehicles", icon: <Car size={18} /> },
-  { label: "Customer", href: "/admin/customers", icon: <Users size={18} /> },
   { label: "Report", href: "/admin/reports", icon: <BarChart2 size={18} /> },
   { label: "Settings", href: "/admin/settings", icon: <Settings size={18} /> },
 ];

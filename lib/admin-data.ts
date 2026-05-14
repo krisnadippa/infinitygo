@@ -91,6 +91,7 @@ export interface Vehicle {
   name: string;
   type: "Car" | "Mini Bus" | "Bus" | "Motorcycle";
   brand: string;
+  location: string;
   capacity: number;
   pricePerDay: number;
   driverIncluded: boolean;
@@ -324,11 +325,11 @@ export const dummyAccommodations: Accommodation[] = [
 ];
 
 export const dummyVehicles: Vehicle[] = [
-  { id: "veh-001", name: "Toyota Innova Reborn", type: "Car", brand: "Toyota", capacity: 7, pricePerDay: 450000, driverIncluded: false, description: "Mobil keluarga nyaman untuk 7 penumpang, kondisi sangat baik dan terawat.", image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600", status: "Active" },
-  { id: "veh-002", name: "Toyota Hiace Commuter", type: "Mini Bus", brand: "Toyota", capacity: 14, pricePerDay: 800000, driverIncluded: true, description: "Minibus kapasitas 14 penumpang dengan driver berpengalaman, cocok untuk group tour.", image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600", status: "Active" },
-  { id: "veh-003", name: "Isuzu Elf Medium", type: "Mini Bus", brand: "Isuzu", capacity: 16, pricePerDay: 950000, driverIncluded: true, description: "Minibus medium untuk group 16 penumpang, dilengkapi AC dan audio system.", image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=600", status: "Active" },
-  { id: "veh-004", name: "Bus Pariwisata 40 Seat", type: "Bus", brand: "Mercedes-Benz", capacity: 40, pricePerDay: 1500000, driverIncluded: true, description: "Bus pariwisata besar kapasitas 40 penumpang untuk corporate event dan tour besar.", image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600", status: "Active" },
-  { id: "veh-005", name: "Honda PCX 160", type: "Motorcycle", brand: "Honda", capacity: 2, pricePerDay: 80000, driverIncluded: false, description: "Skuter modern untuk menjelajahi Bali secara mandiri, nyaman dan irit.", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600", status: "Active" },
+  { id: "veh-001", name: "Toyota Innova Reborn", type: "Car", brand: "Toyota", location: "Bali", capacity: 7, pricePerDay: 450000, driverIncluded: false, description: "Mobil keluarga nyaman untuk 7 penumpang, kondisi sangat baik dan terawat.", image: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600", status: "Active" },
+  { id: "veh-002", name: "Toyota Hiace Commuter", type: "Mini Bus", brand: "Toyota", location: "Bali", capacity: 14, pricePerDay: 800000, driverIncluded: true, description: "Minibus kapasitas 14 penumpang dengan driver berpengalaman, cocok untuk group tour.", image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600", status: "Active" },
+  { id: "veh-003", name: "Isuzu Elf Medium", type: "Mini Bus", brand: "Isuzu", location: "Yogyakarta", capacity: 16, pricePerDay: 950000, driverIncluded: true, description: "Minibus medium untuk group 16 penumpang, dilengkapi AC dan audio system.", image: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=600", status: "Active" },
+  { id: "veh-004", name: "Bus Pariwisata 40 Seat", type: "Bus", brand: "Mercedes-Benz", location: "Jakarta", capacity: 40, pricePerDay: 1500000, driverIncluded: true, description: "Bus pariwisata besar kapasitas 40 penumpang untuk corporate event dan tour besar.", image: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600", status: "Active" },
+  { id: "veh-005", name: "Honda PCX 160", type: "Motorcycle", brand: "Honda", location: "Bali", capacity: 2, pricePerDay: 80000, driverIncluded: false, description: "Skuter modern untuk menjelajahi Bali secara mandiri, nyaman dan irit.", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600", status: "Active" },
 ];
 
 export const dummyCustomers: Customer[] = [

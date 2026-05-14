@@ -11,6 +11,13 @@ import Image from "next/image";
 
 function generateId() { return Math.random().toString(36).slice(2, 9); }
 
+const locationOptions = [
+  { value: "Bali", label: "Bali" },
+  { value: "Jakarta", label: "Jakarta" },
+  { value: "Labuan Bajo", label: "Labuan Bajo" },
+  { value: "Yogyakarta", label: "Yogyakarta" },
+];
+
 const typeOptions = [
   { value: "Hotel", label: "Hotel" },
   { value: "Villa", label: "Villa" },
@@ -19,7 +26,7 @@ const typeOptions = [
 ];
 
 const defaultForm: Partial<Accommodation> = {
-  name: "", type: "Hotel", location: "", pricePerNight: 0,
+  name: "", type: "Hotel", location: "Bali", pricePerNight: 0,
   facilities: [], description: "", image: "", status: "Active",
 };
 
@@ -120,7 +127,7 @@ export default function AccommodationsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="sm:col-span-2"><Input label="Nama Akomodasi" placeholder="Nama hotel/villa/resort" value={form.name || ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} id="acc-name" /></div>
           <Select label="Tipe" id="acc-type" options={typeOptions} value={form.type || "Hotel"} onChange={(e) => setForm((p) => ({ ...p, type: e.target.value as Accommodation["type"] }))} />
-          <Input label="Lokasi" placeholder="Area, Kabupaten" value={form.location || ""} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} id="acc-location" />
+          <Select label="Lokasi" id="acc-location" options={locationOptions} value={form.location || "Bali"} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
           <Input label="Harga per Malam (Rp)" type="number" value={form.pricePerNight || ""} onChange={(e) => setForm((p) => ({ ...p, pricePerNight: Number(e.target.value) }))} id="acc-price" />
           <Select label="Status" id="acc-status" options={[{ value: "Active", label: "Active" }, { value: "Inactive", label: "Inactive" }]} value={form.status || "Active"} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as "Active" | "Inactive" }))} />
           <div className="sm:col-span-2"><Textarea label="Deskripsi" rows={3} value={form.description || ""} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} id="acc-desc" /></div>
