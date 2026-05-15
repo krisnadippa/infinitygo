@@ -12,7 +12,7 @@ export default function ReportsClient({ initialInvoices }: { initialInvoices: an
   const [dateTo, setDateTo] = useState("2026-05-31");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  const paidInvoices = invoices.filter((i) => i.status === "Paid");
+  const paidInvoices = invoices.filter((i) => ["PAID", "Paid", "Lunas"].includes(i.status));
   const totalRevenue = paidInvoices.reduce((s, i) => s + i.grandTotal, 0);
   const totalExpense = paidInvoices.reduce((s, i) => s + i.totalExpense, 0);
   const netProfit = totalRevenue - totalExpense;

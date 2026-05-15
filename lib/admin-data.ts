@@ -366,8 +366,12 @@ export const dummyCustomers: Customer[] = [
 // ============================================================
 
 export function computeDashboardStats(invoices: Invoice[]) {
-  const paid = invoices.filter((i) => i.status === "Paid");
-  const pending = invoices.filter((i) => i.status === "Pending" || i.status === "DP");
+  const paid = invoices.filter((i) => 
+    ["PAID", "Paid", "Lunas"].includes(i.status)
+  );
+  const pending = invoices.filter((i) => 
+    ["PENDING", "Pending", "DP", "DRAFT", "Draft"].includes(i.status)
+  );
   const totalRevenue = paid.reduce((s, i) => s + i.grandTotal, 0);
   const totalExpense = paid.reduce((s, i) => s + i.totalExpense, 0);
   const netProfit = totalRevenue - totalExpense;
