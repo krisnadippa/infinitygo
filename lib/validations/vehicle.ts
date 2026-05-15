@@ -6,7 +6,7 @@ export const VehicleSchema = z.object({
   vehicleType: z.string().min(1, "Tipe kendaraan wajib diisi"),
   brand: z.string().optional(),
   location: z.string().optional(),
-  capacity: z.number().positive("Kapasitas harus angka positif").optional(),
+  capacity: z.number().int().positive("Kapasitas harus angka positif").default(4),
   pricePerDay: z.number().nonnegative("Harga tidak boleh negatif"),
   driverIncluded: z.boolean().default(false),
   description: z.string().optional(),

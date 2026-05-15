@@ -123,7 +123,7 @@ export async function saveVehicle(rawData: any) {
       type: data.vehicleType,
       brand: data.brand || "",
       location: data.location || "",
-      capacity: data.capacity,
+      capacity: data.capacity || 4,
       pricePerDay: data.pricePerDay,
       driverIncluded: data.driverIncluded,
       description: data.description || "",
