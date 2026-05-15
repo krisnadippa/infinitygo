@@ -30,18 +30,36 @@ export default function ReportsClient({ initialInvoices }: { initialInvoices: an
   const activeData = monthlyChartData.filter((d) => d.revenue > 0);
   const maxRev = Math.max(...activeData.map((d) => d.revenue));
 
+  const handleExportPDF = () => {
+    window.print();
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-12">
+      <div className="flex items-center justify-between no-print">
         <div>
           <h1 className="text-[20px] font-bold text-slate-800">Report</h1>
           <p className="text-[13px] text-slate-500 mt-0.5">Laporan keuangan dan performa bisnis</p>
         </div>
-        <Button icon={<Download size={15} />} variant="outline">Export Report</Button>
+        <Button icon={<Download size={15} />} variant="outline" onClick={handleExportPDF}>Export Report (PDF)</Button>
+      </div>
+
+      {/* Header for PDF only */}
+      <div className="hidden print:block mb-8">
+        <div className="flex justify-between items-start border-b-2 border-slate-800 pb-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">INFINITY GO BALI</h1>
+            <p className="text-sm text-slate-600">Laporan Keuangan & Performa Bisnis</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-slate-500">Periode:</p>
+            <p className="text-sm font-semibold">{dateFrom} s/d {dateTo}</p>
+          </div>
+        </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 no-print">
         <div className="flex flex-wrap items-end gap-4">
           <div>
             <label className="block text-[12.5px] font-medium text-slate-600 mb-1.5">Dari Tanggal</label>
@@ -65,22 +83,22 @@ export default function ReportsClient({ initialInvoices }: { initialInvoices: an
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Revenue", value: formatRupiah(totalRevenue), color: "text-green-600", bg: "bg-green-50", border: "border-green-100" },
-          { label: "Total Expense", value: formatRupiah(totalExpense), color: "text-red-500", bg: "bg-red-50", border: "border-red-100" },
-          { label: "Net Profit", value: formatRupiah(netProfit), color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-100" },
-          { label: "Profit Margin", value: `${profitMargin}%`, color: "text-purple-600", bg: "bg-purple-50", border: "border-purple-100" },
+          { label: "Total Revenue", value: formatRupiah(totalRevenue), color: "text-emerald-600", bg: "bg-emerald-50/50", border: "border-emerald-100" },
+          { label: "Total Expense", value: formatRupiah(totalExpense), color: "text-rose-500", bg: "bg-rose-50/50", border: "border-rose-100" },
+          { label: "Net Profit", value: formatRupiah(netProfit), color: "text-blue-600", bg: "bg-blue-50/50", border: "border-blue-100" },
+          { label: "Profit Margin", value: `${profitMargin}%`, color: "text-violet-600", bg: "bg-violet-50/50", border: "border-violet-100" },
         ].map((card) => (
-          <div key={card.label} className={`${card.bg} rounded-2xl border ${card.border} p-5`}>
-            <p className="text-[12px] text-slate-500 mb-1">{card.label}</p>
-            <p className={`text-[20px] font-bold ${card.color}`}>{card.value}</p>
+          <div key={card.label} className={`${card.bg} rounded-2xl border ${card.border} p-4 print:bg-white print:border-slate-200`}>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">{card.label}</p>
+            <p className={`text-[17px] sm:text-[18px] font-extrabold truncate ${card.color}`} title={card.value}>{card.value}</p>
           </div>
         ))}
       </div>
 
-      {/* Revenue chart */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+      {/* Revenue chart - Hide in print for cleaner look */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 no-print">
         <h3 className="text-[14.5px] font-semibold text-slate-800 mb-5">Monthly Revenue Chart 2026</h3>
         <div className="flex items-end gap-3 h-44">
           {activeData.map((item, i) => {
@@ -103,16 +121,16 @@ export default function ReportsClient({ initialInvoices }: { initialInvoices: an
       </div>
 
       {/* Invoice breakdown table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden print:border-none print:shadow-none">
         <div className="px-5 py-4 border-b border-slate-100">
           <h3 className="text-[14.5px] font-semibold text-slate-800">Detail Invoice</h3>
         </div>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto hide-scrollbar">
           <table className="w-full">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200">
-                {["Invoice", "Customer", "Revenue", "Expense", "Net Profit", "Margin", "Status"].map((h) => (
-                  <th key={h} className="text-left px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-slate-400 whitespace-nowrap">{h}</th>
+                {["Inv", "Customer", "Revenue", "Expense", "Profit", "Margin", "Status"].map((h) => (
+                  <th key={h} className="text-left px-2 py-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 whitespace-nowrap">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -121,13 +139,13 @@ export default function ReportsClient({ initialInvoices }: { initialInvoices: an
                 const margin = inv.grandTotal > 0 ? Math.round((inv.netProfit / inv.grandTotal) * 100) : 0;
                 return (
                   <tr key={inv.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-5 py-3.5 text-[13px] font-medium text-blue-600">{inv.invoiceNumber}</td>
-                    <td className="px-5 py-3.5 text-[13px] text-slate-700">{inv.customerName}</td>
-                    <td className="px-5 py-3.5 text-[13px] font-semibold text-green-600">{formatRupiah(inv.grandTotal)}</td>
-                    <td className="px-5 py-3.5 text-[13px] text-red-500">{inv.totalExpense > 0 ? formatRupiah(inv.totalExpense) : "—"}</td>
-                    <td className="px-5 py-3.5 text-[13px] font-semibold text-blue-700">{inv.netProfit > 0 ? formatRupiah(inv.netProfit) : "—"}</td>
-                    <td className="px-5 py-3.5 text-[13px] text-purple-600 font-medium">{inv.netProfit > 0 ? `${margin}%` : "—"}</td>
-                    <td className="px-5 py-3.5"><StatusBadge status={inv.status} /></td>
+                    <td className="px-2 py-2.5 text-[11.5px] font-medium text-blue-600 whitespace-nowrap">{inv.invoiceNumber}</td>
+                    <td className="px-2 py-2.5 text-[11.5px] text-slate-700 max-w-[120px] truncate" title={inv.customerName}>{inv.customerName}</td>
+                    <td className="px-2 py-2.5 text-[11.5px] font-semibold text-emerald-600 whitespace-nowrap">{formatRupiah(inv.grandTotal).replace(",00", "")}</td>
+                    <td className="px-2 py-2.5 text-[11.5px] text-rose-500 whitespace-nowrap">{inv.totalExpense > 0 ? formatRupiah(inv.totalExpense).replace(",00", "") : "—"}</td>
+                    <td className="px-2 py-2.5 text-[11.5px] font-bold text-blue-700 whitespace-nowrap">{inv.netProfit > 0 ? formatRupiah(inv.netProfit).replace(",00", "") : "—"}</td>
+                    <td className="px-2 py-2.5 text-[11.5px] text-violet-600 font-bold">{inv.netProfit > 0 ? `${margin}%` : "—"}</td>
+                    <td className="px-2 py-2.5 whitespace-nowrap"><StatusBadge status={inv.status} /></td>
                   </tr>
                 );
               })}
@@ -135,6 +153,24 @@ export default function ReportsClient({ initialInvoices }: { initialInvoices: an
           </table>
         </div>
       </div>
+
+      <style jsx global>{`
+        @media print {
+          .no-print { display: none !important; }
+          body { background: white !important; }
+          .lg\\:ml-64 { margin-left: 0 !important; }
+          main { padding: 0 !important; }
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        /* Hide scrollbar for IE, Edge and Firefox */
+        .hide-scrollbar {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+        }
+      `}</style>
     </div>
   );
 }
