@@ -15,7 +15,7 @@ export const InvoiceSchema = z.object({
   customerEmail: z.string().email("Email tidak valid").or(z.literal("")).optional(),
   invoiceDate: z.date().or(z.string().pipe(z.coerce.date())),
   dueDate: z.date().or(z.string().pipe(z.coerce.date())).optional(),
-  status: z.enum(["DRAFT", "PENDING", "PAID", "CANCELLED", "Draft", "Pending", "Lunas", "DP", "Dibatalkan"]), // Compatible with current UI and requested caps
+  status: z.enum(["DRAFT", "PENDING", "PAID", "CANCELLED", "Draft", "Pending", "Paid", "Cancelled", "Lunas", "DP", "Dibatalkan"]), // Comprehensive list of allowed statuses
   paymentMethod: z.string().optional(),
   discount: z.number().nonnegative().default(0),
   tax: z.number().nonnegative().default(0),
