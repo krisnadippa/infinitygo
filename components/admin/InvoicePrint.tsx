@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Invoice, formatRupiah } from "@/lib/admin-data";
+import { Invoice, formatRupiah, formatDate } from "@/lib/admin-data";
 
 interface InvoicePrintProps {
   invoice: Invoice;
@@ -46,8 +46,25 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
     <div
       id="invoice-print-area"
       className="bg-white w-full max-w-[794px] mx-auto font-sans text-[13px] text-slate-800 pt-8 flex flex-col min-h-[970px]"
-      style={{ fontFamily: "'Inter', 'Outfit', sans-serif" }}
+      style={{ 
+        fontFamily: "'Inter', 'Outfit', sans-serif",
+      }}
     >
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: auto;
+            margin: 10mm 15mm !important;
+          }
+          body {
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          header, footer, nav, .print-hidden {
+            display: none !important;
+          }
+        }
+      `}</style>
       {/* ===== HEADER ===== */}
       <div className="flex items-start justify-between pb-6 border-b-2 border-slate-800 mb-6">
         <div className="flex items-center gap-4">
@@ -108,13 +125,13 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
               Tanggal Invoice
             </p>
-            <p className="font-semibold text-slate-800">{invoice.invoiceDate}</p>
+            <p className="font-semibold text-slate-800">{formatDate(invoice.invoiceDate)}</p>
           </div>
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
               Jatuh Tempo
             </p>
-            <p className="font-semibold text-slate-800">{invoice.dueDate}</p>
+            <p className="font-semibold text-slate-800">{formatDate(invoice.dueDate)}</p>
           </div>
           <div className="mt-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
@@ -210,7 +227,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
                 <span className="text-blue-700 font-medium">
                   DP Dibayar
                   {invoice.dpDate && (
-                    <span className="text-[11px] text-blue-400 ml-1">({invoice.dpDate})</span>
+                    <span className="text-[11px] text-blue-400 ml-1">({formatDate(invoice.dpDate)})</span>
                   )}
                 </span>
                 <span className="font-bold text-blue-700">
@@ -222,7 +239,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
                   <span className="text-green-700 font-medium">
                     Pelunasan Sisa
                     {invoice.paidRemainingDate && (
-                      <span className="text-[11px] text-green-500 ml-1">({invoice.paidRemainingDate})</span>
+                      <span className="text-[11px] text-green-500 ml-1">({formatDate(invoice.paidRemainingDate)})</span>
                     )}
                   </span>
                   <span className="font-bold text-green-700">
@@ -298,7 +315,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
                       {exp.category}
                     </span>
                   </td>
-                  <td className="px-3 py-2.5 border-b border-slate-100 text-[12px] text-slate-500">{exp.date}</td>
+                  <td className="px-3 py-2.5 border-b border-slate-100 text-[12px] text-slate-500">{formatDate(exp.date)}</td>
                   <td className="px-3 py-2.5 border-b border-slate-100 text-right font-semibold text-slate-700">
                     {formatRupiah(exp.amount)}
                   </td>

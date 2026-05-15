@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Invoice {
+  id                  String        @id @default(cuid())
+  invoiceNumber       String        @unique
+  customerName        String
+  customerPhone       String
+  customerEmail       String
+  invoiceDate         DateTime
+  dueDate             DateTime
+  status              String
+  paymentMethod       String
+  paymentType         String
+  dpAmount            Float         @default(0)
+  dpDate              DateTime?
+  remainingAmount     Float         @default(0)
+  paidFull            Boolean       @default(false)
+  paidRemainingDate   DateTime?
+  paidRemainingAmount Float?
+  notes               String?
+  subtotal            Float         @default(0)
+  discount            Float         @default(0)
+  tax                 Float         @default(0)
+  grandTotal          Float         @default(0)
+  totalExpense        Float         @default(0)
+  netProfit           Float         @default(0)
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  expenses            Expense[]
+  items               InvoiceItem[]
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  type        String
+  name        String
+  description String?
+  quantity    Int
+  price       Float
+  subtotal    Float
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id        String   @id @default(cuid())
+  invoiceId String
+  name      String
+  category  String
+  amount    Float
+  date      DateTime
+  notes     String?
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model TourPackage {
+  id          String   @id @default(cuid())
+  name        String
+  location    String
+  duration    String
+  price       Float
+  description String
+  facilities  String[]
+  image       String?  // Keep for compatibility but marked for deletion
+  imageUrl    String?
+  status      String   @default("Active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Accommodation {
+  id            String   @id @default(cuid())
+  name          String
+  type          String
+  location      String
+  pricePerNight Float
+  facilities    String[]
+  description   String
+  image         String?  // Keep for compatibility but marked for deletion
+  imageUrl      String?
+  status        String   @default("Active")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Vehicle {
+  id             String   @id @default(cuid())
+  name           String
+  type           String
+  brand          String
+  location       String
+  capacity       Int
+  pricePerDay    Float
+  driverIncluded Boolean  @default(false)
+  description    String
+  image          String?  // Keep for compatibility but marked for deletion
+  imageUrl       String?
+  status         String   @default("Active")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model GalleryItem {
+  id        String   @id @default(cuid())
+  title     String
+  location  String
+  image     String?  // Keep for compatibility but marked for deletion
+  imageUrl  String?
+  status    String   @default("Active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id          String    @id @default(cuid())
+  name        String
+  phone       String
+  email       String
+  totalOrders Int       @default(0)
+  totalSpent  Float     @default(0)
+  lastOrder   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

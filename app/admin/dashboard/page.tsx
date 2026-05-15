@@ -11,23 +11,41 @@ import StatCard from "@/components/admin/StatCard";
 import { StatusBadge } from "@/components/admin/Badge";
 import { RevenueExpenseChart, MonthlyTargetCard } from "@/components/admin/Charts";
 import {
-  dummyInvoices,
-  dummyTourPackages,
   computeDashboardStats,
   formatRupiah,
-  monthlyChartData,
+  formatDate,
 } from "@/lib/admin-data";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
 export const metadata = {
   title: "Dashboard | BaliTravel Admin",
   description: "Overview statistik bisnis travel Bali",
 };
 
-export default function AdminDashboardPage() {
-  const stats = computeDashboardStats(dummyInvoices);
-  const recentInvoices = dummyInvoices.slice(0, 5);
-  const topPackages = dummyTourPackages.slice(0, 4);
+export default async function AdminDashboardPage() {
+  const invoices = await prisma.invoice.findMany({
+    orderBy: { createdAt: "desc" },
+    include: { items: true, expenses: true }
+  });
+  
+  const tourPackages = await prisma.tourPackage.findMany({
+    where: { status: "Active" },
+    take: 4,
+  });
+
+  const stats = computeDashboardStats(invoices as any);
+  const recentInvoices = invoices.slice(0, 5);
+  const topPackages = tourPackages;
+
+  // Mock chart data for now, but use current stats for May
+  const monthlyChartData = [
+    { month: "Jan", revenue: 45000000, expense: 22000000 },
+    { month: "Feb", revenue: 52000000, expense: 28000000 },
+    { month: "Mar", revenue: 38000000, expense: 18000000 },
+    { month: "Apr", revenue: 67000000, expense: 35000000 },
+    { month: "May", revenue: stats.totalRevenue, expense: stats.totalExpense },
+  ];
 
   return (
     <div className="space-y-6">
@@ -65,7 +83,7 @@ export default function AdminDashboardPage() {
         <div className="col-span-2 lg:col-span-1 xl:col-span-1">
           <StatCard
             title="Total Revenue"
-            value="Rp 125 Jt"
+            value={formatRupiah(stats.totalRevenue)}
             change={18}
             changeLabel="vs bulan lalu"
             icon={<DollarSign size={20} />}
@@ -76,7 +94,7 @@ export default function AdminDashboardPage() {
         <div className="col-span-2 lg:col-span-1 xl:col-span-1">
           <StatCard
             title="Total Expense"
-            value="Rp 72,5 Jt"
+            value={formatRupiah(stats.totalExpense)}
             change={-5}
             changeLabel="vs bulan lalu"
             icon={<TrendingDown size={20} />}
@@ -87,7 +105,7 @@ export default function AdminDashboardPage() {
         <div className="col-span-2 lg:col-span-1 xl:col-span-1">
           <StatCard
             title="Net Profit"
-            value="Rp 52,5 Jt"
+            value={formatRupiah(stats.netProfit)}
             change={24}
             changeLabel="vs bulan lalu"
             icon={<TrendingUp size={20} />}
@@ -163,7 +181,7 @@ export default function AdminDashboardPage() {
                       <span className="text-[13px] font-medium text-blue-600">
                         {inv.invoiceNumber}
                       </span>
-                      <p className="text-[11.5px] text-slate-400 mt-0.5">{inv.invoiceDate}</p>
+                      <p className="text-[11.5px] text-slate-400 mt-0.5">{formatDate(inv.invoiceDate)}</p>
                     </td>
                     <td className="px-5 py-3.5">
                       <p className="text-[13px] text-slate-700 font-medium">{inv.customerName}</p>

@@ -58,7 +58,7 @@ export default function KontakPage() {
               { name: "Beranda", link: "/" },
               { name: "Layanan", link: "/layanan" },
               { name: "Destinasi", link: "/destinasi" },
-              { name: "Akomodasi", link: "/#akomodasi" },
+              { name: "Galeri", link: "/galeri" },
               { name: "Testimoni", link: "/#testimoni" },
               { name: "Kontak", link: "/kontak" },
             ]} 
@@ -96,7 +96,7 @@ export default function KontakPage() {
                   { name: "Beranda", link: "/" },
                   { name: "Layanan", link: "/layanan" },
                   { name: "Destinasi", link: "/destinasi" },
-                  { name: "Akomodasi", link: "/#akomodasi" },
+                  { name: "Galeri", link: "/galeri" },
                   { name: "Testimoni", link: "/#testimoni" },
                   { name: "Kontak", link: "/kontak" },
                 ].map((item, idx) => (

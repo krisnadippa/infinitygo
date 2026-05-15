@@ -70,7 +70,7 @@ export interface TourPackage {
   price: number;
   description: string;
   facilities: string[];
-  image: string;
+  imageUrl?: string;
   status: "Active" | "Inactive";
 }
 
@@ -82,7 +82,7 @@ export interface Accommodation {
   pricePerNight: number;
   facilities: string[];
   description: string;
-  image: string;
+  imageUrl?: string;
   status: "Active" | "Inactive";
 }
 
@@ -96,7 +96,15 @@ export interface Vehicle {
   pricePerDay: number;
   driverIncluded: boolean;
   description: string;
-  image: string;
+  imageUrl?: string;
+  status: "Active" | "Inactive";
+}
+
+export interface GalleryItem {
+  id: string;
+  title: string;
+  location: string;
+  imageUrl?: string;
   status: "Active" | "Inactive";
 }
 
@@ -332,6 +340,18 @@ export const dummyVehicles: Vehicle[] = [
   { id: "veh-005", name: "Honda PCX 160", type: "Motorcycle", brand: "Honda", location: "Bali", capacity: 2, pricePerDay: 80000, driverIncluded: false, description: "Skuter modern untuk menjelajahi Bali secara mandiri, nyaman dan irit.", image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600", status: "Active" },
 ];
 
+export const dummyGallery: GalleryItem[] = [
+  { id: "gal-001", title: "Keindahan Alam Bali", location: "Bali", image: "/images/bali.jpg", status: "Active" },
+  { id: "gal-002", title: "Perjalanan Menyenangkan", location: "Bali", image: "/images/contact.jpg", status: "Active" },
+  { id: "gal-003", title: "Eksplorasi Destinasi", location: "Bali", image: "/images/destinasi.jpg", status: "Active" },
+  { id: "gal-004", title: "Pemandangan Eksotis", location: "Nusa Penida", image: "/images/destinasi1.jpg", status: "Active" },
+  { id: "gal-005", title: "City Tour Jakarta", location: "Jakarta", image: "/images/jakarta.jpg", status: "Active" },
+  { id: "gal-006", title: "Pesona Labuan Bajo", location: "Labuan Bajo", image: "/images/labuanbajo.jpg", status: "Active" },
+  { id: "gal-007", title: "Pelayanan Terbaik Kami", location: "Bali", image: "/images/layanan.jpg", status: "Active" },
+  { id: "gal-008", title: "Budaya Yogyakarta", location: "Yogyakarta", image: "/images/yogyakarta.jpg", status: "Active" },
+  { id: "gal-009", title: "Momen Tak Terlupakan", location: "Bali", image: "/images/galery.jpg", status: "Active" },
+];
+
 export const dummyCustomers: Customer[] = [
   { id: "cus-001", name: "Budi Santoso", phone: "+62812345678", email: "budi@gmail.com", totalOrders: 3, totalSpent: 27500000, lastOrder: "2026-05-01" },
   { id: "cus-002", name: "Siti Rahayu", phone: "+62856789012", email: "siti@yahoo.com", totalOrders: 1, totalSpent: 19000000, lastOrder: "2026-05-03" },
@@ -388,3 +408,21 @@ export const formatRupiah = (amount: number): string => {
 
 export const formatNumber = (n: number): string =>
   new Intl.NumberFormat("id-ID").format(n);
+
+export const formatDate = (date: Date | string | null): string => {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return String(date);
+  return d.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+export const formatDateInput = (date: Date | string | null): string => {
+  if (!date) return "";
+  const d = typeof date === "string" ? new Date(date) : date;
+  if (isNaN(d.getTime())) return String(date);
+  return d.toISOString().split("T")[0];
+};

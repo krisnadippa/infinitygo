@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { motion, useScroll, useMotionValueEvent } from "framer-motion";
-import { Check, ShieldCheck, Menu, X } from "lucide-react";
-import { IconBrandX, IconBrandFacebook, IconBrandLinkedin, IconBrandInstagram, IconMapSearch, IconHome, IconCar, IconWifi, IconUsers } from "@tabler/icons-react";
+import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
+import { IconBrandX, IconBrandFacebook, IconBrandLinkedin, IconBrandInstagram } from "@tabler/icons-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { 
   Navbar, 
   NavBody, 
@@ -17,85 +17,33 @@ import {
   MobileNavMenu 
 } from "@/components/ui/resizable-navbar";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { GalleryItem } from "@/lib/admin-data";
 
-const servicesData = [
-  {
-    id: "agen-tour",
-    title: "Agen Tour",
-    description: "Pilihan perjalanan wisata terbaik di Bali. Nikmati pengalaman liburan tanpa repot dengan paket tour lengkap kami, dipandu oleh tim profesional.",
-    image: "/images/layanan.jpg",
-    icon: <IconMapSearch size={28} className="text-white" />,
-    features: [
-      "Pemandu Profesional", "Transportasi Nyaman", 
-      "Harga Kompetitif", "Jadwal Fleksibel"
-    ],
-    packages: ["Paket Harian (12 Jam)", "Paket Keluarga", "Paket Honeymoon", "Private Group"]
-  },
-  {
-    id: "reservasi",
-    title: "Reservasi Villa & Hotel",
-    description: "Temukan akomodasi impian untuk liburan Anda. Kami bekerja sama dengan properti terbaik di Bali untuk memastikan kenyamanan Anda.",
-    image: "/images/layanan.jpg",
-    icon: <IconHome size={28} className="text-white" />,
-    features: [
-      "Harga Rate Terbaik", "Pilihan Beragam", 
-      "Proses Cepat & Mudah", "Layanan Bantuan 24/7"
-    ],
-    packages: ["Villa Private 1-4 Kamar", "Resort Mewah", "Hotel Bintang 4 & 5", "Budget Hotel"]
-  },
-  {
-    id: "transportasi",
-    title: "Transportasi",
-    description: "Solusi mobilitas yang aman dan nyaman selama di Bali. Tersedia sewa mobil dengan sopir atau lepas kunci.",
-    image: "/images/layanan.jpg",
-    icon: <IconCar size={28} className="text-white" />,
-    features: [
-      "Armada Terawat", "Sopir Berpengalaman", 
-      "Asuransi Kendaraan", "Tepat Waktu"
-    ],
-    packages: ["Sewa Mobil Premium", "Sewa Minibus (Hiace)", "Sewa Motor", "Airport Transfer"]
-  },
-  {
-    id: "wifi",
-    title: "Wifi Portabel",
-    description: "Pastikan Anda selalu terhubung dengan internet kecepatan tinggi di mana pun Anda berada selama menjelajahi Bali.",
-    image: "/images/layanan.jpg",
-    icon: <IconWifi size={28} className="text-white" />,
-    features: [
-      "Koneksi Stabil 4G/5G", "Bisa Banyak Device", 
-      "Baterai Tahan Lama", "Pengiriman ke Hotel"
-    ],
-    packages: ["Sewa Harian", "Sewa Mingguan", "Sewa Bulanan", "Paket Rombongan"]
-  },
-  {
-    id: "mice",
-    title: "MICE",
-    description: "Solusi profesional untuk kebutuhan Meeting, Incentive, Convention, dan Exhibition instansi atau perusahaan Anda di Bali.",
-    image: "/images/layanan.jpg",
-    icon: <IconUsers size={28} className="text-white" />,
-    features: [
-      "Perencanaan Matang", "Venue Representatif", 
-      "Peralatan Lengkap", "Tim Eksekusi Handal"
-    ],
-    packages: ["Corporate Meeting", "Company Outing", "Gala Dinner", "Exhibition & Event"]
-  }
-];
-
-export default function LayananPage() {
+export default function GaleriClient({ initialGallery }: { initialGallery: GalleryItem[] }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const activeGallery = initialGallery;
+
+  const openLightbox = (index: number) => {
+    setCurrentIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % activeGallery.length);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev === 0 ? activeGallery.length - 1 : prev - 1));
+  };
 
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (latest) => {
     setScrolled(latest > 50);
   });
-
-  const handleServicePackageClick = (serviceTitle: string, packageName: string) => {
-    const waNumber = "628977857823";
-    const text = `Halo tim Infinity Go,\n\nSaya tertarik untuk memesan/bertanya mengenai layanan berikut:\n\n🏷 *Kategori Layanan:* ${serviceTitle}\n📌 *Pilihan Paket:* ${packageName}\n\nMohon informasi lebih lanjut mengenai harga dan ketersediaannya. Terima kasih!`;
-    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
-  };
 
   return (
     <div className="min-h-screen bg-slate-50 font-outfit">
@@ -179,8 +127,8 @@ export default function LayananPage() {
       <section className="px-4 md:px-10 pt-20 md:pt-24">
         <div className="relative h-[60vh] min-h-[400px] w-full rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-lg">
           <Image
-            src="/images/layanan.jpg"
-            alt="Layanan Infinity Go"
+            src="/images/galery.jpg"
+            alt="Galeri Infinity Go"
             fill 
             className="object-cover" 
             priority
@@ -193,98 +141,80 @@ export default function LayananPage() {
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
               className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-md"
             >
-              Layanan Kami
+              Galeri Kami
             </motion.h1>
             <motion.p 
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
               className="text-white text-sm md:text-lg max-w-2xl mx-auto drop-shadow-md"
             >
-              Solusi Perjalanan Terbaik Liburan Tak Terlupakan di Bali
+              Potret Momen Tak Terlupakan dari Perjalanan Terbaik Bersama Infinity Go
             </motion.p>
           </div>
         </div>
       </section>
 
-      {/* ── SERVICES LIST ── */}
-      <section className="py-20 md:py-32 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex flex-col gap-24 md:gap-32">
-            {servicesData.map((service, index) => {
-              const isEven = index % 2 === 0;
-              return (
-                <div key={service.id} className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} gap-10 md:gap-20 items-center`}>
-                  
-                  {/* Image Side */}
-                  <motion.div 
-                    initial={{ opacity: 0, x: isEven ? -40 : 40 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.7 }}
-                    className="w-full md:w-1/2"
-                  >
-                    <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden bg-slate-200">
-                      <Image src={service.image} alt={service.title} fill className="object-cover" />
-                      {/* Cyan Badge Icon (bottom left) */}
-                      <div className="absolute bottom-6 left-6 w-14 h-14 bg-[#40B5AD]/90 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg border border-white/20">
-                        {service.icon}
-                      </div>
-                    </div>
-                  </motion.div>
+      {/* ── GALLERY HORIZONTAL SCROLL ── */}
+      <section className="py-20 md:py-32 bg-slate-50 overflow-hidden">
+        <div className="max-w-[1400px] mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div>
+              <span className="text-[#40B5AD] text-xs font-bold tracking-widest uppercase block mb-3">Dokumentasi</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-[#1a3636] mb-4">Momen Indah Bersama Kami</h2>
+            </div>
+            <div className="flex items-center gap-3 pb-4">
+              <button 
+                onClick={() => {
+                  const el = document.getElementById("gallery-slider");
+                  if (el) el.scrollBy({ left: -320, behavior: "smooth" });
+                }}
+                className="w-12 h-12 rounded-full border border-slate-200 bg-white flex items-center justify-center text-slate-500 hover:text-[#40B5AD] hover:border-[#40B5AD] transition-all shadow-sm"
+              >
+                <ChevronLeft size={20} />
+              </button>
+              <button 
+                onClick={() => {
+                  const el = document.getElementById("gallery-slider");
+                  if (el) el.scrollBy({ left: 320, behavior: "smooth" });
+                }}
+                className="w-12 h-12 rounded-full bg-[#40B5AD] flex items-center justify-center text-white hover:bg-[#349890] transition-all shadow-md"
+              >
+                <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
 
-                  {/* Content Side */}
-                  <motion.div 
-                    initial={{ opacity: 0, x: isEven ? 40 : -40 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.7, delay: 0.1 }}
-                    className="w-full md:w-1/2"
-                  >
-                    <div className="inline-block border border-[#40B5AD] text-[#40B5AD] px-4 py-1.5 rounded-full text-xs font-bold mb-6 tracking-wide bg-[#40B5AD]/5">
-                      Layanan Kami
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-5">{service.title}</h2>
-                    <p className="text-slate-500 leading-relaxed mb-8">
-                      {service.description}
-                    </p>
-
-                    {/* Fitur Unggulan Box */}
-                    <div className="border border-slate-100 bg-white rounded-2xl p-6 mb-8 shadow-sm">
-                      <div className="flex items-center gap-2 mb-5">
-                        <div className="w-8 h-8 rounded-full bg-[#40B5AD]/10 flex items-center justify-center text-[#40B5AD]">
-                          <ShieldCheck size={18} />
-                        </div>
-                        <h4 className="font-bold text-slate-800 text-sm">Fitur Unggulan</h4>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-6">
-                        {service.features.map((feature, i) => (
-                          <div key={i} className="flex items-center gap-3">
-                            <Check size={16} className="text-[#40B5AD] flex-shrink-0" />
-                            <span className="text-sm text-slate-600 font-medium">{feature}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Paket Tersedia Box */}
-                    <div className="bg-gradient-to-br from-[#40B5AD] to-[#2c8e87] rounded-2xl p-6 shadow-lg shadow-[#40B5AD]/20">
-                      <h4 className="font-bold text-white text-sm mb-5">Paket Tersedia (Klik untuk Pesan)</h4>
-                      <div className="flex flex-wrap gap-3">
-                        {service.packages.map((pkg, i) => (
-                          <div 
-                            key={i} 
-                            onClick={() => handleServicePackageClick(service.title, pkg)}
-                            className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg text-xs font-semibold border border-white/10 text-white cursor-pointer hover:bg-white hover:text-[#40B5AD] transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
-                          >
-                            {pkg}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                  </motion.div>
+          {/* Slider Container */}
+          <div 
+            id="gallery-slider"
+            className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory scrollbar-hide -mx-6 px-6 md:mx-0 md:px-0" 
+            style={{ scrollbarWidth: "none" }}
+          >
+            {activeGallery.map((img, i) => (
+              <motion.div 
+                key={img.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                onClick={() => openLightbox(i)}
+                className="group relative flex-shrink-0 w-[280px] md:w-[360px] aspect-[4/5] rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 cursor-pointer snap-center"
+              >
+                <Image
+                  src={img.imageUrl || "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"}
+                  alt={img.title}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute bottom-0 left-0 p-6 translate-y-4 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  <h3 className="text-white font-bold text-lg">{img.title}</h3>
+                  <p className="text-[#40B5AD] font-medium text-sm mt-1 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#40B5AD]"></span>
+                    {img.location}
+                  </p>
                 </div>
-              );
-            })}
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
@@ -372,6 +302,63 @@ export default function LayananPage() {
           </div>
         </div>
       </footer>
+
+      {/* ── LIGHTBOX MODAL ── */}
+      <AnimatePresence>
+        {lightboxOpen && activeGallery.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 md:p-10"
+            onClick={() => setLightboxOpen(false)}
+          >
+            {/* Close Button */}
+            <button 
+              onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }}
+              className="absolute top-6 right-6 z-50 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 p-2.5 rounded-full transition-all"
+            >
+              <X size={24} />
+            </button>
+            
+            {/* Left Arrow */}
+            <button 
+              onClick={(e) => { e.stopPropagation(); prevImage(); }}
+              className="absolute left-4 md:left-10 z-50 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all"
+            >
+              <ChevronLeft size={32} />
+            </button>
+
+            {/* Image Container */}
+            <div 
+              className="relative w-full max-w-6xl aspect-square md:aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={activeGallery[currentIndex].imageUrl || "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"}
+                alt={activeGallery[currentIndex].title}
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+
+            {/* Right Arrow */}
+            <button 
+              onClick={(e) => { e.stopPropagation(); nextImage(); }}
+              className="absolute right-4 md:right-10 z-50 text-white/50 hover:text-white bg-white/10 hover:bg-white/20 p-3 rounded-full transition-all"
+            >
+              <ChevronRight size={32} />
+            </button>
+            
+            {/* Caption */}
+            <div className="absolute bottom-8 md:bottom-12 left-0 right-0 text-center pointer-events-none">
+              <h3 className="text-white font-bold text-xl md:text-2xl drop-shadow-md">{activeGallery[currentIndex].title}</h3>
+              <p className="text-[#40B5AD] font-medium text-sm mt-1 drop-shadow-md">{activeGallery[currentIndex].location}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

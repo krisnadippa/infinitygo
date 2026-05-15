@@ -1,24 +1,33 @@
-import { dummyCustomers, formatRupiah } from "@/lib/admin-data";
+import { prisma } from "@/lib/prisma";
+import { formatRupiah, formatDate } from "@/lib/admin-data";
 import { Users, Search } from "lucide-react";
 
 export const metadata = {
   title: "Customer | BaliTravel Admin",
 };
 
-export default function CustomersPage() {
+export default async function CustomersPage() {
+  const customers = await prisma.customer.findMany({
+    orderBy: { name: "asc" },
+  });
+
+  const totalSpent = customers.reduce((s, c) => s + c.totalSpent, 0);
+  const totalOrders = customers.reduce((s, c) => s + c.totalOrders, 0);
+  const avgSpent = customers.length > 0 ? Math.round(totalSpent / customers.length) : 0;
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-[20px] font-bold text-slate-800">Customer</h1>
-        <p className="text-[13px] text-slate-500 mt-0.5">{dummyCustomers.length} customer terdaftar</p>
+        <p className="text-[13px] text-slate-500 mt-0.5">{customers.length} customer terdaftar</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Total Customer", value: dummyCustomers.length, color: "text-blue-600" },
-          { label: "Total Orders", value: dummyCustomers.reduce((s, c) => s + c.totalOrders, 0), color: "text-green-600" },
-          { label: "Total Revenue", value: formatRupiah(dummyCustomers.reduce((s, c) => s + c.totalSpent, 0)), color: "text-purple-600" },
-          { label: "Avg per Customer", value: formatRupiah(Math.round(dummyCustomers.reduce((s, c) => s + c.totalSpent, 0) / dummyCustomers.length)), color: "text-amber-600" },
+          { label: "Total Customer", value: customers.length, color: "text-blue-600" },
+          { label: "Total Orders", value: totalOrders, color: "text-green-600" },
+          { label: "Total Revenue", value: formatRupiah(totalSpent), color: "text-purple-600" },
+          { label: "Avg per Customer", value: formatRupiah(avgSpent), color: "text-amber-600" },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
             <p className="text-[12px] text-slate-400 mb-1">{stat.label}</p>
@@ -41,7 +50,7 @@ export default function CustomersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {dummyCustomers.map((cust) => (
+              {customers.map((cust) => (
                 <tr key={cust.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
@@ -62,7 +71,7 @@ export default function CustomersPage() {
                   <td className="px-5 py-3.5">
                     <p className="text-[13px] font-semibold text-green-600">{formatRupiah(cust.totalSpent)}</p>
                   </td>
-                  <td className="px-5 py-3.5 text-[13px] text-slate-600">{cust.lastOrder}</td>
+                  <td className="px-5 py-3.5 text-[13px] text-slate-600">{formatDate(cust.lastOrder)}</td>
                 </tr>
               ))}
             </tbody>
