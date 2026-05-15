@@ -20,7 +20,11 @@ export const InvoiceSchema = z.object({
   discount: z.number().nonnegative().default(0),
   tax: z.number().nonnegative().default(0),
   dpAmount: z.number().nonnegative().optional().default(0),
+  dpDate: z.date().or(z.string().pipe(z.coerce.date())).optional(),
   remainingAmount: z.number().nonnegative().optional().default(0),
+  paidFull: z.boolean().optional().default(false),
+  paidRemainingDate: z.date().or(z.string().pipe(z.coerce.date())).optional(),
+  paidRemainingAmount: z.number().nonnegative().optional().default(0),
   grandTotal: z.number().nonnegative("Total tidak boleh negatif"),
   items: z.array(z.any()).min(1, "Minimal harus ada 1 item"),
 });
