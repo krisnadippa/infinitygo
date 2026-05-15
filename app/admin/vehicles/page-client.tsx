@@ -62,6 +62,7 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
     const veh = {
       ...(editing ? { id: editing.id } : {}),
       name: form.name || "",
+      type: (form as any).vehicleType || (form as any).type || "Car",
       vehicleType: (form as any).vehicleType || (form as any).type || "Car",
       brand: form.brand || "",
       location: form.location || "Bali",
