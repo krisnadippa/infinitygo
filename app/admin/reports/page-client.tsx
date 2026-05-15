@@ -7,12 +7,21 @@ import { StatusBadge } from "@/components/admin/Badge";
 import { formatRupiah } from "@/lib/admin-data";
 
 export default function ReportsClient({ initialInvoices }: { initialInvoices: any[] }) {
-  const [invoices] = useState<any[]>(initialInvoices);
   const [dateFrom, setDateFrom] = useState("2026-05-01");
   const [dateTo, setDateTo] = useState("2026-05-31");
   const [statusFilter, setStatusFilter] = useState("All");
 
-  const paidInvoices = invoices.filter((i) => ["PAID", "Paid", "Lunas"].includes(i.status));
+  // Filter logic
+  const filteredInvoices = initialInvoices.filter((inv) => {
+    const invDate = new Date(inv.invoiceDate).toISOString().split("T")[0];
+    const matchDate = invDate >= dateFrom && invDate <= dateTo;
+    const matchStatus = statusFilter === "All" || 
+                       inv.status.toLowerCase() === statusFilter.toLowerCase() ||
+                       (statusFilter === "Paid" && ["PAID", "Lunas"].includes(inv.status));
+    return matchDate && matchStatus;
+  });
+
+  const paidInvoices = filteredInvoices.filter((i) => ["PAID", "Paid", "Lunas"].includes(i.status));
   const totalRevenue = paidInvoices.reduce((s, i) => s + i.grandTotal, 0);
   const totalExpense = paidInvoices.reduce((s, i) => s + i.totalExpense, 0);
   const netProfit = totalRevenue - totalExpense;
@@ -135,7 +144,7 @@ export default function ReportsClient({ initialInvoices }: { initialInvoices: an
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {invoices.map((inv) => {
+              {filteredInvoices.map((inv) => {
                 const margin = inv.grandTotal > 0 ? Math.round((inv.netProfit / inv.grandTotal) * 100) : 0;
                 return (
                   <tr key={inv.id} className="hover:bg-slate-50/50 transition-colors">
