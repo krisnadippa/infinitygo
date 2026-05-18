@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { formatRupiah, formatDate } from "@/lib/admin-data";
 import { Users, Search } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Customer | BaliTravel Admin",
 };
