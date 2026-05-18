@@ -175,6 +175,7 @@ export async function saveGalleryItem(rawData: any) {
       create: dbData,
     });
     revalidatePath("/admin/gallery");
+    revalidatePath("/galeri");
     revalidatePath("/");
     return result;
   } catch (error) {
@@ -187,6 +188,7 @@ export async function deleteGalleryItem(id: string) {
   try {
     await prisma.galleryItem.delete({ where: { id } });
     revalidatePath("/admin/gallery");
+    revalidatePath("/galeri");
     revalidatePath("/");
   } catch (error) {
     return handleError(error, "Gagal menghapus foto galeri");
