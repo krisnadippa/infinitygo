@@ -247,13 +247,13 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
         title: "Tersimpan",
         message: "Data pengeluaran telah berhasil disimpan."
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save expense:", error);
       setStatusModal({
         isOpen: true,
         type: "error",
         title: "Gagal",
-        message: "Terjadi kesalahan saat menyimpan data. Silakan coba lagi."
+        message: error.message || "Terjadi kesalahan saat menyimpan data. Silakan coba lagi."
       });
     }
   };

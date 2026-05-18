@@ -75,6 +75,14 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
     .sort((a, b) => {
       const aVal = a[sortField];
       const bVal = b[sortField];
+      
+      // Handle date fields sorting chronologically
+      if (sortField === "createdAt" || sortField === "invoiceDate") {
+        const aTime = aVal ? new Date(aVal).getTime() : 0;
+        const bTime = bVal ? new Date(bVal).getTime() : 0;
+        return sortDir === "asc" ? aTime - bTime : bTime - aTime;
+      }
+
       if (typeof aVal === "number" && typeof bVal === "number") {
         return sortDir === "asc" ? aVal - bVal : bVal - aVal;
       }
