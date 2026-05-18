@@ -18,6 +18,8 @@ import {
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Dashboard | BaliTravel Admin",
   description: "Overview statistik bisnis travel Bali",

@@ -4,7 +4,7 @@ import { z } from "zod";
 const dateSchema = z.preprocess((val) => {
   if (val === "" || val === null || val === undefined) return undefined;
   return val;
-}, z.coerce.date({ invalid_type_error: "Tanggal invoice wajib diisi", required_error: "Tanggal invoice wajib diisi" }));
+}, z.coerce.date());
 
 const optionalDateSchema = z.preprocess((val) => {
   if (val === "" || val === null || val === undefined) return undefined;

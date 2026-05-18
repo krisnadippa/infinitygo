@@ -3,7 +3,7 @@ import { z } from "zod";
 const dateSchema = z.preprocess((val) => {
   if (val === "" || val === null || val === undefined) return undefined;
   return val;
-}, z.coerce.date({ invalid_type_error: "Tanggal pengeluaran wajib diisi", required_error: "Tanggal pengeluaran wajib diisi" }));
+}, z.coerce.date());
 
 export const ExpenseSchema = z.object({
   invoiceId: z.string().min(1, "Invoice ID wajib"),
