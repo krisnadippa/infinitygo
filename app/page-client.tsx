@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Script from "next/script";
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Car, Home, Wifi, Star, Menu, X, ArrowRight, Phone, Mail, Globe, ChevronRight, Users, Calendar, ChevronDown, User, ArrowUpRight, ShoppingBag, ShoppingCart, Check, X as XIcon } from "lucide-react";
@@ -85,22 +86,12 @@ export default function PageClient({
     Motorcycle: "bg-teal-50 text-teal-700 border-teal-200",
   };
 
-  const testimonials = [
-    { name: "Sarah Andini",    role: "Jakarta",   stars: 5, text: "Pengalaman luar biasa! Tim Infinity Go sangat profesional dalam mengatur jadwal wisata kami." },
-    { name: "Budi Santoso",    role: "Surabaya",  stars: 5, text: "Sewa kendaraannya sangat mudah dan kondisinya prima. Pasti akan menggunakan jasa ini lagi!" },
-    { name: "Diana Pratiwi",   role: "Bandung",   stars: 5, text: "Villa yang direkomendasikan sangat indah dan sesuai ekspektasi. Terima kasih Infinity Go!" },
-    { name: "Andi Rahmat",     role: "Medan",     stars: 4, text: "Pelayanan sangat ramah dan responsif. Liburan keluarga kami menjadi sangat berkesan." },
-    { name: "Maya Kusuma",     role: "Semarang",  stars: 5, text: "Guide kami sangat berpengetahuan tentang budaya Bali. Sangat direkomendasikan!" },
-    { name: "Reza Firmansyah", role: "Yogyakarta",stars: 4, text: "Proses booking mudah dan transparan, tidak ada biaya tersembunyi. Sangat memuaskan." },
-  ];
-
   const navLinks = ["Layanan", "Destinasi", "Akomodasi", "Testimoni", "Kontak"];
 
   const { ref: svcRef, inView: svcIn } = useInView();
   const { ref: destRef, inView: destIn } = useInView();
   const { ref: accomRef, inView: accomIn } = useInView();
   const { ref: vehRef, inView: vehIn } = useInView();
-  const { ref: testiRef, inView: testiIn } = useInView();
 
   return (
     <div className="min-h-screen bg-white text-slate-800">
@@ -444,31 +435,16 @@ export default function PageClient({
       {/* ── TESTIMONI ── */}
       <section id="testimoni" className="py-20 md:py-28 bg-white">
         <div className="max-w-7xl mx-auto px-5 md:px-10">
-          <div className="text-center mb-12">
-            <span className="text-[#40B5AD] text-xs font-bold tracking-widest uppercase block mb-3">Testimoni</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-[#1a3636] mb-4">Apa Kata Wisatawan</h2>
-            <p className="text-slate-500 max-w-lg mx-auto text-sm leading-relaxed">Ribuan wisatawan telah mempercayakan liburan impian mereka kepada Infinity Go.</p>
+          <div className="text-center mb-8">
+            <span className="text-[#40B5AD] text-xs font-bold tracking-widest uppercase block">Testimoni</span>
           </div>
 
-          <motion.div ref={testiRef as React.RefObject<HTMLDivElement>} variants={stagger} initial="hidden" animate={testiIn ? "visible" : "hidden"}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {testimonials.map(({ name, role, stars, text }) => (
-              <motion.div key={name} variants={fadeUp} className="bg-slate-50 border border-slate-100 rounded-2xl p-6 hover:shadow-md transition-shadow">
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: stars }).map((_, i) => <Star key={i} size={14} className="fill-amber-400 text-amber-400" />)}
-                  {Array.from({ length: 5 - stars }).map((_, i) => <Star key={i} size={14} className="text-slate-200 fill-slate-200" />)}
-                </div>
-                <p className="text-slate-600 text-sm leading-relaxed mb-5 italic">&ldquo;{text}&rdquo;</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#40B5AD]/20 flex items-center justify-center text-[#40B5AD] font-bold text-sm flex-shrink-0">{name[0]}</div>
-                  <div>
-                    <p className="font-semibold text-slate-800 text-sm">{name}</p>
-                    <p className="text-slate-400 text-xs">{role}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+          {/* Elfsight Google Reviews Widget */}
+          <div className="w-full">
+            <div className="elfsight-app-1904e8ff-14c3-4052-b91d-4b4d7c5ee6dd" data-elfsight-app-lazy></div>
+          </div>
+          
+          <Script src="https://elfsightcdn.com/platform.js" strategy="afterInteractive" />
         </div>
       </section>
 
