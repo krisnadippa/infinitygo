@@ -191,12 +191,12 @@ export default function PageClient({
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
               className="mb-8 self-start"
             >
-              <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full cursor-pointer hover:bg-white/20 transition-all group shadow-2xl">
+              <a href="/destinasi" className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full cursor-pointer hover:bg-white/20 transition-all group shadow-2xl">
                 <span className="bg-[#40B5AD] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-sm">NEW</span>
                 <span className="text-white text-xs font-semibold flex items-center gap-2">
                   Choose your destination <ArrowUpRight size={14} className="group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </span>
-              </div>
+              </a>
             </motion.div>
 
             {/* Headline */}
@@ -220,18 +220,18 @@ export default function PageClient({
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.6 }}
               className="flex flex-wrap gap-4"
             >
-              <button className="group bg-white text-slate-900 px-8 py-4 rounded-full font-bold text-sm flex items-center gap-3 hover:bg-[#40B5AD] hover:text-white transition-all shadow-xl">
+              <a href="/kontak" className="group bg-white text-slate-900 px-8 py-4 rounded-full font-bold text-sm flex items-center gap-3 hover:bg-[#40B5AD] hover:text-white transition-all shadow-xl">
                 Plan Your Journey 
                 <span className="bg-slate-900 text-white group-hover:bg-white group-hover:text-slate-900 p-1.5 rounded-full transition-colors">
                   <ArrowUpRight size={14} />
                 </span>
-              </button>
-              <button className="group bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-bold text-sm flex items-center gap-3 hover:bg-white/20 transition-all">
+              </a>
+              <a href="/destinasi" className="group bg-white/10 backdrop-blur-md border border-white/20 text-white px-8 py-4 rounded-full font-bold text-sm flex items-center gap-3 hover:bg-white/20 transition-all">
                 Explore Destinations
                 <span className="bg-white/20 group-hover:bg-white group-hover:text-slate-900 p-1.5 rounded-full transition-colors">
                   <ArrowUpRight size={14} />
                 </span>
-              </button>
+              </a>
             </motion.div>
           </div>
         </div>
