@@ -11,8 +11,8 @@ model Invoice {
   id                  String        @id @default(cuid())
   invoiceNumber       String        @unique
   customerName        String
-  customerPhone       String
-  customerEmail       String
+  customerPhone       String?
+  customerEmail       String?
   invoiceDate         DateTime
   dueDate             DateTime
   status              String

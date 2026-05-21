@@ -46,7 +46,7 @@ function InvoicePickerModal({ isOpen, onClose, invoices, onSelect }: InvoicePick
     (inv) =>
       inv.invoiceNumber.toLowerCase().includes(search.toLowerCase()) ||
       inv.customerName.toLowerCase().includes(search.toLowerCase()) ||
-      inv.customerPhone.includes(search)
+      (inv.customerPhone || "").includes(search)
   );
 
   const statusColor: Record<string, string> = {
@@ -106,7 +106,10 @@ function InvoicePickerModal({ isOpen, onClose, invoices, onSelect }: InvoicePick
                       )}
                     </div>
                     <p className="text-[12.5px] text-slate-600 mt-0.5 font-medium">{inv.customerName}</p>
-                    <p className="text-[11.5px] text-slate-400">{inv.customerPhone} &bull; {formatDate(inv.invoiceDate)}</p>
+                    <p className="text-[11.5px] text-slate-400">
+                      {inv.customerPhone ? `${inv.customerPhone} • ` : ""}
+                      {formatDate(inv.invoiceDate)}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0 ml-4">
@@ -340,7 +343,10 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
                     )}
                   </div>
                   <p className="text-[13px] text-slate-600 font-medium">{selectedInvoice.customerName}</p>
-                  <p className="text-[12px] text-slate-400">{selectedInvoice.customerPhone} &bull; {formatDate(selectedInvoice.invoiceDate)}</p>
+                  <p className="text-[12px] text-slate-400">
+                    {selectedInvoice.customerPhone ? `${selectedInvoice.customerPhone} • ` : ""}
+                    {formatDate(selectedInvoice.invoiceDate)}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">

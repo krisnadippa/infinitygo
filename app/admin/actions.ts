@@ -205,8 +205,8 @@ export async function saveInvoice(rawData: any) {
     const invoiceData = {
       invoiceNumber: data.invoiceNumber,
       customerName: data.customerName,
-      customerPhone: data.customerPhone || "",
-      customerEmail: data.customerEmail || "",
+      customerPhone: data.customerPhone || null,
+      customerEmail: data.customerEmail || null,
       invoiceDate: new Date(data.invoiceDate),
       dueDate: data.dueDate ? new Date(data.dueDate) : new Date(),
       status: data.status,

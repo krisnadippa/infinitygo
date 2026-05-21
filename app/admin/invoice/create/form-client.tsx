@@ -86,7 +86,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
           setInvoiceId(inv.id);
           setInvoiceNumber(inv.invoiceNumber);
           setCustomerName(inv.customerName);
-          setCustomerPhone(inv.customerPhone);
+          setCustomerPhone(inv.customerPhone || "");
           setCustomerEmail(inv.customerEmail || "");
           setInvoiceDate(inv.invoiceDate ? new Date(inv.invoiceDate).toISOString().split("T")[0] : today);
           setDueDate(inv.dueDate ? new Date(inv.dueDate).toISOString().split("T")[0] : "");

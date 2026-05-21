@@ -115,7 +115,9 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
             Tagihan Kepada
           </p>
           <p className="font-bold text-slate-800">{invoice.customerName}</p>
-          <p className="text-slate-500 text-[12px] mt-0.5">{invoice.customerPhone}</p>
+          {invoice.customerPhone && (
+            <p className="text-slate-500 text-[12px] mt-0.5">{invoice.customerPhone}</p>
+          )}
           {invoice.customerEmail && (
             <p className="text-slate-500 text-[12px]">{invoice.customerEmail}</p>
           )}

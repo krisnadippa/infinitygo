@@ -22,8 +22,8 @@ export const InvoiceItemSchema = z.object({
 export const InvoiceSchema = z.object({
   invoiceNumber: z.string().min(1, "Nomor invoice wajib"),
   customerName: z.string().min(2, "Nama minimal 2 karakter"),
-  customerPhone: z.string().optional(),
-  customerEmail: z.string().email("Email tidak valid").or(z.literal("")).optional(),
+  customerPhone: z.string().optional().or(z.literal("")).nullable(),
+  customerEmail: z.string().email("Email tidak valid").or(z.literal("")).optional().nullable(),
   invoiceDate: dateSchema,
   dueDate: optionalDateSchema,
   status: z.enum(["DRAFT", "PENDING", "PAID", "CANCELLED", "Draft", "Pending", "Paid", "Cancelled", "Lunas", "DP", "Dibatalkan"]), // Comprehensive list of allowed statuses
