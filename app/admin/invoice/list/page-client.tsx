@@ -106,10 +106,10 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[20px] font-bold text-slate-800">Invoice List</h1>
-          <p className="text-[13px] text-slate-500 mt-0.5">{filtered.length} invoice ditemukan</p>
+          <p className="text-[13px] text-slate-500 mt-0.5">{filtered.length} invoices found</p>
         </div>
         <Link href="/admin/invoice/create">
-          <Button icon={<PlusCircle size={15} />}>Buat Invoice</Button>
+          <Button icon={<PlusCircle size={15} />}>Create Invoice</Button>
         </Link>
       </div>
 
@@ -120,7 +120,7 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Cari invoice atau customer..."
+              placeholder="Search invoice or customer..."
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               className="w-full pl-9 pr-3 py-2.5 text-[13.5px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
@@ -147,7 +147,7 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
                 {[
                   { label: "Invoice", field: "invoiceNumber" as SortField },
                   { label: "Customer", field: "customerName" as SortField },
-                  { label: "Tanggal", field: "invoiceDate" as SortField },
+                  { label: "Date", field: "invoiceDate" as SortField },
                   { label: "Revenue", field: "grandTotal" as SortField },
                   { label: "Expense", field: "totalExpense" as SortField },
                   { label: "Net Profit", field: "netProfit" as SortField },
@@ -162,7 +162,7 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
                   </th>
                 ))}
                 <th className="text-left px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-slate-400">
-                  Aksi
+                  Action
                 </th>
               </tr>
             </thead>
@@ -170,7 +170,7 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
               {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-5 py-16 text-center text-[13.5px] text-slate-400">
-                    Tidak ada invoice yang ditemukan.
+                    No invoices found.
                   </td>
                 </tr>
               ) : (
@@ -182,7 +182,7 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
                         <p className="text-[11.5px] text-slate-400">{inv.paymentMethod}</p>
                         {inv.paymentType === "DP" && (
                           <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full border border-amber-200 font-medium">
-                            {inv.paidFull ? "Lunas" : `Sisa ${formatRupiah(inv.remainingAmount)}`}
+                            {inv.paidFull ? "Paid" : `Balance Due ${formatRupiah(inv.remainingAmount)}`}
                           </span>
                         )}
                       </div>
@@ -219,7 +219,7 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
                         <Link href={`/admin/invoice/expense?id=${inv.id}`} className="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors" title="Add Expense">
                           <DollarSign size={14} />
                         </Link>
-                        <Link href={`/admin/invoice/${inv.id}`} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors" title="Cetak Invoice">
+                        <Link href={`/admin/invoice/${inv.id}`} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors" title="Print Invoice">
                           <Download size={14} />
                         </Link>
                         <button onClick={() => setDeleteId(inv.id)} className="p-1.5 rounded-lg hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors" title="Delete">
@@ -238,7 +238,7 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
         {totalPages > 1 && (
           <div className="flex items-center justify-between px-5 py-4 border-t border-slate-100">
             <p className="text-[12.5px] text-slate-400">
-              Halaman {page} dari {totalPages} ({filtered.length} total)
+              Page {page} of {totalPages} ({filtered.length} total)
             </p>
             <div className="flex items-center gap-1.5">
               <button
@@ -275,10 +275,10 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         type="delete"
-        title="Hapus Invoice"
-        message="Apakah Anda yakin ingin menghapus invoice ini? Tindakan ini tidak dapat dibatalkan."
-        confirmLabel="Hapus Sekarang"
-        cancelLabel="Batal"
+        title="Delete Invoice"
+        message="Are you sure you want to delete this invoice? This action cannot be undone."
+        confirmLabel="Delete Now"
+        cancelLabel="Cancel"
         onConfirm={handleDelete}
         loading={loading}
       />

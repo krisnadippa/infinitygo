@@ -23,9 +23,9 @@ function generateInvoiceNumber() {
 }
 
 const itemTypeOptions = [
-  { value: "Paket Tour", label: "Paket Tour" },
-  { value: "Akomodasi", label: "Akomodasi" },
-  { value: "Kendaraan", label: "Kendaraan" },
+  { value: "Paket Tour", label: "Tour Package" },
+  { value: "Akomodasi", label: "Accommodation" },
+  { value: "Kendaraan", label: "Vehicle" },
   { value: "Custom", label: "Custom" },
 ];
 
@@ -33,7 +33,7 @@ const statusOptions = [
   { value: "Draft", label: "Draft" },
   { value: "Pending", label: "Pending" },
   { value: "DP", label: "DP (Down Payment)" },
-  { value: "Paid", label: "Paid / Lunas" },
+  { value: "Paid", label: "Paid" },
   { value: "Cancelled", label: "Cancelled" },
 ];
 
@@ -181,8 +181,8 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
       setStatusModal({
         isOpen: true,
         type: "success",
-        title: "Invoice Disimpan",
-        message: `Invoice ${invoiceNumber} telah berhasil disimpan ke database.`
+        title: "Invoice Saved",
+        message: `Invoice ${invoiceNumber} has been successfully saved to the database.`
       });
       setTimeout(() => {
         router.push("/admin/invoice/list");
@@ -191,8 +191,8 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
       setStatusModal({
         isOpen: true,
         type: "error",
-        title: "Gagal Menyimpan",
-        message: error.message || "Terjadi kesalahan saat menyimpan invoice. Silakan periksa kembali data Anda."
+        title: "Save Failed",
+        message: error.message || "An error occurred while saving the invoice. Please double check your data."
       });
     } finally {
       setLoading(false);
@@ -212,40 +212,40 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
       <div className="print:hidden space-y-6">
         <div>
           <h1 className="text-[20px] font-bold text-slate-800">{editId ? "Edit Invoice" : "Create Invoice"}</h1>
-          <p className="text-[13px] text-slate-500 mt-0.5">{editId ? "Ubah data invoice customer" : "Buat invoice baru untuk customer"}</p>
+          <p className="text-[13px] text-slate-500 mt-0.5">{editId ? "Update customer invoice details" : "Create a new invoice for customer"}</p>
         </div>
-
+ 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2 space-y-5">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <h2 className="text-[14px] font-semibold text-slate-800 mb-4">Informasi Invoice & Customer</h2>
+              <h2 className="text-[14px] font-semibold text-slate-800 mb-4">Invoice & Customer Information</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Invoice Number</label>
                   <input type="text" value={invoiceNumber} readOnly
                     className="w-full px-3 py-2.5 text-[13.5px] border border-slate-300 rounded-lg bg-slate-50 text-slate-500 cursor-not-allowed" />
                 </div>
-                <Input label="Customer Name" placeholder="Nama lengkap customer" value={customerName} onChange={(e) => setCustomerName(e.target.value)} id="customer-name" />
-                <Input label="Nomor HP / WhatsApp" placeholder="+62812345678" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} id="customer-phone" />
-                <Input label="Email Customer" placeholder="customer@email.com" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} id="customer-email" />
-                <Input label="Tanggal Invoice" type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} id="invoice-date" />
-                <Input label="Jatuh Tempo" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} id="due-date" />
-                <Select label="Metode Pembayaran" id="payment-method" options={paymentOptions} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)} />
+                <Input label="Customer Name" placeholder="Full customer name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} id="customer-name" />
+                <Input label="Phone / WhatsApp Number" placeholder="+62812345678" type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} id="customer-phone" />
+                <Input label="Customer Email" placeholder="customer@email.com" type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} id="customer-email" />
+                <Input label="Invoice Date" type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} id="invoice-date" />
+                <Input label="Due Date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} id="due-date" />
+                <Select label="Payment Method" id="payment-method" options={paymentOptions} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)} />
                 <Select label="Status" id="invoice-status" options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as Invoice["status"])} />
                 <div className="sm:col-span-2">
-                  <Textarea label="Catatan" placeholder="Catatan tambahan untuk customer..." rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} id="invoice-notes" />
+                  <Textarea label="Notes" placeholder="Additional notes for customer..." rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} id="invoice-notes" />
                 </div>
               </div>
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[14px] font-semibold text-slate-800">Item Invoice</h2>
+                <h2 className="text-[14px] font-semibold text-slate-800">Invoice Items</h2>
                 <Button variant="outline" size="sm" icon={<Plus size={14} />} onClick={addItem}>
-                  Tambah Item
+                  Add Item
                 </Button>
               </div>
-
+ 
               <div className="space-y-4">
                 {items.map((item, index) => (
                   <div key={item.id} className="border border-slate-200 rounded-xl p-4 space-y-3 bg-slate-50/50">
@@ -259,20 +259,20 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div className="col-span-2 sm:col-span-1">
-                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Tipe</label>
+                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Type</label>
                         <select value={item.type} onChange={(e) => updateItem(item.id, "type", e.target.value as ItemType)}
                           className="w-full px-3 py-2.5 text-[13px] border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400">
                           {itemTypeOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                         </select>
                       </div>
                       <div className="col-span-2 sm:col-span-3">
-                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Nama Item</label>
-                        <input type="text" value={item.name} onChange={(e) => updateItem(item.id, "name", e.target.value)} placeholder="Nama layanan atau produk"
+                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Item Name</label>
+                        <input type="text" value={item.name} onChange={(e) => updateItem(item.id, "name", e.target.value)} placeholder="Service or product name"
                           className="w-full px-3 py-2.5 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
                       </div>
                       <div className="col-span-2">
-                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Deskripsi</label>
-                        <input type="text" value={item.description} onChange={(e) => updateItem(item.id, "description", e.target.value)} placeholder="Deskripsi singkat"
+                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Description</label>
+                        <input type="text" value={item.description} onChange={(e) => updateItem(item.id, "description", e.target.value)} placeholder="Short description"
                           className="w-full px-3 py-2.5 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
                       </div>
                       <div>
@@ -281,7 +281,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                           className="w-full px-3 py-2.5 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
                       </div>
                       <div>
-                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Harga (Rp)</label>
+                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Price (Rp)</label>
                         <input type="number" min={0} value={item.price || ""} onChange={(e) => updateItem(item.id, "price", Number(e.target.value))}
                           className="w-full px-3 py-2.5 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
                       </div>
@@ -297,7 +297,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
             </div>
 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <h2 className="text-[14px] font-semibold text-slate-800 mb-4">Jenis Pembayaran</h2>
+              <h2 className="text-[14px] font-semibold text-slate-800 mb-4">Payment Type</h2>
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <button
                   onClick={() => handlePaymentTypeChange("Full")}
@@ -312,9 +312,9 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                   </div>
                   <div className="text-left">
                     <p className={`text-[13.5px] font-semibold ${paymentType === "Full" ? "text-blue-700" : "text-slate-700"}`}>
-                      Bayar Penuh
+                      Full Payment
                     </p>
-                    <p className="text-[12px] text-slate-400">Langsung lunas</p>
+                    <p className="text-[12px] text-slate-400">Fully paid upfront</p>
                   </div>
                 </button>
                 <button
@@ -332,7 +332,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                     <p className={`text-[13.5px] font-semibold ${paymentType === "DP" ? "text-amber-700" : "text-slate-700"}`}>
                       Down Payment (DP)
                     </p>
-                    <p className="text-[12px] text-slate-400">Bayar sebagian dahulu</p>
+                    <p className="text-[12px] text-slate-400">Pay partial deposit first</p>
                   </div>
                 </button>
               </div>
@@ -340,17 +340,17 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
               {paymentType === "DP" && (
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                   <div>
-                    <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Jumlah DP (Rp)</label>
+                    <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Deposit Amount (Rp)</label>
                     <input
                       type="number"
                       min={0}
                       value={dpAmount || ""}
                       onChange={(e) => setDpAmount(Number(e.target.value))}
-                      placeholder="Masukkan jumlah DP"
+                      placeholder="Enter deposit amount"
                       className="w-full px-3 py-2.5 text-[13.5px] border border-amber-300 rounded-lg bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400"
                     />
                   </div>
-                  <Input label="Tanggal DP Dibayar" type="date" value={dpDate} onChange={(e) => setDpDate(e.target.value)} id="dp-date" />
+                  <Input label="Deposit Payment Date" type="date" value={dpDate} onChange={(e) => setDpDate(e.target.value)} id="dp-date" />
                   {grandTotal > 0 && dpAmount > 0 && (
                     <div className="col-span-2 bg-amber-50 border border-amber-200 rounded-xl p-3 grid grid-cols-3 gap-3">
                       <div className="text-center">
@@ -358,11 +358,11 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                         <p className="text-[13px] font-bold text-amber-800">{formatRupiah(grandTotal)}</p>
                       </div>
                       <div className="text-center border-x border-amber-200">
-                        <p className="text-[10.5px] text-amber-600 font-medium uppercase tracking-wide mb-0.5">DP Dibayar</p>
+                        <p className="text-[10.5px] text-amber-600 font-medium uppercase tracking-wide mb-0.5">Deposit Paid</p>
                         <p className="text-[13px] font-bold text-blue-700">{formatRupiah(dpAmount)}</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-[10.5px] text-amber-600 font-medium uppercase tracking-wide mb-0.5">Sisa Tagihan</p>
+                        <p className="text-[10.5px] text-amber-600 font-medium uppercase tracking-wide mb-0.5">Balance Due</p>
                         <p className="text-[13px] font-bold text-red-600">{formatRupiah(remainingAmount)}</p>
                       </div>
                     </div>
@@ -371,17 +371,17 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
               )}
             </div>
           </div>
-
+ 
           <div className="space-y-5">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <h2 className="text-[14px] font-semibold text-slate-800 mb-4">Ringkasan Invoice</h2>
+              <h2 className="text-[14px] font-semibold text-slate-800 mb-4">Invoice Summary</h2>
               <div className="space-y-2">
                 <div className="flex justify-between items-center py-2 border-b border-slate-100">
                   <span className="text-[13px] text-slate-500">Subtotal</span>
                   <span className="text-[13px] font-semibold text-slate-800">{formatRupiah(subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                  <span className="text-[13px] text-slate-500">Diskon</span>
+                  <span className="text-[13px] text-slate-500">Discount</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[12px] text-slate-400">Rp</span>
                     <input type="number" min={0} value={discount || ""} onChange={(e) => setDiscount(Number(e.target.value))}
@@ -389,7 +389,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                   </div>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                  <span className="text-[13px] text-slate-500">Pajak (Rp)</span>
+                  <span className="text-[13px] text-slate-500">Tax (Rp)</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[12px] text-slate-400">Rp</span>
                     <input type="number" min={0} value={tax || ""} onChange={(e) => setTax(Number(e.target.value))}
@@ -400,45 +400,45 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                   <span className="text-[14px] font-bold text-slate-800">Grand Total</span>
                   <span className="text-[16px] font-bold text-blue-600">{formatRupiah(grandTotal)}</span>
                 </div>
-
+ 
                 {paymentType === "DP" && (
                   <div className="border-t border-slate-100 pt-3 mt-1 space-y-2">
                     <div className="flex justify-between items-center py-1.5 bg-blue-50 rounded-lg px-2">
-                      <span className="text-[12.5px] text-blue-700 font-medium">DP Dibayar</span>
+                      <span className="text-[12.5px] text-blue-700 font-medium">Deposit Paid</span>
                       <span className="text-[12.5px] font-bold text-blue-700">- {formatRupiah(dpAmount)}</span>
                     </div>
                     <div className="flex justify-between items-center py-1.5 bg-red-50 rounded-lg px-2">
-                      <span className="text-[12.5px] text-red-600 font-medium">Sisa Tagihan</span>
+                      <span className="text-[12.5px] text-red-600 font-medium">Balance Due</span>
                       <span className="text-[13px] font-bold text-red-600">{formatRupiah(remainingAmount)}</span>
                     </div>
                   </div>
                 )}
               </div>
             </div>
-
+ 
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-2.5">
-              <Button className="w-full" onClick={handleSave} icon={<Sv size={15} />} loading={loading}>Simpan Invoice</Button>
+              <Button className="w-full" onClick={handleSave} icon={<Sv size={15} />} loading={loading}>Save Invoice</Button>
               <Button variant="outline" className="w-full" icon={<View size={15} />} onClick={() => setPreviewOpen(true)}>Preview Invoice</Button>
-              <Button variant="secondary" className="w-full" icon={<Dl size={15} />} onClick={handlePrint}>Cetak / Download</Button>
+              <Button variant="secondary" className="w-full" icon={<Dl size={15} />} onClick={handlePrint}>Print / Download</Button>
             </div>
-
+ 
             <div className="bg-blue-50 rounded-2xl border border-blue-100 p-4">
-              <p className="text-[12px] text-blue-700 font-medium mb-1">Informasi</p>
+              <p className="text-[12px] text-blue-700 font-medium mb-1">Information</p>
               <p className="text-[12px] text-blue-600">
-                Setelah disimpan, tambahkan expense/modal dari menu Invoice - Expense. Untuk invoice DP, admin bisa mencatat pelunasan dari menu Invoice List.
+                After saving, you can add expenses/costs from the Invoice - Expense menu. For down payment (DP) invoices, the remaining balance settlement can be recorded in the Invoice List.
               </p>
             </div>
           </div>
         </div>
       </div>
-
+ 
       <Modal isOpen={previewOpen} onClose={() => setPreviewOpen(false)} title="Preview Invoice" size="xl">
         <div className="overflow-auto max-h-[75vh] print:max-h-none print:overflow-visible">
           <InvoicePrint invoice={previewInvoice} />
         </div>
         <div className="flex gap-3 pt-4 border-t border-slate-100 mt-4 print:hidden">
-          <Button className="flex-1" icon={<Dl size={15} />} onClick={() => window.print()}>Cetak / Download PDF</Button>
-          <Button variant="outline" className="flex-1" onClick={() => setPreviewOpen(false)}>Tutup</Button>
+          <Button className="flex-1" icon={<Dl size={15} />} onClick={() => window.print()}>Print / Download PDF</Button>
+          <Button variant="outline" className="flex-1" onClick={() => setPreviewOpen(false)}>Close</Button>
         </div>
       </Modal>
 

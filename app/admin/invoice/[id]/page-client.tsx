@@ -30,9 +30,9 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
   if (!invoice) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-slate-400">
-        <p className="text-[15px] font-medium">Invoice tidak ditemukan.</p>
+        <p className="text-[15px] font-medium">Invoice not found.</p>
         <Link href="/admin/invoice/list" className="mt-3 text-blue-600 text-[13px] hover:underline">
-          Kembali ke Invoice List
+          Back to Invoice List
         </Link>
       </div>
     );
@@ -64,15 +64,15 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
       setStatusModal({
         isOpen: true,
         type: "success",
-        title: "Pelunasan Berhasil",
-        message: `Pelunasan untuk invoice ${invoice.invoiceNumber} telah berhasil dicatat.`
+        title: "Settlement Successful",
+        message: `Payment settlement for invoice ${invoice.invoiceNumber} has been successfully recorded.`
       });
     } catch (error: any) {
       setStatusModal({
         isOpen: true,
         type: "error",
-        title: "Gagal Melunasi",
-        message: error.message || "Terjadi kesalahan saat menyimpan data pelunasan."
+        title: "Settlement Failed",
+        message: error.message || "An error occurred while saving the payment settlement."
       });
     } finally {
       setLoading(false);
@@ -90,7 +90,7 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
         <div className="flex items-center gap-3">
           <Link href="/admin/invoice/list">
             <Button variant="ghost" size="sm" icon={<ArrowLeft size={15} />}>
-              Kembali
+              Back
             </Button>
           </Link>
           <div>
@@ -101,18 +101,18 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Bayar Sisa button — hanya muncul jika DP dan belum lunas */}
+          {/* Settle Balance button — only appears if DP and not fully paid */}
           {invoice.paymentType === "DP" && !invoice.paidFull && (
             <Button
               variant="primary"
               icon={<CheckCircle size={15} />}
               onClick={openConfirmLunas}
             >
-              Bayar Sisa ({formatRupiah(invoice.remainingAmount)})
+              Settle Balance ({formatRupiah(invoice.remainingAmount)})
             </Button>
           )}
 
-          {/* Toggle Expense — hanya muncul jika invoice punya expense */}
+          {/* Toggle Expense — only appears if invoice has expenses */}
           {invoice.expenses && invoice.expenses.length > 0 && (
             <button
               onClick={() => setShowExpense((v) => !v)}
@@ -123,19 +123,19 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
               }`}
             >
               {showExpense ? <EyeOff size={15} /> : <Eye size={15} />}
-              {showExpense ? "Sembunyikan Expense" : "Tampilkan Expense"}
+              {showExpense ? "Hide Expense" : "Show Expense"}
             </button>
           )}
 
           <Button variant="outline" icon={<Printer size={15} />} onClick={handlePrint}>
-            Cetak / Print
+            Print
           </Button>
         </div>
       </div>
 
       {lunasDone && (
         <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 text-[13px] text-green-700 font-medium no-print">
-          Pembayaran sisa berhasil dicatat. Invoice sekarang berstatus LUNAS.
+          Remaining payment successfully recorded. Invoice status is now PAID.
         </div>
       )}
 
@@ -148,12 +148,12 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
       <Modal
         isOpen={confirmLunas}
         onClose={() => setConfirmLunas(false)}
-        title="Konfirmasi Pelunasan"
+        title="Confirm Payment Settlement"
         size="sm"
       >
         <div className="space-y-4">
           <p className="text-[13px] text-slate-600">
-            Catat pelunasan sisa tagihan untuk <strong>{invoice.customerName}</strong>:
+            Record remaining balance payment for <strong>{invoice.customerName}</strong>:
           </p>
           <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
             <div className="flex justify-between text-[12.5px]">
@@ -161,18 +161,18 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
               <span className="font-semibold text-slate-700">{formatRupiah(invoice.grandTotal)}</span>
             </div>
             <div className="flex justify-between text-[12.5px]">
-              <span className="text-slate-500">DP Sudah Dibayar</span>
+              <span className="text-slate-500">Down Payment Paid</span>
               <span className="font-semibold text-blue-600">- {formatRupiah(invoice.dpAmount)}</span>
             </div>
             <div className="flex justify-between text-[13px] border-t border-slate-200 pt-1.5 mt-1">
-              <span className="font-bold text-slate-800">Sisa Tagihan</span>
+              <span className="font-bold text-slate-800">Balance Due</span>
               <span className="font-bold text-red-600">{formatRupiah(invoice.remainingAmount)}</span>
             </div>
           </div>
 
           <div className="space-y-3 pt-1">
             <div>
-              <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Nominal Dilunasi (Rp)</label>
+              <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Settle Amount (Rp)</label>
               <input
                 type="number"
                 value={settleAmount || ""}
@@ -181,7 +181,7 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
               />
             </div>
             <div>
-              <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Tanggal Pelunasan</label>
+              <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Settlement Date</label>
               <input
                 type="date"
                 value={settleDate}
@@ -193,10 +193,10 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
 
           <div className="flex gap-3 pt-2">
             <Button className="flex-1" icon={<CheckCircle size={15} />} onClick={handleBayarLunas} loading={loading}>
-              Simpan Lunas
+              Save Settlement
             </Button>
             <Button variant="outline" className="flex-1" onClick={() => setConfirmLunas(false)}>
-              Batal
+              Cancel
             </Button>
           </div>
         </div>

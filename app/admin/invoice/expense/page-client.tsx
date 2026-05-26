@@ -58,13 +58,13 @@ function InvoicePickerModal({ isOpen, onClose, invoices, onSelect }: InvoicePick
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Pilih Invoice" size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title="Select Invoice" size="lg">
       {/* Search */}
       <div className="relative mb-4">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
         <input
           type="text"
-          placeholder="Cari nomor invoice, nama customer, atau nomor HP..."
+          placeholder="Search invoice number, customer name, or phone..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           autoFocus
@@ -72,14 +72,14 @@ function InvoicePickerModal({ isOpen, onClose, invoices, onSelect }: InvoicePick
         />
       </div>
 
-      <p className="text-[12px] text-slate-400 mb-3">{filtered.length} invoice ditemukan</p>
+      <p className="text-[12px] text-slate-400 mb-3">{filtered.length} invoices found</p>
 
       {/* List */}
       <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-1">
         {filtered.length === 0 ? (
           <div className="text-center py-10 text-slate-400">
             <Search size={24} className="mx-auto mb-2 opacity-40" />
-            <p className="text-[13.5px]">Tidak ada invoice yang cocok</p>
+            <p className="text-[13.5px]">No matching invoices found</p>
           </div>
         ) : (
           filtered.map((inv: any) => (
@@ -101,7 +101,7 @@ function InvoicePickerModal({ isOpen, onClose, invoices, onSelect }: InvoicePick
                       <StatusBadge status={inv.status} />
                       {inv.paymentType === "DP" && !inv.paidFull && (
                         <span className="text-[10.5px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 font-medium">
-                          Sisa: {formatRupiah(inv.remainingAmount)}
+                          Remaining: {formatRupiah(inv.remainingAmount)}
                         </span>
                       )}
                     </div>
@@ -114,7 +114,7 @@ function InvoicePickerModal({ isOpen, onClose, invoices, onSelect }: InvoicePick
                 </div>
                 <div className="text-right flex-shrink-0 ml-4">
                   <p className="text-[13px] font-bold text-slate-800">{formatRupiah(inv.grandTotal)}</p>
-                  <p className="text-[11px] text-slate-400">{inv.items.length} item</p>
+                  <p className="text-[11px] text-slate-400">{inv.items.length} items</p>
                   <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-400 ml-auto mt-1 transition-colors" />
                 </div>
               </div>
@@ -247,16 +247,16 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
       setStatusModal({
         isOpen: true,
         type: "success",
-        title: "Tersimpan",
-        message: "Data pengeluaran telah berhasil disimpan."
+        title: "Saved",
+        message: "Expense data has been successfully saved."
       });
     } catch (error: any) {
       console.error("Failed to save expense:", error);
       setStatusModal({
         isOpen: true,
         type: "error",
-        title: "Gagal",
-        message: error.message || "Terjadi kesalahan saat menyimpan data. Silakan coba lagi."
+        title: "Error",
+        message: error.message || "An error occurred while saving. Please try again."
       });
     }
   };
@@ -279,15 +279,15 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
       setStatusModal({
         isOpen: true,
         type: "success",
-        title: "Terhapus",
-        message: "Data pengeluaran telah berhasil dihapus."
+        title: "Deleted",
+        message: "Expense data has been successfully deleted."
       });
     } catch (error) {
       setStatusModal({
         isOpen: true,
         type: "error",
-        title: "Gagal",
-        message: "Gagal menghapus data pengeluaran."
+        title: "Error",
+        message: "Failed to delete expense data."
       });
     } finally {
       setIsDeleting(false);
@@ -299,11 +299,11 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-[20px] font-bold text-slate-800">Expense Management</h1>
-          <p className="text-[13px] text-slate-500 mt-0.5">Kelola modal dan biaya per invoice</p>
+          <p className="text-[13px] text-slate-500 mt-0.5">Manage costs and expenses per invoice</p>
         </div>
         {selectedInvoice && (
           <Button icon={<PlusCircle size={15} />} onClick={openAddModal}>
-            Tambah Expense
+            Add Expense
           </Button>
         )}
       </div>
@@ -315,12 +315,12 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
             <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
               <Search size={22} className="text-blue-500" />
             </div>
-            <h3 className="text-[15px] font-semibold text-slate-700 mb-1">Pilih Invoice</h3>
+            <h3 className="text-[15px] font-semibold text-slate-700 mb-1">Select Invoice</h3>
             <p className="text-[13px] text-slate-400 mb-5 max-w-sm">
-              Pilih invoice terlebih dahulu untuk mengelola expense dan menghitung keuntungan bersih.
+              Select an invoice first to manage expenses and calculate net profit.
             </p>
             <Button icon={<Search size={15} />} onClick={() => setPickerOpen(true)}>
-              Cari &amp; Pilih Invoice
+              Search &amp; Select Invoice
             </Button>
           </div>
         ) : (
@@ -338,7 +338,7 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
                     <StatusBadge status={selectedInvoice.status} />
                     {selectedInvoice.paymentType === "DP" && !selectedInvoice.paidFull && (
                       <span className="text-[11px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 font-medium">
-                        DP — Sisa {formatRupiah(selectedInvoice.remainingAmount)}
+                        DP — Balance {formatRupiah(selectedInvoice.remainingAmount)}
                       </span>
                     )}
                   </div>
@@ -351,7 +351,7 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" icon={<Search size={14} />} onClick={() => setPickerOpen(true)}>
-                  Ganti Invoice
+                  Change Invoice
                 </Button>
                 <button onClick={() => setSelectedInvoice(null)} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition-colors">
                   <X size={16} />
@@ -361,7 +361,7 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
 
             {/* Invoice items summary */}
             <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-              <p className="text-[11.5px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Item Invoice</p>
+              <p className="text-[11.5px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Invoice Items</p>
               <div className="space-y-1">
                 {(selectedInvoice.items as any[]).map((item: any) => (
                   <div key={item.id} className="flex justify-between items-center text-[12.5px]">
@@ -384,8 +384,8 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
           {/* Expense table */}
           <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-              <h3 className="text-[14.5px] font-semibold text-slate-800">Daftar Expense</h3>
-              <span className="text-[12px] text-slate-400">{expenses.length} item</span>
+              <h3 className="text-[14.5px] font-semibold text-slate-800">Expense List</h3>
+              <span className="text-[12px] text-slate-400">{expenses.length} items</span>
             </div>
 
             {expenses.length === 0 ? (
@@ -393,15 +393,15 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3">
                   <PlusCircle size={20} />
                 </div>
-                <p className="text-[13.5px] font-medium">Belum ada expense</p>
-                <p className="text-[12.5px] mt-1">Klik Tambah Expense untuk memulai</p>
+                <p className="text-[13.5px] font-medium">No expenses recorded yet</p>
+                <p className="text-[12.5px] mt-1">Click Add Expense to get started</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-slate-50">
-                      {["Nama Expense", "Kategori", "Jumlah", "Tanggal", "Aksi"].map((h) => (
+                      {["Expense Name", "Category", "Amount", "Date", "Action"].map((h) => (
                         <th key={h} className="text-left px-5 py-3 text-[11.5px] font-semibold uppercase tracking-wide text-slate-400">{h}</th>
                       ))}
                     </tr>
@@ -437,7 +437,7 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
           {/* Financial summary */}
           <div className="space-y-4">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-              <h3 className="text-[14.5px] font-semibold text-slate-800 mb-4">Ringkasan Keuangan</h3>
+              <h3 className="text-[14.5px] font-semibold text-slate-800 mb-4">Financial Summary</h3>
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border border-green-100">
                   <span className="text-[13px] text-green-700 font-medium">Invoice Revenue</span>
@@ -457,11 +457,11 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
                 </div>
               </div>
             </div>
-
+ 
             {/* Category breakdown */}
             {expenses.length > 0 && (
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-                <h3 className="text-[13px] font-semibold text-slate-700 mb-3">Per Kategori</h3>
+                <h3 className="text-[13px] font-semibold text-slate-700 mb-3">By Category</h3>
                 {Object.entries(
                   expenses.reduce((acc, e) => {
                     acc[e.category] = (acc[e.category] || 0) + e.amount;
@@ -488,16 +488,16 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
       />
 
       {/* Add/Edit Expense Modal */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editingExpense ? "Edit Expense" : "Tambah Expense"}>
+      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editingExpense ? "Edit Expense" : "Add Expense"}>
         <div className="space-y-4">
-          <Input label="Nama Expense" placeholder="Nama biaya atau modal" value={form.name || ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} id="expense-name" />
-          <Select label="Kategori" options={categoryOptions} value={form.category || "Tour Cost"} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value as ExpenseCategory }))} id="expense-category" />
-          <Input label="Jumlah (Rp)" type="number" placeholder="0" value={form.amount || ""} onChange={(e) => setForm((p) => ({ ...p, amount: Number(e.target.value) }))} id="expense-amount" />
-          <Input label="Tanggal" type="date" value={formatDateInput(form.date || "")} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} id="expense-date" />
-          <Textarea label="Catatan" placeholder="Catatan tambahan..." rows={3} value={form.notes || ""} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} id="expense-notes" />
+          <Input label="Expense Name" placeholder="Expense or cost name" value={form.name || ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} id="expense-name" />
+          <Select label="Category" options={categoryOptions} value={form.category || "Tour Cost"} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value as ExpenseCategory }))} id="expense-category" />
+          <Input label="Amount (Rp)" type="number" placeholder="0" value={form.amount || ""} onChange={(e) => setForm((p) => ({ ...p, amount: Number(e.target.value) }))} id="expense-amount" />
+          <Input label="Date" type="date" value={formatDateInput(form.date || "")} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} id="expense-date" />
+          <Textarea label="Notes" placeholder="Additional notes..." rows={3} value={form.notes || ""} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} id="expense-notes" />
           <div className="flex gap-3 pt-2">
-            <Button className="flex-1" onClick={handleSave} icon={<Save size={15} />}>Simpan</Button>
-            <Button variant="outline" className="flex-1" onClick={() => setModalOpen(false)}>Batal</Button>
+            <Button className="flex-1" onClick={handleSave} icon={<Save size={15} />}>Save</Button>
+            <Button variant="outline" className="flex-1" onClick={() => setModalOpen(false)}>Cancel</Button>
           </div>
         </div>
       </Modal>
@@ -507,10 +507,10 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
         isOpen={!!deleteId}
         onClose={() => setDeleteId(null)}
         type="delete"
-        title="Hapus Pengeluaran"
-        message="Apakah Anda yakin ingin menghapus catatan pengeluaran ini?"
-        confirmLabel="Hapus"
-        cancelLabel="Batal"
+        title="Delete Expense"
+        message="Are you sure you want to delete this expense?"
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
         onConfirm={handleDelete}
         loading={isDeleting}
       />

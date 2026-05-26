@@ -8,16 +8,23 @@ interface InvoicePrintProps {
   showExpense?: boolean;
 }
 
+const itemTypeTranslation: Record<string, string> = {
+  "Paket Tour": "Tour Package",
+  "Akomodasi": "Accommodation",
+  "Kendaraan": "Vehicle",
+  "Custom": "Custom",
+};
+
 export default function InvoicePrint({ invoice, showExpense = false }: InvoicePrintProps) {
   const statusLabel =
     invoice.paymentType === "DP" && !invoice.paidFull
-      ? "DP / PARTIAL"
+      ? "DEPOSIT / PARTIAL"
       : invoice.status === "Paid"
-      ? "LUNAS"
+      ? "PAID"
       : invoice.status === "Pending"
-      ? "BELUM DIBAYAR"
+      ? "UNPAID"
       : invoice.status === "Cancelled"
-      ? "DIBATALKAN"
+      ? "CANCELLED"
       : "DRAFT";
 
   const statusColor =
@@ -103,7 +110,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
       <div className="grid grid-cols-3 gap-6 mb-7">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-            Dari
+            From
           </p>
           <p className="font-bold text-slate-800">{companyInfo.name}</p>
           <p className="text-slate-500 text-[12px] mt-0.5">{companyInfo.address}</p>
@@ -112,7 +119,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
         </div>
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-            Tagihan Kepada
+            Bill To
           </p>
           <p className="font-bold text-slate-800">{invoice.customerName}</p>
           {invoice.customerPhone && (
@@ -125,19 +132,19 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
         <div className="text-right">
           <div className="mb-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
-              Tanggal Invoice
+              Invoice Date
             </p>
             <p className="font-semibold text-slate-800">{formatDate(invoice.invoiceDate)}</p>
           </div>
           <div>
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
-              Jatuh Tempo
+              Due Date
             </p>
             <p className="font-semibold text-slate-800">{formatDate(invoice.dueDate)}</p>
           </div>
           <div className="mt-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">
-              Metode Pembayaran
+              Payment Method
             </p>
             <p className="font-semibold text-slate-800">{invoice.paymentMethod}</p>
           </div>
@@ -149,16 +156,16 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
         <thead>
           <tr className="border-b-2 border-slate-800 text-slate-800">
             <th className="text-left px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest">
-              Deskripsi
+              Description
             </th>
             <th className="text-left px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest w-28">
-              Tipe
+              Type
             </th>
             <th className="text-center px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest w-14">
               Qty
             </th>
             <th className="text-right px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest w-36">
-              Harga Satuan
+              Unit Price
             </th>
             <th className="text-right px-4 py-3 text-[11.5px] font-bold uppercase tracking-widest w-36">
               Total
@@ -179,7 +186,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
               </td>
               <td className="px-4 py-3 border-b border-slate-200">
                 <span className="text-[10.5px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100 whitespace-nowrap">
-                  {item.type}
+                  {itemTypeTranslation[item.type] || item.type}
                 </span>
               </td>
               <td className="px-4 py-3 text-center border-b border-slate-200 text-slate-700">
@@ -205,13 +212,13 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
           </div>
           {invoice.discount > 0 && (
             <div className="flex justify-between py-1.5 border-b border-slate-200">
-              <span className="text-slate-500">Diskon</span>
+              <span className="text-slate-500">Discount</span>
               <span className="font-medium text-red-500">- {formatRupiah(invoice.discount)}</span>
             </div>
           )}
           {invoice.tax > 0 && (
             <div className="flex justify-between py-1.5 border-b border-slate-200">
-              <span className="text-slate-500">Pajak</span>
+              <span className="text-slate-500">Tax</span>
               <span className="font-medium text-slate-800">{formatRupiah(invoice.tax)}</span>
             </div>
           )}
@@ -227,7 +234,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
             <>
               <div className="flex justify-between py-1.5 border-b border-slate-200 bg-blue-50 px-2 rounded">
                 <span className="text-blue-700 font-medium">
-                  DP Dibayar
+                  Deposit Paid
                   {invoice.dpDate && (
                     <span className="text-[11px] text-blue-400 ml-1">({formatDate(invoice.dpDate)})</span>
                   )}
@@ -239,7 +246,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
               {invoice.paidFull && (
                 <div className="flex justify-between py-1.5 border-b border-slate-200 bg-green-50 px-2 rounded">
                   <span className="text-green-700 font-medium">
-                    Pelunasan Sisa
+                    Remaining Balance Paid
                     {invoice.paidRemainingDate && (
                       <span className="text-[11px] text-green-500 ml-1">({formatDate(invoice.paidRemainingDate)})</span>
                     )}
@@ -251,7 +258,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
               )}
               <div className="flex justify-between py-2.5 mt-1 rounded-lg px-2 bg-slate-100">
                 <span className="font-bold text-slate-800 text-[13px]">
-                  {invoice.paidFull ? "Sisa Tagihan" : "Sisa Tagihan"}
+                  {invoice.paidFull ? "Balance Due" : "Balance Due"}
                 </span>
                 <span
                   className={`font-black text-[14px] ${
@@ -264,7 +271,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
               {invoice.paidFull && (
                 <div className="text-center py-1.5 bg-green-100 rounded-lg border border-green-300 mt-1">
                   <span className="text-green-800 font-bold text-[11px] uppercase tracking-wider">
-                    ✓ PEMBAYARAN LUNAS
+                    ✓ PAID IN FULL
                   </span>
                 </div>
               )}
@@ -274,13 +281,13 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
           {/* Full payment paid */}
           {invoice.paymentType === "Full" && invoice.status === "Paid" && (
             <div className="flex justify-between py-1.5">
-              <span className="text-slate-500">Jumlah Dibayar</span>
+              <span className="text-slate-500">Amount Paid</span>
               <span className="font-bold text-green-600">{formatRupiah(invoice.grandTotal)}</span>
             </div>
           )}
           {invoice.paymentType === "Full" && invoice.status !== "Paid" && (
             <div className="flex justify-between py-1.5">
-              <span className="font-bold text-slate-800">Sisa Tagihan</span>
+              <span className="font-bold text-slate-800">Balance Due</span>
               <span className="font-black text-red-600">{formatRupiah(invoice.grandTotal)}</span>
             </div>
           )}
@@ -292,17 +299,17 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
         <div className="mt-7 mb-4">
           <div className="flex items-center gap-3 mb-3">
             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
-              Rincian Biaya Operasional
+              Operational Expense Details
             </p>
             <div className="flex-1 h-px bg-slate-200" />
           </div>
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b-2 border-slate-700 text-slate-700">
-                <th className="text-left px-3 py-2 text-[11px] font-bold uppercase tracking-widest">Keterangan</th>
-                <th className="text-left px-3 py-2 text-[11px] font-bold uppercase tracking-widest w-36">Kategori</th>
-                <th className="text-left px-3 py-2 text-[11px] font-bold uppercase tracking-widest w-24">Tanggal</th>
-                <th className="text-right px-3 py-2 text-[11px] font-bold uppercase tracking-widest w-36">Jumlah</th>
+                <th className="text-left px-3 py-2 text-[11px] font-bold uppercase tracking-widest">Description</th>
+                <th className="text-left px-3 py-2 text-[11px] font-bold uppercase tracking-widest w-36">Category</th>
+                <th className="text-left px-3 py-2 text-[11px] font-bold uppercase tracking-widest w-24">Date</th>
+                <th className="text-right px-3 py-2 text-[11px] font-bold uppercase tracking-widest w-36">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -327,7 +334,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
           </table>
           {/* Expense summary row */}
           <div className="flex justify-end mt-3 gap-12 pr-3">
-            <span className="text-[12px] text-slate-500 font-medium">Total Biaya Operasional</span>
+            <span className="text-[12px] text-slate-500 font-medium">Total Operational Expenses</span>
             <span className="text-[13px] font-bold text-amber-700">{formatRupiah(invoice.totalExpense)}</span>
           </div>
           <div className="flex justify-end mt-1.5 gap-12 pr-3 pb-3 border-b-2 border-slate-700">
@@ -344,27 +351,27 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
             {invoice.notes && (
               <>
                 <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                  Catatan
+                  Notes
                 </p>
                 <p className="text-[12.5px] text-slate-600 leading-relaxed">{invoice.notes}</p>
               </>
             )}
             <div className="mt-3">
               <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-                Syarat Pembayaran
+                Payment Terms
               </p>
               <p className="text-[12px] text-slate-500">
-                Pembayaran harap dilakukan sebelum jatuh tempo. Terima kasih telah menggunakan layanan Infinity Go Bali.
+                Payment should be made before the due date. Thank you for choosing Infinity Go Bali.
               </p>
             </div>
           </div>
           <div className="text-right">
             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
-              Informasi Pembayaran
+              Payment Information
             </p>
             <p className="font-bold text-slate-800 text-[13px]">{companyInfo.name}</p>
             <p className="text-slate-600 text-[12.5px]">{companyInfo.bank}</p>
-            <p className="text-slate-600 text-[12.5px]">a.n. {companyInfo.accountName}</p>
+            <p className="text-slate-600 text-[12.5px]">A/N {companyInfo.accountName}</p>
             <p className="font-mono font-bold text-slate-800 text-[14px] mt-1">
               {companyInfo.accountNumber}
             </p>
