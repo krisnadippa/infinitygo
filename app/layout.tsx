@@ -8,21 +8,30 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Infinity Go | Liburan Tak Terlupakan di Bali",
-  description: "Jelajahi keindahan Pulau Dewata dengan Infinity Go. Rasakan pengalaman liburan tak terlupakan dengan layanan premium, tur wisata, sewa mobil, dan akomodasi terbaik di Bali.",
-  keywords: ["travel bali", "liburan bali", "tour bali", "sewa mobil bali", "infinity go", "paket wisata bali", "akomodasi bali"],
+  title: "Infinity Go Travel - Bali Indonesia Tour & Travel",
+  description:
+    "Infinity Go Travel menyediakan layanan tour dan travel di Bali, paket wisata, transportasi, guide, dokumentasi perjalanan, dan layanan perjalanan terpercaya untuk wisatawan lokal maupun internasional.",
+  alternates: {
+    canonical: "https://infinitygotravel.com",
+  },
+  openGraph: {
+    title: "Infinity Go Travel - Bali Indonesia Tour & Travel",
+    description:
+      "Infinity Go Travel menyediakan layanan tour dan travel di Bali, paket wisata, transportasi, guide, dokumentasi perjalanan, dan layanan perjalanan terpercaya untuk wisatawan lokal maupun internasional.",
+    url: "https://infinitygotravel.com",
+    siteName: "Infinity Go Travel",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Infinity Go Travel - Bali Indonesia Tour & Travel",
+    description:
+      "Infinity Go Travel menyediakan layanan tour dan travel di Bali, paket wisata, transportasi, guide, dokumentasi perjalanan, dan layanan perjalanan terpercaya untuk wisatawan lokal maupun internasional.",
+  },
   icons: {
     icon: "/images/logo.png",
     shortcut: "/images/logo.png",
     apple: "/images/logo.png",
-  },
-  openGraph: {
-    title: "Infinity Go | Liburan Tak Terlupakan di Bali",
-    description: "Jelajahi keindahan Pulau Dewata dengan Infinity Go. Layanan travel premium di Bali.",
-    url: "https://infinitygo.vercel.app", // Placeholder URL
-    siteName: "Infinity Go",
-    locale: "id_ID",
-    type: "website",
   },
 };
 
