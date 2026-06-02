@@ -6,6 +6,7 @@ export const TourPackageSchema = z.object({
   location: z.string().optional(),
   duration: z.string().optional(),
   price: z.number().nonnegative("Harga tidak boleh negatif"),
+  discount: z.number().nonnegative("Diskon tidak boleh negatif").optional(),
   description: z.string().optional(),
   facilities: z.array(z.string()).optional(),
   imageUrl: z.string().url("Format URL gambar tidak valid").or(z.string().min(1)).optional(),

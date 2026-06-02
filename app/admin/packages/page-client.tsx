@@ -5,7 +5,7 @@ import { PlusCircle, Edit2, Trash2, Search, MapPin, Clock } from "lucide-react";
 import { StatusBadge } from "@/components/admin/Badge";
 import Button from "@/components/admin/Button";
 import Modal from "@/components/admin/Modal";
-import { Input, Select, Textarea } from "@/components/admin/FormFields";
+import { Input, Select, Textarea, CurrencyInput } from "@/components/admin/FormFields";
 import { TourPackage, formatRupiah } from "@/lib/admin-data";
 import Image from "next/image";
 import { saveTourPackage, deleteTourPackage } from "../actions";
@@ -18,10 +18,15 @@ const locationOptions = [
   { value: "Jakarta", label: "Jakarta" },
   { value: "Labuan Bajo", label: "Labuan Bajo" },
   { value: "Yogyakarta", label: "Yogyakarta" },
+  { value: "Malaysia", label: "Malaysia" },
+  { value: "China", label: "China" },
+  { value: "Vietnam", label: "Vietnam" },
+  { value: "Thailand", label: "Thailand" },
+  { value: "Malang", label: "Malang" },
 ];
 
 const defaultForm: Partial<TourPackage> = {
-  name: "", location: "Bali", duration: "", price: 0,
+  name: "", location: "Bali", duration: "", price: 0, discount: 0,
   facilities: [], description: "", imageUrl: "", status: "Active",
 };
 
@@ -63,6 +68,7 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
       location: form.location || "Bali",
       duration: form.duration || "",
       price: form.price || 0,
+      discount: form.discount || 0,
       description: form.description || "",
       facilities: facilitiesText.split(",").map((f) => f.trim()).filter(Boolean),
       imageUrl: form.imageUrl || "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600",
@@ -161,7 +167,21 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
                 )}
               </div>
               <div className="flex items-center justify-between pt-1 border-t border-slate-100">
-                <p className="text-[15px] font-bold text-blue-600">{formatRupiah(pkg.price)}</p>
+              <div className="flex flex-col">
+                {(pkg.discount || 0) > 0 && (
+                  <span className="text-[12px] text-slate-400 line-through">
+                    {formatRupiah(pkg.price)}
+                  </span>
+                )}
+                <p className="text-[15px] font-bold text-blue-600 flex items-center gap-1.5">
+                  {formatRupiah(pkg.price - (pkg.price * (pkg.discount || 0) / 100))}
+                  {(pkg.discount || 0) > 0 && (
+                    <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
+                      Hemat {pkg.discount}%
+                    </span>
+                  )}
+                </p>
+              </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => openEdit(pkg)}
@@ -190,7 +210,15 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
           </div>
           <Select label="Lokasi" id="pkg-location" options={locationOptions} value={form.location || "Bali"} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
           <Input label="Durasi" placeholder="Contoh: 3 Hari 2 Malam" value={form.duration || ""} onChange={(e) => setForm((p) => ({ ...p, duration: e.target.value }))} id="pkg-duration" />
-          <Input label="Harga (Rp)" type="number" value={form.price || ""} onChange={(e) => setForm((p) => ({ ...p, price: Number(e.target.value) }))} id="pkg-price" />
+          <CurrencyInput label="Harga (Rp)" value={form.price || 0} onChange={(val) => setForm((p) => ({ ...p, price: val }))} id="pkg-price" />
+          <div className="flex flex-col gap-1">
+            <Input label="Diskon (%) opsional" type="number" min="0" max="100" value={form.discount || ""} onChange={(e) => setForm((p) => ({ ...p, discount: Number(e.target.value) }))} id="pkg-discount" />
+            {!!form.discount && !!form.price && (
+              <p className="text-[12px] text-emerald-600 font-medium">
+                Harga setelah diskon: {formatRupiah(form.price - (form.price * form.discount / 100))}
+              </p>
+            )}
+          </div>
           <Select
             label="Status"
             id="pkg-status"

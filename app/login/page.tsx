@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Lock, Mail, Loader2, ShieldCheck, ArrowRight } from "lucide-react";
+import { Lock, Mail, Loader2, ShieldCheck, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
@@ -19,10 +20,20 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
+    // Simple sanitization: Trim inputs and check lengths
+    const sanitizedEmail = email.trim();
+    const sanitizedPassword = password;
+
+    if (!sanitizedEmail || !sanitizedPassword) {
+      setError("Email dan password harus diisi.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const result = await signIn("credentials", {
-        email,
-        password,
+        email: sanitizedEmail,
+        password: sanitizedPassword,
         redirect: false,
       });
 
@@ -105,6 +116,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  maxLength={100}
                   className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-4 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-slate-400"
                   placeholder="admin@infinitygo.id"
                 />
@@ -121,13 +133,21 @@ export default function LoginPage() {
                   <Lock size={18} />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-4 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-slate-400"
+                  maxLength={50}
+                  className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-12 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-slate-400"
                   placeholder="••••••••"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
             </div>
 

@@ -66,6 +66,7 @@ model TourPackage {
   location    String
   duration    String
   price       Float
+  discount    Float    @default(0)
   description String
   facilities  String[]
   image       String?  // Keep for compatibility but marked for deletion
@@ -81,6 +82,7 @@ model Accommodation {
   type          String
   location      String
   pricePerNight Float
+  discount      Float    @default(0)
   facilities    String[]
   description   String
   image         String?  // Keep for compatibility but marked for deletion
@@ -98,6 +100,7 @@ model Vehicle {
   location       String
   capacity       Int
   pricePerDay    Float
+  discount       Float    @default(0)
   driverIncluded Boolean  @default(false)
   description    String
   image          String?  // Keep for compatibility but marked for deletion

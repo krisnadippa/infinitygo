@@ -33,18 +33,7 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobileSidebar }: 
         <Menu size={20} />
       </button>
 
-      {/* Search */}
-      <div className="flex-1 max-w-md relative hidden sm:block">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Search or type command..."
-          className="w-full pl-9 pr-4 py-2 text-[13px] bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 text-slate-700 placeholder:text-slate-400 transition-all"
-        />
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
-          Ctrl K
-        </span>
-      </div>
+      <div className="flex-1" />
 
       <div className="ml-auto flex items-center gap-2">
         {/* Dark mode toggle */}
@@ -62,7 +51,7 @@ export default function AdminTopbar({ onToggleSidebar, onToggleMobileSidebar }: 
             A
           </div>
           <div className="hidden md:block text-left">
-            <p className="text-[13px] font-medium text-slate-700 leading-tight">Admin Bali Travel</p>
+            <p className="text-[13px] font-medium text-slate-700 leading-tight">Admin InfinityGo</p>
             <p className="text-[11px] text-slate-400 leading-tight">Administrator</p>
           </div>
         </div>

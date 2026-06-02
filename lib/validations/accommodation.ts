@@ -6,6 +6,7 @@ export const AccommodationSchema = z.object({
   type: z.string().min(1, "Tipe akomodasi wajib diisi"),
   location: z.string().optional(),
   pricePerNight: z.number().nonnegative("Harga tidak boleh negatif"),
+  discount: z.number().nonnegative("Diskon tidak boleh negatif").optional(),
   facilities: z.array(z.string()).optional(),
   description: z.string().optional(),
   imageUrl: z.string().url("Format URL tidak valid").or(z.string().min(1)).optional(),

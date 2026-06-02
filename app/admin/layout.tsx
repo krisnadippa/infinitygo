@@ -30,7 +30,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main content */}
       <div
         className={`flex-1 flex flex-col min-h-screen transition-all duration-300 print:min-h-0 print:ml-0 print:block ${
-          sidebarOpen ? "lg:ml-64" : "lg:ml-0"
+          sidebarOpen ? "lg:ml-64" : "lg:ml-16"
         }`}
       >
         <div className="print:hidden">

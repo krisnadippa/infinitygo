@@ -178,9 +178,10 @@ export default function PageClient({
       <section className="relative pt-12 md:pt-16 px-4 md:px-6 pb-6">
         <div className="relative h-[85vh] min-h-[600px] w-full rounded-[2rem] md:rounded-[3rem] overflow-hidden">
           <Image
-            src="/images/hero.png"
+            src="/images/hero11.jpg"
             alt="Infinity Go Travel"
             fill className="object-cover" priority
+            unoptimized
           />
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-transparent" />

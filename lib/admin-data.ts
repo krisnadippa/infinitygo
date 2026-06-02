@@ -71,6 +71,7 @@ export interface TourPackage {
   description: string;
   facilities: string[];
   imageUrl?: string;
+  discount?: number;
   status: "Active" | "Inactive";
 }
 
@@ -83,6 +84,7 @@ export interface Accommodation {
   facilities: string[];
   description: string;
   imageUrl?: string;
+  discount?: number;
   status: "Active" | "Inactive";
 }
 
@@ -97,6 +99,7 @@ export interface Vehicle {
   driverIncluded: boolean;
   description: string;
   imageUrl?: string;
+  discount?: number;
   status: "Active" | "Inactive";
 }
 

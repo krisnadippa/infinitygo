@@ -40,14 +40,35 @@ export default async function AdminDashboardPage() {
   const recentInvoices = invoices.slice(0, 5);
   const topPackages = tourPackages;
 
-  // Mock chart data for now, but use current stats for May
-  const monthlyChartData = [
-    { month: "Jan", revenue: 45000000, expense: 22000000 },
-    { month: "Feb", revenue: 52000000, expense: 28000000 },
-    { month: "Mar", revenue: 38000000, expense: 18000000 },
-    { month: "Apr", revenue: 67000000, expense: 35000000 },
-    { month: "May", revenue: stats.totalRevenue, expense: stats.totalExpense },
-  ];
+  // Real-time monthly chart data for the current year
+  const currentYear = new Date().getFullYear();
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const monthlyChartData = months.map((month, index) => {
+    const monthlyInvoices = invoices.filter((inv) => {
+      const date = new Date(inv.invoiceDate);
+      return date.getFullYear() === currentYear && date.getMonth() === index;
+    });
+
+    const paidInvoices = monthlyInvoices.filter((inv) =>
+      ["PAID", "Paid", "Lunas"].includes(inv.status)
+    );
+
+    const revenue = paidInvoices.reduce((sum, inv) => sum + inv.grandTotal, 0);
+    const expense = paidInvoices.reduce((sum, inv) => sum + inv.totalExpense, 0);
+
+    return {
+      month,
+      revenue,
+      expense,
+    };
+  });
+
+  // Calculate current month's stats for the Monthly Target Card
+  const currentMonthIndex = new Date().getMonth();
+  const currentMonthData = monthlyChartData[currentMonthIndex];
+  const currentMonthRevenue = currentMonthData ? currentMonthData.revenue : 0;
+  const currentMonthExpense = currentMonthData ? currentMonthData.expense : 0;
+  const currentMonthProfit = currentMonthRevenue - currentMonthExpense;
 
   return (
     <div className="space-y-6">
@@ -56,7 +77,7 @@ export default async function AdminDashboardPage() {
         <div>
           <h1 className="text-[20px] font-bold text-slate-800">Dashboard</h1>
           <p className="text-[13px] text-slate-500 mt-0.5">
-            Selamat datang kembali, Admin Bali Travel
+            Selamat datang kembali, Admin InfinityGo
           </p>
         </div>
         <p className="text-[12.5px] text-slate-400 hidden sm:block">
@@ -141,7 +162,7 @@ export default async function AdminDashboardPage() {
           <RevenueExpenseChart data={monthlyChartData} />
         </div>
         <div className="xl:col-span-1">
-          <MonthlyTargetCard />
+          <MonthlyTargetCard achieved={currentMonthRevenue} profit={currentMonthProfit} />
         </div>
       </div>
 

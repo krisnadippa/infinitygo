@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { PlusCircle, Trash2, Edit2, Save, Search, ChevronRight, X } from "lucide-react";
-import { Input, Select, Textarea } from "@/components/admin/FormFields";
+import { Input, Select, Textarea, CurrencyInput } from "@/components/admin/FormFields";
 import Button from "@/components/admin/Button";
 import { StatusBadge } from "@/components/admin/Badge";
 import Modal from "@/components/admin/Modal";
@@ -492,7 +492,7 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
         <div className="space-y-4">
           <Input label="Expense Name" placeholder="Expense or cost name" value={form.name || ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} id="expense-name" />
           <Select label="Category" options={categoryOptions} value={form.category || "Tour Cost"} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value as ExpenseCategory }))} id="expense-category" />
-          <Input label="Amount (Rp)" type="number" placeholder="0" value={form.amount || ""} onChange={(e) => setForm((p) => ({ ...p, amount: Number(e.target.value) }))} id="expense-amount" />
+          <CurrencyInput label="Amount (Rp)" value={form.amount || 0} onChange={(val) => setForm((p) => ({ ...p, amount: val }))} id="expense-amount" />
           <Input label="Date" type="date" value={formatDateInput(form.date || "")} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} id="expense-date" />
           <Textarea label="Notes" placeholder="Additional notes..." rows={3} value={form.notes || ""} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} id="expense-notes" />
           <div className="flex gap-3 pt-2">

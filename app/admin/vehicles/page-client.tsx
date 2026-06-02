@@ -5,7 +5,7 @@ import { PlusCircle, Edit2, Trash2, Search, Users, Check, X as XIcon, MapPin } f
 import { StatusBadge } from "@/components/admin/Badge";
 import Button from "@/components/admin/Button";
 import Modal from "@/components/admin/Modal";
-import { Input, Select, Textarea } from "@/components/admin/FormFields";
+import { Input, Select, Textarea, CurrencyInput } from "@/components/admin/FormFields";
 import { Vehicle, formatRupiah } from "@/lib/admin-data";
 import Image from "next/image";
 import { saveVehicle, deleteVehicle } from "../actions";
@@ -25,10 +25,15 @@ const locationOptions = [
   { value: "Jakarta", label: "Jakarta" },
   { value: "Labuan Bajo", label: "Labuan Bajo" },
   { value: "Yogyakarta", label: "Yogyakarta" },
+  { value: "Malaysia", label: "Malaysia" },
+  { value: "China", label: "China" },
+  { value: "Vietnam", label: "Vietnam" },
+  { value: "Thailand", label: "Thailand" },
+  { value: "Malang", label: "Malang" },
 ];
 
 const defaultForm: Partial<Vehicle & { vehicleType: string }> = {
-  name: "", vehicleType: "Car", brand: "", location: "Bali", capacity: 4, pricePerDay: 0,
+  name: "", vehicleType: "Car", brand: "", location: "Bali", capacity: 4, pricePerDay: 0, discount: 0,
   driverIncluded: false, description: "", imageUrl: "", status: "Active",
 };
 
@@ -68,6 +73,7 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
       location: form.location || "Bali",
       capacity: form.capacity || 4,
       pricePerDay: form.pricePerDay || 0,
+      discount: form.discount || 0,
       driverIncluded: form.driverIncluded || false,
       description: form.description || "",
       imageUrl: form.imageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600",
@@ -165,8 +171,20 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
               </div>
               
               <div className="flex items-center justify-between pt-1 border-t border-slate-100 mt-2">
-                <div>
-                  <p className="text-[15px] font-bold text-blue-600">{formatRupiah(veh.pricePerDay)}</p>
+                <div className="flex flex-col">
+                  {(veh.discount || 0) > 0 && (
+                    <span className="text-[12px] text-slate-400 line-through">
+                      {formatRupiah(veh.pricePerDay)}
+                    </span>
+                  )}
+                  <p className="text-[15px] font-bold text-blue-600 flex items-center gap-1.5">
+                    {formatRupiah(veh.pricePerDay - (veh.pricePerDay * (veh.discount || 0) / 100))}
+                    {(veh.discount || 0) > 0 && (
+                      <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
+                        Hemat {veh.discount}%
+                      </span>
+                    )}
+                  </p>
                   <p className="text-[10.5px] text-slate-400">per hari</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -190,7 +208,15 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
           <Input label="Brand" placeholder="Toyota, Honda, dll" value={form.brand || ""} onChange={(e) => setForm((p) => ({ ...p, brand: e.target.value }))} id="veh-brand" />
           <Select label="Lokasi" id="veh-location" options={locationOptions} value={form.location || "Bali"} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
           <Input label="Kapasitas Penumpang" type="number" value={form.capacity || ""} onChange={(e) => setForm((p) => ({ ...p, capacity: Number(e.target.value) }))} id="veh-capacity" />
-          <Input label="Harga per Hari (Rp)" type="number" value={form.pricePerDay || ""} onChange={(e) => setForm((p) => ({ ...p, pricePerDay: Number(e.target.value) }))} id="veh-price" />
+          <CurrencyInput label="Harga per Hari (Rp)" value={form.pricePerDay || 0} onChange={(val) => setForm((p) => ({ ...p, pricePerDay: val }))} id="veh-price" />
+          <div className="flex flex-col gap-1">
+            <Input label="Diskon (%) opsional" type="number" min="0" max="100" value={form.discount || ""} onChange={(e) => setForm((p) => ({ ...p, discount: Number(e.target.value) }))} id="veh-discount" />
+            {!!form.discount && !!form.pricePerDay && (
+              <p className="text-[12px] text-emerald-600 font-medium">
+                Harga setelah diskon: {formatRupiah(form.pricePerDay - (form.pricePerDay * form.discount / 100))}
+              </p>
+            )}
+          </div>
           <Select label="Driver Included" id="veh-driver" options={[{ value: "true", label: "Ya" }, { value: "false", label: "Tidak" }]} value={String(form.driverIncluded || false)} onChange={(e) => setForm((p) => ({ ...p, driverIncluded: e.target.value === "true" }))} />
           <Select label="Status" id="veh-status" options={[{ value: "Active", label: "Active" }, { value: "Inactive", label: "Inactive" }]} value={form.status || "Active"} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as "Active" | "Inactive" }))} />
           <div className="sm:col-span-2"><Textarea label="Deskripsi" rows={3} value={form.description || ""} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} id="veh-desc" /></div>

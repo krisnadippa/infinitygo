@@ -99,3 +99,63 @@ export function Textarea({ label, error, className = "", id, ...props }: Textare
     </div>
   );
 }
+
+interface CurrencyInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'> {
+  label?: string;
+  error?: string;
+  icon?: ReactNode;
+  helper?: string;
+  value: number;
+  onChange: (value: number) => void;
+}
+
+export function CurrencyInput({ label, error, icon, helper, className = "", id, value, onChange, ...props }: CurrencyInputProps) {
+  const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
+  
+  // Format to string with thousand separators
+  const formatValue = (val: number) => {
+    if (val === 0 || isNaN(val)) return "";
+    return new Intl.NumberFormat("id-ID").format(val);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Remove non-digit characters
+    const rawValue = e.target.value.replace(/\D/g, "");
+    if (!rawValue) {
+      onChange(0);
+      return;
+    }
+    const numValue = parseInt(rawValue, 10);
+    onChange(numValue);
+  };
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {label && (
+        <label htmlFor={inputId} className="text-[13px] font-medium text-slate-700">
+          {label}
+        </label>
+      )}
+      <div className="relative">
+        {icon && (
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span>
+        )}
+        <input
+          type="text"
+          id={inputId}
+          {...props}
+          value={formatValue(value)}
+          onChange={handleInputChange}
+          className={`w-full ${icon ? "pl-9" : "pl-3"} pr-3 py-2.5 text-[13.5px] border rounded-lg bg-white text-slate-800
+            placeholder:text-slate-400 transition-colors
+            focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400
+            ${error ? "border-red-300 focus:border-red-400 focus:ring-red-500/20" : "border-slate-300"}
+            disabled:bg-slate-50 disabled:text-slate-400
+            ${className}`}
+        />
+      </div>
+      {error && <p className="text-[12px] text-red-500">{error}</p>}
+      {helper && !error && <p className="text-[12px] text-slate-400">{helper}</p>}
+    </div>
+  );
+}

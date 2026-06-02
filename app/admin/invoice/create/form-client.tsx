@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { PlusCircle as Plus, Trash2 as Trash, Eye as View, Download as Dl, Save as Sv, CreditCard as Cc, DollarSign as Ds } from "lucide-react";
-import { Input, Select, Textarea } from "@/components/admin/FormFields";
+import { Input, Select, Textarea, CurrencyInput } from "@/components/admin/FormFields";
 import Button from "@/components/admin/Button";
 import Modal from "@/components/admin/Modal";
 import StatusModal from "@/components/admin/StatusModal";
@@ -282,8 +282,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                       </div>
                       <div>
                         <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Price (Rp)</label>
-                        <input type="number" min={0} value={item.price || ""} onChange={(e) => updateItem(item.id, "price", Number(e.target.value))}
-                          className="w-full px-3 py-2.5 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
+                        <CurrencyInput value={item.price || 0} onChange={(val) => updateItem(item.id, "price", val)} />
                       </div>
                     </div>
                     <div className="flex justify-end">
@@ -340,14 +339,12 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
               {paymentType === "DP" && (
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                   <div>
-                    <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Deposit Amount (Rp)</label>
-                    <input
-                      type="number"
-                      min={0}
-                      value={dpAmount || ""}
-                      onChange={(e) => setDpAmount(Number(e.target.value))}
+                    <CurrencyInput
+                      label="Deposit Amount (Rp)"
+                      value={dpAmount || 0}
+                      onChange={(val) => setDpAmount(val)}
                       placeholder="Enter deposit amount"
-                      className="w-full px-3 py-2.5 text-[13.5px] border border-amber-300 rounded-lg bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-400/30 focus:border-amber-400"
+                      className="border-amber-300 bg-amber-50 focus:border-amber-400"
                     />
                   </div>
                   <Input label="Deposit Payment Date" type="date" value={dpDate} onChange={(e) => setDpDate(e.target.value)} id="dp-date" />
@@ -384,16 +381,14 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                   <span className="text-[13px] text-slate-500">Discount</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[12px] text-slate-400">Rp</span>
-                    <input type="number" min={0} value={discount || ""} onChange={(e) => setDiscount(Number(e.target.value))}
-                      className="w-28 px-2 py-1 text-[13px] border border-slate-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                    <CurrencyInput value={discount || 0} onChange={(val) => setDiscount(val)} className="w-28 text-right" />
                   </div>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-slate-100">
                   <span className="text-[13px] text-slate-500">Tax (Rp)</span>
                   <div className="flex items-center gap-2">
                     <span className="text-[12px] text-slate-400">Rp</span>
-                    <input type="number" min={0} value={tax || ""} onChange={(e) => setTax(Number(e.target.value))}
-                      className="w-28 px-2 py-1 text-[13px] border border-slate-300 rounded-lg text-right focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+                    <CurrencyInput value={tax || 0} onChange={(val) => setTax(val)} className="w-28 text-right" />
                   </div>
                 </div>
                 <div className="flex justify-between items-center pt-2">

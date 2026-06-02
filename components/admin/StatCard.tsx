@@ -40,7 +40,12 @@ export default function StatCard({
         )}
       </div>
       <p className="text-[12.5px] text-slate-500 font-medium mb-1">{title}</p>
-      <p className="text-[22px] font-bold text-slate-800 leading-tight">{value}</p>
+      <p 
+        className="text-[16px] sm:text-[18px] xl:text-[19px] 2xl:text-[22px] font-bold text-slate-800 leading-tight tracking-tight truncate" 
+        title={value}
+      >
+        {value}
+      </p>
       {changeLabel && (
         <p className="text-[11.5px] text-slate-400 mt-1.5">{changeLabel}</p>
       )}

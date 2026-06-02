@@ -44,7 +44,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
     city: "Bali 80361, Indonesia",
     phone: "+62 812 3456 7890",
     email: "admin@infinitygo.id",
-    bank: "Bank BCA",
+    bank: "Payments Methods",
     accountName: "Infinity Go Bali",
     accountNumber: "1234 5678 9012",
   };
@@ -61,11 +61,12 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
         @media print {
           @page {
             size: auto;
-            margin: 10mm 15mm !important;
+            margin: 0mm !important; /* Mencegah browser mencetak header/footer (termasuk URL) */
           }
           body {
             margin: 0 !important;
-            padding: 0 !important;
+            padding: 10mm 15mm !important; /* Memindahkan margin ke body agar konten tidak mepet pinggir */
+            box-sizing: border-box;
           }
           header, footer, nav, .print-hidden {
             display: none !important;
@@ -372,9 +373,6 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
             <p className="font-bold text-slate-800 text-[13px]">{companyInfo.name}</p>
             <p className="text-slate-600 text-[12.5px]">{companyInfo.bank}</p>
             <p className="text-slate-600 text-[12.5px]">A/N {companyInfo.accountName}</p>
-            <p className="font-mono font-bold text-slate-800 text-[14px] mt-1">
-              {companyInfo.accountNumber}
-            </p>
           </div>
         </div>
       </div>
