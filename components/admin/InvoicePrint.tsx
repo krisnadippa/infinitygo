@@ -44,9 +44,6 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
     city: "Bali 80361, Indonesia",
     phone: "+62 812 3456 7890",
     email: "admin@infinitygo.id",
-    bank: "Payments Methods",
-    accountName: "Infinity Go Bali",
-    accountNumber: "1234 5678 9012",
   };
 
   return (
@@ -61,15 +58,28 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
         @media print {
           @page {
             size: auto;
-            margin: 0mm !important; /* Mencegah browser mencetak header/footer (termasuk URL) */
+            margin: 0mm !important; /* Wajib 0mm untuk menyembunyikan header (URL) dan footer bawaan browser */
           }
           body {
             margin: 0 !important;
-            padding: 10mm 15mm !important; /* Memindahkan margin ke body agar konten tidak mepet pinggir */
+            padding: 10mm 15mm 15mm 15mm !important; /* Gunakan padding pada body untuk memberi jarak konten dengan tepi kertas */
             box-sizing: border-box;
           }
           header, footer, nav, .print-hidden {
             display: none !important;
+          }
+          #invoice-print-area {
+            min-height: 270mm !important; /* Tinggi disesuaikan agar footer tetap terdorong ke bawah */
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          .avoid-break {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          tr {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
         }
       `}</style>
@@ -116,7 +126,6 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
           <p className="font-bold text-slate-800">{companyInfo.name}</p>
           <p className="text-slate-500 text-[12px] mt-0.5">{companyInfo.address}</p>
           <p className="text-slate-500 text-[12px]">{companyInfo.city}</p>
-          <p className="text-slate-500 text-[12px]">{companyInfo.email}</p>
         </div>
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
@@ -205,7 +214,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
       </table>
 
       {/* ===== SUMMARY ===== */}
-      <div className="flex justify-end mb-7">
+      <div className="flex justify-end mb-7 print:pt-16 avoid-break">
         <div className="w-72 space-y-1.5">
           <div className="flex justify-between py-1.5 border-b border-slate-200">
             <span className="text-slate-500">Subtotal</span>
@@ -297,7 +306,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
 
       {/* ===== EXPENSE SECTION ===== */}
       {showExpense && invoice.expenses && invoice.expenses.length > 0 && (
-        <div className="mt-7 mb-4">
+        <div className="mt-7 mb-4 print:pt-16 avoid-break">
           <div className="flex items-center gap-3 mb-3">
             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
               Operational Expense Details
@@ -346,7 +355,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
       )}
 
       {/* ===== BOTTOM SECTION (NOTES + FOOTER) ===== */}
-      <div className="mt-auto">
+      <div className="mt-auto print:pt-16 avoid-break">
         <div className="grid grid-cols-2 gap-6 pt-5 border-t-2 border-slate-800">
           <div>
             {invoice.notes && (
@@ -370,9 +379,15 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
             <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mb-2">
               Payment Information
             </p>
-            <p className="font-bold text-slate-800 text-[13px]">{companyInfo.name}</p>
-            <p className="text-slate-600 text-[12.5px]">{companyInfo.bank}</p>
-            <p className="text-slate-600 text-[12.5px]">A/N {companyInfo.accountName}</p>
+            <p className="font-bold text-slate-800 text-[13.5px]">BCA</p>
+            <p className="font-semibold text-slate-700 text-[13px]">4040619343</p>
+            <p className="text-slate-600 text-[12.5px]">A/N PT. Anugerah Wisata kencana</p>
+            <p className="text-slate-600 text-[12.5px] mt-0.5">Swift code: CENAIDJA</p>
+            <p className="text-slate-500 text-[11.5px] mt-1.5 leading-snug">
+              Kartika plaza street no.89
+              <br />
+              Kuta
+            </p>
           </div>
         </div>
       </div>
