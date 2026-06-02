@@ -9,7 +9,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f1f5f9] flex print:bg-white print:block print:min-h-0">
+    <div className="min-h-screen bg-white flex print:bg-white print:block print:min-h-0">
       {/* Sidebar */}
       <div className="print:hidden">
         <AdminSidebar

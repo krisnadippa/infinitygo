@@ -7,7 +7,7 @@ import Button from "@/components/admin/Button";
 import { StatusBadge } from "@/components/admin/Badge";
 import { CurrencyInput } from "@/components/admin/FormFields";
 import Modal from "@/components/admin/Modal";
-import { Printer, ArrowLeft, CheckCircle, Eye, EyeOff } from "lucide-react";
+import { Printer, Download, ArrowLeft, CheckCircle, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import StatusModal from "@/components/admin/StatusModal";
 import { saveInvoice } from "../../actions";
@@ -80,8 +80,37 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
     }
   };
 
-  const handlePrint = () => {
-    window.print();
+  const [loadingPDF, setLoadingPDF] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    try {
+      setLoadingPDF(true);
+      const { pdf } = await import("@react-pdf/renderer");
+      const InvoicePDF = (await import("@/components/admin/InvoicePDF")).default;
+
+      const blob = await pdf(
+        <InvoicePDF invoice={invoice} showExpense={showExpense} />
+      ).toBlob();
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice-${invoice.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Download Failed",
+        message: "Failed to generate PDF. Please try again.",
+      });
+    } finally {
+      setLoadingPDF(false);
+    }
   };
 
   return (
@@ -128,8 +157,13 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
             </button>
           )}
 
-          <Button variant="outline" icon={<Printer size={15} />} onClick={handlePrint}>
-            Print
+          <Button 
+            variant="outline" 
+            icon={<Download size={15} />} 
+            onClick={handleDownloadPDF}
+            loading={loadingPDF}
+          >
+            {loadingPDF ? "Generating PDF..." : "Download PDF"}
           </Button>
         </div>
       </div>

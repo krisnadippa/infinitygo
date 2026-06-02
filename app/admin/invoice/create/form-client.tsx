@@ -73,6 +73,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
   }>({ isOpen: false, type: "success", title: "", message: "" });
   const [previewOpen, setPreviewOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingPDF, setLoadingPDF] = useState(false);
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -199,13 +200,38 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
     }
   };
 
-  const handlePrint = () => {
-    setPreviewOpen(true);
-    // Allow modal to open then trigger print
-    setTimeout(() => window.print(), 500);
-  };
-
   const previewInvoice = buildInvoice();
+
+  const handleDownloadPDF = async () => {
+    try {
+      setLoadingPDF(true);
+      const { pdf } = await import("@react-pdf/renderer");
+      const InvoicePDF = (await import("@/components/admin/InvoicePDF")).default;
+
+      const blob = await pdf(
+        <InvoicePDF invoice={previewInvoice} />
+      ).toBlob();
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice-${previewInvoice.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to generate PDF:", error);
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Download Failed",
+        message: "Failed to generate PDF. Please try again.",
+      });
+    } finally {
+      setLoadingPDF(false);
+    }
+  };
 
   return (
     <div className="space-y-6 print:space-y-0">
@@ -414,7 +440,9 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-2.5">
               <Button className="w-full" onClick={handleSave} icon={<Sv size={15} />} loading={loading}>Save Invoice</Button>
               <Button variant="outline" className="w-full" icon={<View size={15} />} onClick={() => setPreviewOpen(true)}>Preview Invoice</Button>
-              <Button variant="secondary" className="w-full" icon={<Dl size={15} />} onClick={handlePrint}>Print / Download</Button>
+              <Button variant="secondary" className="w-full" icon={<Dl size={15} />} onClick={handleDownloadPDF} loading={loadingPDF}>
+                {loadingPDF ? "Generating PDF..." : "Download PDF"}
+              </Button>
             </div>
  
             <div className="bg-blue-50 rounded-2xl border border-blue-100 p-4">
@@ -432,7 +460,9 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
           <InvoicePrint invoice={previewInvoice} />
         </div>
         <div className="flex gap-3 pt-4 border-t border-slate-100 mt-4 print:hidden">
-          <Button className="flex-1" icon={<Dl size={15} />} onClick={() => window.print()}>Print / Download PDF</Button>
+          <Button className="flex-1" icon={<Dl size={15} />} onClick={handleDownloadPDF} loading={loadingPDF}>
+            {loadingPDF ? "Generating PDF..." : "Download PDF"}
+          </Button>
           <Button variant="outline" className="flex-1" onClick={() => setPreviewOpen(false)}>Close</Button>
         </div>
       </Modal>
