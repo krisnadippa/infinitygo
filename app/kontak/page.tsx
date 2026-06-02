@@ -167,7 +167,7 @@ export default function KontakPage() {
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-3">Alamat</h3>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Jl. Nuansa Udayana 1 No.5, Jimbaran, Kec. Kuta Sel., Kabupaten Badung, Bali
+              Jl. Nuansa Udayana I No.5, Jimbaran, Kec. Kuta Sel., Kabupaten Badung, Bali 80361
             </p>
           </motion.div>
 
@@ -364,7 +364,7 @@ export default function KontakPage() {
                 <h4 className="font-bold text-slate-800 mb-2">Kunjungi Kantor Kami</h4>
                 <p className="text-sm text-slate-500 leading-relaxed flex items-start gap-2">
                   <MapPin size={16} className="text-[#40B5AD] shrink-0 mt-0.5" />
-                  Jl. Nuansa Udayana 1 No.5, Jimbaran, Kec. Kuta Sel., Kabupaten Badung, Bali
+                  Jl. Nuansa Udayana I No.5, Jimbaran, Kec. Kuta Sel., Kabupaten Badung, Bali 80361
                 </p>
               </div>
             </div>

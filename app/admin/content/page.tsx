@@ -11,7 +11,7 @@ const defaultContent = {
   aboutTitle: "Tentang Infinity Go",
   aboutDescription: "Infinity Go adalah agen perjalanan terpercaya di Bali yang menyediakan layanan wisata lengkap sejak 2018. Kami berkomitmen memberikan pengalaman liburan yang tak terlupakan.",
   contactWhatsapp: "+6281234567890",
-  address: "Jl. Raya Kuta No. 88, Kuta, Badung, Bali 80361",
+  address: "Jl. Nuansa Udayana I No.5, Jimbaran, Kec. Kuta Sel., Kabupaten Badung, Bali 80361",
   instagram: "https://instagram.com/infinitygo.bali",
   facebook: "https://facebook.com/infinitygo",
   bannerImage: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200",

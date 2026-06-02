@@ -40,8 +40,8 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
 
   const companyInfo = {
     name: "Infinity Go Bali",
-    address: "Jl. Raya Kuta No. 88, Kuta, Badung",
-    city: "Bali 80361, Indonesia",
+    address: "Jl. Nuansa Udayana I No.5, Jimbaran, Kec. Kuta Sel.",
+    city: "Kabupaten Badung, Bali 80361",
     phone: "+62 812 3456 7890",
     email: "admin@infinitygo.id",
   };
