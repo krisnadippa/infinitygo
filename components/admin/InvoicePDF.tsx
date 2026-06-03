@@ -271,6 +271,8 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
 
   const companyInfo = {
     name: "Infinity Go Bali",
+    address: "Jl. Nuansa Udayana I No.5, Jimbaran, Kec. Kuta Sel.",
+    city: "Kabupaten Badung, Bali 80361",
     website: "www.infinitygotravel.com",
     email: "infinitygo.travel@gmail.com",
     phone: "+62 812 3456 7890",
@@ -289,8 +291,8 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
             <Image src={logoUrl} style={styles.logo} />
             <View>
               <Text style={styles.companyName}>{companyInfo.name}</Text>
-              <Text style={styles.companyDetails}>{companyInfo.website}</Text>
-              <Text style={styles.companyDetails}>{companyInfo.email}</Text>
+              <Text style={styles.companyDetails}>{companyInfo.address}</Text>
+              <Text style={styles.companyDetails}>{companyInfo.city}</Text>
               <Text style={styles.companyDetails}>{companyInfo.phone}</Text>
             </View>
           </View>
