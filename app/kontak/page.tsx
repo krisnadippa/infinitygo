@@ -193,8 +193,8 @@ export default function KontakPage() {
               <Mail size={28} />
             </div>
             <h3 className="text-xl font-bold text-slate-800 mb-3">Email</h3>
-            <a href="mailto:halo@infinitygobali.com" className="text-sm text-slate-500 hover:text-[#40B5AD] transition-colors break-all">
-              halo@infinitygobali.com
+            <a href="mailto:infinitygo.travel@gmail.com" className="text-sm text-slate-500 hover:text-[#40B5AD] transition-colors break-all">
+              infinitygo.travel@gmail.com
             </a>
           </motion.div>
 

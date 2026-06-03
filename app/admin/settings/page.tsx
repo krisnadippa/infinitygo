@@ -53,14 +53,14 @@ export default function SettingsPage() {
               <div className="flex items-center gap-5 mb-6">
                 <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-2xl">A</div>
                 <div>
-                  <p className="text-[13.5px] font-medium text-slate-700">Admin Bali Travel</p>
-                  <p className="text-[12.5px] text-slate-400">admin@balitravel.com</p>
+                  <p className="text-[13.5px] font-medium text-slate-700">Admin Infinity Go</p>
+                  <p className="text-[12.5px] text-slate-400">infinitygo.travel@gmail.com</p>
                   <button className="text-[12px] text-blue-600 mt-1 hover:underline">Ganti Foto</button>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="Nama Lengkap" defaultValue="Admin Bali Travel" id="settings-name" />
-                <Input label="Email" type="email" defaultValue="admin@balitravel.com" id="settings-email" />
+                <Input label="Nama Lengkap" defaultValue="Admin Infinity Go" id="settings-name" />
+                <Input label="Email" type="email" defaultValue="infinitygo.travel@gmail.com" id="settings-email" />
                 <Input label="Nomor Telepon" defaultValue="+6281234567890" id="settings-phone" />
                 <Input label="Jabatan" defaultValue="Administrator" id="settings-role" />
               </div>
@@ -99,7 +99,7 @@ export default function SettingsPage() {
             <>
               <h2 className="text-[14px] font-semibold text-slate-800 mb-4">Pengaturan Umum</h2>
               <div className="space-y-4">
-                <Input label="Nama Bisnis" defaultValue="BaliTravel Admin" id="settings-biz-name" />
+                <Input label="Nama Bisnis" defaultValue="Infinity Go Admin" id="settings-biz-name" />
                 <Select label="Mata Uang" id="settings-currency" options={[{ value: "IDR", label: "IDR - Rupiah Indonesia" }, { value: "USD", label: "USD - US Dollar" }]} />
                 <Select label="Bahasa" id="settings-lang" options={[{ value: "id", label: "Bahasa Indonesia" }, { value: "en", label: "English" }]} />
                 <Select label="Timezone" id="settings-tz" options={[{ value: "Asia/Makassar", label: "WITA - Asia/Makassar" }, { value: "Asia/Jakarta", label: "WIB - Asia/Jakarta" }]} />

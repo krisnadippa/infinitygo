@@ -118,7 +118,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   maxLength={100}
                   className="w-full bg-slate-50 border border-slate-200 text-slate-900 rounded-xl py-3.5 pl-12 pr-4 text-[14px] focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-slate-400"
-                  placeholder="admin@infinitygo.id"
+                  placeholder="infinitygo.travel@gmail.com"
                 />
               </div>
             </div>

@@ -245,7 +245,7 @@ function SidebarContent({
           {!collapsed && (
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-medium text-slate-700 truncate">Admin InfinityGo</p>
-              <p className="text-[11px] text-slate-400 truncate">admin@infinitygo.id</p>
+              <p className="text-[11px] text-slate-400 truncate">infinitygo.travel@gmail.com</p>
             </div>
           )}
         </div>
