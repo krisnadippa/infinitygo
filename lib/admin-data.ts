@@ -5,7 +5,7 @@
 export type InvoiceStatus = "Draft" | "Pending" | "DP" | "Paid" | "Cancelled";
 export type PaymentMethod = "Cash" | "Bank Transfer" | "Credit Card" | "E-Wallet";
 export type PaymentType = "Full" | "DP";
-export type ItemType = "Paket Tour" | "Akomodasi" | "Kendaraan" | "Wifi Portable" | "MICE" | "Custom";
+export type ItemType = "Paket Tour" | "Akomodasi" | "Kendaraan" | "Wifi" | "MICE" | "Custom";
 export type ExpenseCategory =
   | "Tour Cost"
   | "Vehicle Cost"
