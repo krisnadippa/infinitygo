@@ -12,6 +12,8 @@ const itemTypeTranslation: Record<string, string> = {
   "Paket Tour": "Tour Package",
   "Akomodasi": "Accommodation",
   "Kendaraan": "Vehicle",
+  "Wifi Portable": "Wifi Portable",
+  "MICE": "MICE",
   "Custom": "Custom",
 };
 

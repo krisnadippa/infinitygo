@@ -26,6 +26,8 @@ const itemTypeOptions = [
   { value: "Paket Tour", label: "Tour Package" },
   { value: "Akomodasi", label: "Accommodation" },
   { value: "Kendaraan", label: "Vehicle" },
+  { value: "Wifi Portable", label: "Wifi Portable" },
+  { value: "MICE", label: "MICE" },
   { value: "Custom", label: "Custom" },
 ];
 
