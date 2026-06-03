@@ -271,10 +271,9 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
 
   const companyInfo = {
     name: "Infinity Go Bali",
-    address: "Jl. Nuansa Udayana I No.5, Jimbaran, Kec. Kuta Sel.",
-    city: "Kabupaten Badung, Bali 80361",
+    website: "www.infinitygotravel.com",
+    email: "infinitygo.travel@gmail.com",
     phone: "+62 812 3456 7890",
-    email: "admin@infinitygo.id",
   };
 
   // Construct absolute URL for the logo, safe for both client and server rendering
@@ -290,8 +289,8 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
             <Image src={logoUrl} style={styles.logo} />
             <View>
               <Text style={styles.companyName}>{companyInfo.name}</Text>
-              <Text style={styles.companyDetails}>{companyInfo.address}</Text>
-              <Text style={styles.companyDetails}>{companyInfo.city}</Text>
+              <Text style={styles.companyDetails}>{companyInfo.website}</Text>
+              <Text style={styles.companyDetails}>{companyInfo.email}</Text>
               <Text style={styles.companyDetails}>{companyInfo.phone}</Text>
             </View>
           </View>
@@ -309,8 +308,8 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
           <View style={styles.billCol}>
             <Text style={styles.billLabel}>From</Text>
             <Text style={styles.billName}>{companyInfo.name}</Text>
-            <Text style={styles.billText}>{companyInfo.address}</Text>
-            <Text style={styles.billText}>{companyInfo.city}</Text>
+            <Text style={styles.billText}>{companyInfo.website}</Text>
+            <Text style={styles.billText}>{companyInfo.email}</Text>
           </View>
           <View style={styles.billCol}>
             <Text style={styles.billLabel}>Bill To</Text>

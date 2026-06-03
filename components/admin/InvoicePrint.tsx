@@ -42,10 +42,9 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
 
   const companyInfo = {
     name: "Infinity Go Bali",
-    address: "Jl. Nuansa Udayana I No.5, Jimbaran, Kec. Kuta Sel.",
-    city: "Kabupaten Badung, Bali 80361",
+    website: "www.infinitygotravel.com",
+    email: "infinitygo.travel@gmail.com",
     phone: "+62 812 3456 7890",
-    email: "admin@infinitygo.id",
   };
 
   return (
@@ -101,8 +100,8 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
             <h1 className="text-[22px] font-black text-slate-900 leading-tight tracking-tight">
               {companyInfo.name}
             </h1>
-            <p className="text-[11.5px] text-slate-500 mt-0.5">{companyInfo.address}</p>
-            <p className="text-[11.5px] text-slate-500">{companyInfo.city}</p>
+            <p className="text-[11.5px] text-slate-500 mt-0.5">{companyInfo.website}</p>
+            <p className="text-[11.5px] text-slate-500">{companyInfo.email}</p>
             <p className="text-[11.5px] text-slate-500">{companyInfo.phone}</p>
           </div>
         </div>
@@ -126,8 +125,8 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
             From
           </p>
           <p className="font-bold text-slate-800">{companyInfo.name}</p>
-          <p className="text-slate-500 text-[12px] mt-0.5">{companyInfo.address}</p>
-          <p className="text-slate-500 text-[12px]">{companyInfo.city}</p>
+          <p className="text-slate-500 text-[12px] mt-0.5">{companyInfo.website}</p>
+          <p className="text-slate-500 text-[12px]">{companyInfo.email}</p>
         </div>
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
