@@ -156,7 +156,10 @@ export default function BundleClient({
     setModalOpen(false);
     
     try {
-      await saveBundle(bundle);
+      const saved = await saveBundle(bundle);
+      if (saved && !editing) {
+        setItems((prev) => prev.map((item) => (item.id === tempId ? saved : item)));
+      }
     } catch (error: any) {
       alert(error.message || "Gagal menyimpan data");
       window.location.reload();
@@ -168,7 +171,12 @@ export default function BundleClient({
     const idToDelete = deleteId;
     setItems((p) => p.filter((b) => b.id !== idToDelete));
     setDeleteId(null);
-    await deleteBundle(idToDelete);
+    try {
+      await deleteBundle(idToDelete);
+    } catch (error: any) {
+      alert(error.message || "Gagal menghapus data");
+      window.location.reload();
+    }
   };
 
   return (

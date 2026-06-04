@@ -15,7 +15,7 @@ export default async function Page() {
 
   const bundles = await prisma.bundle.findMany({
     where: { status: "Active" },
-    take: 4,
+    take: 1,
   }) as Bundle[];
 
   const packages = await prisma.tourPackage.findMany({

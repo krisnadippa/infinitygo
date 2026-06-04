@@ -485,7 +485,7 @@ export async function saveBundle(rawData: any) {
 export async function deleteBundle(id: string) {
   await requireAdmin();
   try {
-    await prisma.bundle.delete({ where: { id } });
+    await prisma.bundle.deleteMany({ where: { id } });
     revalidatePath("/admin/bundles");
     revalidatePath("/destinasi");
     revalidatePath("/");
