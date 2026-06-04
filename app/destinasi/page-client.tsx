@@ -17,9 +17,10 @@ import {
   MobileNavMenu 
 } from "@/components/ui/resizable-navbar";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import BundlingVoucherSection from "@/components/BundlingVoucherSection";
 
 const CITIES = ["Semua", "Bali", "Jakarta", "Labuan Bajo", "Yogyakarta", "Malang", "Malaysia", "China", "Vietnam", "Thailand"];
-import { formatRupiah, TourPackage, Accommodation, Vehicle, Wifi, Mice } from "@/lib/admin-data";
+import { formatRupiah, TourPackage, Accommodation, Vehicle, Wifi, Mice, Bundle } from "@/lib/admin-data";
 
 const typeBadgeColors: Record<string, string> = {
   Hotel: "bg-blue-50 text-blue-700 border-blue-200",
@@ -40,19 +41,22 @@ export default function DestinasiClient({
   initialAccommodations,
   initialVehicles,
   initialWifis,
-  initialMice
+  initialMice,
+  initialBundles
 }: {
   initialPackages: TourPackage[];
   initialAccommodations: Accommodation[];
   initialVehicles: Vehicle[];
   initialWifis: Wifi[];
   initialMice: Mice[];
+  initialBundles: Bundle[];
 }) {
   const [packages] = useState<TourPackage[]>(initialPackages);
   const [accommodations] = useState<Accommodation[]>(initialAccommodations);
   const [vehicles] = useState<Vehicle[]>(initialVehicles);
   const [wifis] = useState<Wifi[]>(initialWifis);
   const [mice] = useState<Mice[]>(initialMice);
+  const [bundles] = useState<Bundle[]>(initialBundles);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Semua");
@@ -65,6 +69,13 @@ export default function DestinasiClient({
   const handlePackageClick = (pkg: TourPackage) => {
     const waNumber = "628977857823";
     const text = `Halo tim Infinity Go,\n\nSaya tertarik untuk memesan/bertanya mengenai paket tour berikut:\n\n📌 *Paket:* ${pkg.name}\n📍 *Lokasi:* ${pkg.location}\n⏱ *Durasi:* ${pkg.duration}\n💰 *Harga:* ${formatRupiah(pkg.price)}\n\nMohon informasi ketersediaan dan detail jadwalnya. Terima kasih!`;
+    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+  };
+
+  const handleBundleClick = (bundle: Bundle) => {
+    const waNumber = "628977857823";
+    const text = `Halo tim Infinity Go,\n\nSaya tertarik dengan Promo Bundling berikut:\n\n🎟 *Paket:* ${bundle.name}\n📍 *Lokasi:* ${(bundle.locations || []).join(", ") || "Bali"}\n💰 *Harga Promo:* ${formatRupiah(bundle.discountedPrice)}\n\nMohon informasi lebih lanjut. Terima kasih!`;
     const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(waUrl, '_blank');
   };
@@ -108,9 +119,10 @@ export default function DestinasiClient({
 
   const filteredPackages = packages.filter(pkg => matchesCity(pkg.location, selectedCity));
   const filteredAccommodations = accommodations.filter(acc => matchesCity(acc.location, selectedCity));
-  const filteredVehicles = vehicles.filter(veh => (veh.locations || []).some(loc => matchesCity(loc, selectedCity)));
-  const filteredWifis = wifis.filter(wifi => (wifi.locations || []).some(loc => matchesCity(loc, selectedCity)));
+  const filteredVehicles = vehicles.filter(veh => selectedCity === "Semua" || (veh.locations || []).some(loc => matchesCity(loc, selectedCity)));
+  const filteredWifis = wifis.filter(wifi => selectedCity === "Semua" || (wifi.locations || []).some(loc => matchesCity(loc, selectedCity)));
   const filteredMice = mice.filter(m => matchesCity(m.location, selectedCity));
+  const filteredBundles = bundles.filter(b => selectedCity === "Semua" || (b.locations || []).some(loc => matchesCity(loc, selectedCity)));
 
   return (
     <div className="min-h-screen bg-slate-50 font-outfit">
@@ -247,6 +259,21 @@ export default function DestinasiClient({
               ))}
             </div>
           </div>
+
+          {/* ── BUNDLING VOUCHERS SECTION (PROMO) ── */}
+          {filteredBundles.length > 0 && (
+            <div className="mb-20">
+              <BundlingVoucherSection 
+                bundles={bundles}
+                packages={packages}
+                accommodations={accommodations}
+                vehicles={vehicles}
+                wifis={wifis}
+                mice={mice}
+                selectedCity={selectedCity}
+              />
+            </div>
+          )}
 
           {/* Packages Grid */}
           <motion.div 

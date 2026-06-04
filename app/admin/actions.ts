@@ -447,3 +447,50 @@ export async function deleteMice(id: string) {
   }
 }
 
+// --- Bundle ---
+import { BundleSchema } from "@/lib/validations/bundle";
+
+export async function saveBundle(rawData: any) {
+  await requireAdmin();
+  try {
+    const data = BundleSchema.parse(rawData);
+    const isNew = !data.id || data.id === "new";
+    
+    const dbData = {
+      name: data.name,
+      description: data.description || "",
+      imageUrl: data.imageUrl || null,
+      originalPrice: data.originalPrice,
+      discount: data.discount || 0,
+      discountedPrice: data.discountedPrice,
+      locations: data.locations || [],
+      includedItems: data.includedItems || [],
+      status: data.status,
+    };
+
+    const result = await prisma.bundle.upsert({
+      where: { id: (data.id && data.id !== "new") ? data.id : "new" },
+      update: dbData,
+      create: dbData,
+    });
+    revalidatePath("/admin/bundles");
+    revalidatePath("/destinasi");
+    revalidatePath("/");
+    return result;
+  } catch (error) {
+    return handleError(error, "Gagal menyimpan Bundle");
+  }
+}
+
+export async function deleteBundle(id: string) {
+  await requireAdmin();
+  try {
+    await prisma.bundle.delete({ where: { id } });
+    revalidatePath("/admin/bundles");
+    revalidatePath("/destinasi");
+    revalidatePath("/");
+  } catch (error) {
+    return handleError(error, "Gagal menghapus Bundle");
+  }
+}
+

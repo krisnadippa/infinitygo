@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import PageClient from "./page-client";
-import { Accommodation, Vehicle } from "@/lib/admin-data";
+import { TourPackage, Accommodation, Vehicle, Wifi, Mice, Bundle } from "@/lib/admin-data";
 
 export default async function Page() {
   const accommodations = await prisma.accommodation.findMany({
@@ -13,5 +13,32 @@ export default async function Page() {
     take: 3,
   }) as Vehicle[];
 
-  return <PageClient accommodations={accommodations} vehicles={vehicles} />;
+  const bundles = await prisma.bundle.findMany({
+    where: { status: "Active" },
+    take: 4,
+  }) as Bundle[];
+
+  const packages = await prisma.tourPackage.findMany({
+    where: { status: "Active" }
+  }) as TourPackage[];
+
+  const wifis = await prisma.wifi.findMany({
+    where: { status: "Active" }
+  }) as Wifi[];
+
+  const mice = await prisma.mice.findMany({
+    where: { status: "Active" }
+  }) as Mice[];
+
+  return (
+    <PageClient 
+      accommodations={accommodations} 
+      vehicles={vehicles} 
+      bundles={bundles}
+      packages={packages}
+      wifis={wifis}
+      mice={mice}
+    />
+  );
 }
+

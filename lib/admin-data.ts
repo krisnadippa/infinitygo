@@ -137,6 +137,19 @@ export interface Mice {
   status: "Active" | "Inactive";
 }
 
+export interface Bundle {
+  id: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+  originalPrice: number;
+  discount: number;
+  discountedPrice: number;
+  locations: string[];
+  includedItems: string[];
+  status: "Active" | "Inactive";
+}
+
 export interface Customer {
   id: string;
   name: string;
@@ -387,6 +400,10 @@ export const dummyWifis: Wifi[] = [
 
 export const dummyMice: Mice[] = [
   { id: "mice-001", name: "Paket Meeting Half Day", location: "Denpasar", capacity: 50, price: 250000, description: "Paket meeting setengah hari dengan fasilitas lengkap dan 1x coffee break.", facilities: ["Projector", "Sound System", "Whiteboard", "Coffee Break"], imageUrl: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=600", status: "Active" },
+];
+
+export const dummyBundles: Bundle[] = [
+  { id: "bnd-001", name: "Paket Tour + Wifi", description: "Jelajahi Bali dengan koneksi internet lancar.", imageUrl: "https://images.unsplash.com/photo-1512100356356-de1b84283e18?w=600", originalPrice: 600000, discount: 15, discountedPrice: 510000, locations: ["Bali"], includedItems: ["Paket Bali Selatan 2D1N", "Portable WiFi 4G"], status: "Active" },
 ];
 
 export const dummyCustomers: Customer[] = [

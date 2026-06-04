@@ -18,7 +18,8 @@ import {
   MobileNavMenu 
 } from "@/components/ui/resizable-navbar";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { formatRupiah, Accommodation, Vehicle } from "@/lib/admin-data";
+import BundlingVoucherSection from "@/components/BundlingVoucherSection";
+import { formatRupiah, TourPackage, Accommodation, Vehicle, Wifi as WifiType, Mice, Bundle } from "@/lib/admin-data";
 
 function useInView(threshold = 0.15) {
   const ref = useRef<HTMLElement>(null);
@@ -38,10 +39,20 @@ const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.15 } }
 
 export default function PageClient({ 
   accommodations, 
-  vehicles 
+  vehicles,
+  bundles,
+  packages,
+  wifis,
+  mice,
+  selectedCity
 }: { 
   accommodations: Accommodation[], 
-  vehicles: Vehicle[] 
+  vehicles: Vehicle[],
+  bundles: Bundle[],
+  packages: TourPackage[],
+  wifis: WifiType[],
+  mice: Mice[],
+  selectedCity?: string
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -85,8 +96,6 @@ export default function PageClient({
     Bus: "bg-amber-50 text-amber-700 border-amber-200",
     Motorcycle: "bg-teal-50 text-teal-700 border-teal-200",
   };
-
-  const navLinks = ["Layanan", "Destinasi", "Akomodasi", "Testimoni", "Kontak"];
 
   const { ref: svcRef, inView: svcIn } = useInView();
   const { ref: destRef, inView: destIn } = useInView();
@@ -237,6 +246,46 @@ export default function PageClient({
           </div>
         </div>
       </section>
+
+      {/* ── BUNDLING VOUCHERS SECTION (PROMO) ── */}
+      {bundles && bundles.length > 0 && (
+        <section id="promo" className="pt-8 pb-20 md:pb-28 bg-white relative overflow-hidden">
+          {/* Decorative background element */}
+          <div className="absolute top-0 right-0 w-1/3 h-[400px] bg-gradient-to-b from-teal-50/50 to-transparent -z-10 rounded-bl-[100px]" />
+          
+          <div className="max-w-7xl mx-auto px-5 md:px-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+              <div>
+                <span className="text-[#40B5AD] text-xs font-bold tracking-widest uppercase block mb-3 flex items-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#40B5AD] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#40B5AD]"></span>
+                  </span>
+                  Penawaran Terbatas
+                </span>
+                <h2 className="text-3xl md:text-4xl font-bold text-[#1a3636] leading-tight">Promo Spesial<br />Bundling Package</h2>
+              </div>
+              <div className="flex flex-col md:items-end gap-3">
+                <p className="text-slate-500 text-sm max-w-xs leading-relaxed">Nikmati perjalanan lebih hemat dengan paket bundling layanan lengkap dari kami.</p>
+                <a href="/destinasi" className="inline-flex items-center gap-2 mt-2 text-[#40B5AD] font-semibold text-sm hover:gap-3 transition-all">
+                  Lihat Semua Promo <ArrowRight size={16} />
+                </a>
+              </div>
+            </div>
+
+            <BundlingVoucherSection 
+              bundles={bundles}
+              packages={packages}
+              accommodations={accommodations}
+              vehicles={vehicles}
+              wifis={wifis}
+              mice={mice}
+              selectedCity={selectedCity}
+              hideHeader={true}
+            />
+          </div>
+        </section>
+      )}
 
       {/* ── LAYANAN ── */}
       <section id="layanan" className="py-20 md:py-28 bg-slate-50">
@@ -396,7 +445,7 @@ export default function PageClient({
                   </div>
                   
                   <div className="flex items-center gap-3 text-[12px] text-slate-500">
-                    <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{veh.location}</span></span>
+                    <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{veh.locations ? veh.locations.join(", ") : "Bali"}</span></span>
                     <span className="flex items-center gap-1 flex-shrink-0"><Users size={12} className="text-[#40B5AD]" /> {veh.capacity} org</span>
                   </div>
                   
