@@ -33,7 +33,7 @@ const locationOptions = [
 ];
 
 const defaultForm: Partial<Vehicle & { vehicleType: string }> = {
-  name: "", vehicleType: "Car", brand: "", location: "Bali", capacity: 4, pricePerDay: 0, discount: 0,
+  name: "", vehicleType: "Car", brand: "", locations: ["Bali"], capacity: 4, pricePerDay: 0, discount: 0,
   driverIncluded: false, description: "", imageUrl: "", status: "Active",
 };
 
@@ -56,7 +56,7 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
 
   const filtered = items.filter((v) => {
     const matchSearch = v.name.toLowerCase().includes(search.toLowerCase()) || v.brand.toLowerCase().includes(search.toLowerCase());
-    const matchLocation = filterLocation === "All" || v.location === filterLocation;
+    const matchLocation = filterLocation === "All" || (v.locations || []).includes(filterLocation);
     return matchSearch && matchLocation;
   });
 
@@ -70,7 +70,7 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
       type: (form as any).vehicleType || (form as any).type || "Car",
       vehicleType: (form as any).vehicleType || (form as any).type || "Car",
       brand: form.brand || "",
-      location: form.location || "Bali",
+      locations: form.locations || ["Bali"],
       capacity: form.capacity || 4,
       pricePerDay: form.pricePerDay || 0,
       discount: form.discount || 0,
@@ -149,7 +149,7 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
               </div>
               
               <div className="flex items-center gap-3 text-[12px] text-slate-500">
-                <span className="flex items-center gap-1"><MapPin size={12} /> {veh.location}</span>
+                <span className="flex items-center gap-1"><MapPin size={12} /> {(veh.locations || []).join(", ") || "Bali"}</span>
                 <span className="flex items-center gap-1"><Users size={12} /> {veh.capacity} org</span>
               </div>
               
@@ -206,9 +206,33 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
           <div className="sm:col-span-2"><Input label="Nama Kendaraan" placeholder="Contoh: Toyota Innova Reborn" value={form.name || ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} id="veh-name" /></div>
           <Select label="Tipe Kendaraan" id="veh-type" options={typeOptions} value={(form as any).vehicleType || (form as any).type || "Car"} onChange={(e) => setForm((p) => ({ ...p, vehicleType: e.target.value }))} />
           <Input label="Brand" placeholder="Toyota, Honda, dll" value={form.brand || ""} onChange={(e) => setForm((p) => ({ ...p, brand: e.target.value }))} id="veh-brand" />
-          <Select label="Lokasi" id="veh-location" options={locationOptions} value={form.location || "Bali"} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
           <Input label="Kapasitas Penumpang" type="number" value={form.capacity || ""} onChange={(e) => setForm((p) => ({ ...p, capacity: Number(e.target.value) }))} id="veh-capacity" />
           <CurrencyInput label="Harga per Hari (Rp)" value={form.pricePerDay || 0} onChange={(val) => setForm((p) => ({ ...p, pricePerDay: val }))} id="veh-price" />
+          <div className="sm:col-span-2">
+            <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Lokasi (Bisa pilih lebih dari satu)</label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg max-h-40 overflow-y-auto">
+              {locationOptions.map(opt => {
+                const checked = (form.locations || []).includes(opt.value);
+                return (
+                  <label key={opt.value} className="flex items-center gap-2 text-[13px] text-slate-700 cursor-pointer hover:text-slate-900">
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(e) => {
+                        const current = form.locations || [];
+                        const updated = e.target.checked
+                          ? [...current, opt.value]
+                          : current.filter(val => val !== opt.value);
+                        setForm(prev => ({ ...prev, locations: updated }));
+                      }}
+                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500/20"
+                    />
+                    {opt.label}
+                  </label>
+                );
+              })}
+            </div>
+          </div>
           <div className="flex flex-col gap-1">
             <Input label="Diskon (%) opsional" type="number" min="0" max="100" value={form.discount || ""} onChange={(e) => setForm((p) => ({ ...p, discount: Number(e.target.value) }))} id="veh-discount" />
             {!!form.discount && !!form.pricePerDay && (

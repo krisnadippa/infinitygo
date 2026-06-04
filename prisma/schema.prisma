@@ -97,7 +97,7 @@ model Vehicle {
   name           String
   type           String
   brand          String
-  location       String
+  locations      String[]
   capacity       Int
   pricePerDay    Float
   discount       Float    @default(0)
@@ -141,4 +141,34 @@ model User {
   role      String   @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Wifi {
+  id          String   @id @default(cuid())
+  name        String
+  type        String
+  locations   String[]
+  price       Float
+  discount    Float    @default(0)
+  description String
+  features    String[]
+  imageUrl    String?
+  status      String   @default("Active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Mice {
+  id          String   @id @default(cuid())
+  name        String
+  location    String
+  capacity    Int
+  price       Float
+  discount    Float    @default(0)
+  description String
+  facilities  String[]
+  imageUrl    String?
+  status      String   @default("Active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

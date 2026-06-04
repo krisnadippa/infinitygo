@@ -20,6 +20,7 @@ import {
   Building2,
   Camera,
   LogOut,
+  Wifi,
 } from "lucide-react";
 
 interface SidebarProps {
@@ -53,6 +54,8 @@ const navItems: NavItem[] = [
   { label: "Paket Tour", href: "/admin/packages", icon: <MapPin size={18} /> },
   { label: "Akomodasi", href: "/admin/accommodations", icon: <Building2 size={18} /> },
   { label: "Kendaraan", href: "/admin/vehicles", icon: <Car size={18} /> },
+  { label: "Wifi", href: "/admin/wifi", icon: <Wifi size={18} /> },
+  { label: "MICE", href: "/admin/mice", icon: <Users size={18} /> },
   { label: "Galeri", href: "/admin/gallery", icon: <Camera size={18} /> },
   { label: "Report", href: "/admin/reports", icon: <BarChart2 size={18} /> },
   { label: "Settings", href: "/admin/settings", icon: <Settings size={18} /> },

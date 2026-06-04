@@ -5,7 +5,7 @@ export const VehicleSchema = z.object({
   name: z.string().min(1, "Nama kendaraan wajib diisi"),
   vehicleType: z.string().min(1, "Tipe kendaraan wajib diisi"),
   brand: z.string().optional(),
-  location: z.string().optional(),
+  locations: z.array(z.string()).min(1, "Pilih minimal satu lokasi").optional(),
   capacity: z.number().int().positive("Kapasitas harus positif").optional(),
   pricePerDay: z.number().nonnegative("Harga tidak boleh negatif"),
   discount: z.number().nonnegative("Diskon tidak boleh negatif").optional(),

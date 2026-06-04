@@ -93,7 +93,7 @@ export interface Vehicle {
   name: string;
   type: "Car" | "Mini Bus" | "Bus" | "Motorcycle";
   brand: string;
-  location: string;
+  locations: string[];
   capacity: number;
   pricePerDay: number;
   driverIncluded: boolean;
@@ -107,6 +107,32 @@ export interface GalleryItem {
   id: string;
   title: string;
   location: string;
+  imageUrl?: string;
+  status: "Active" | "Inactive";
+}
+
+export interface Wifi {
+  id: string;
+  name: string;
+  type: string;
+  locations: string[];
+  price: number;
+  discount?: number;
+  description: string;
+  features: string[];
+  imageUrl?: string;
+  status: "Active" | "Inactive";
+}
+
+export interface Mice {
+  id: string;
+  name: string;
+  location: string;
+  capacity: number;
+  price: number;
+  discount?: number;
+  description: string;
+  facilities: string[];
   imageUrl?: string;
   status: "Active" | "Inactive";
 }
@@ -336,11 +362,11 @@ export const dummyAccommodations: Accommodation[] = [
 ];
 
 export const dummyVehicles: Vehicle[] = [
-  { id: "veh-001", name: "Toyota Innova Reborn", type: "Car", brand: "Toyota", location: "Bali", capacity: 7, pricePerDay: 450000, driverIncluded: false, description: "Mobil keluarga nyaman untuk 7 penumpang, kondisi sangat baik dan terawat.", imageUrl: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600", status: "Active" },
-  { id: "veh-002", name: "Toyota Hiace Commuter", type: "Mini Bus", brand: "Toyota", location: "Bali", capacity: 14, pricePerDay: 800000, driverIncluded: true, description: "Minibus kapasitas 14 penumpang dengan driver berpengalaman, cocok untuk group tour.", imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600", status: "Active" },
-  { id: "veh-003", name: "Isuzu Elf Medium", type: "Mini Bus", brand: "Isuzu", location: "Yogyakarta", capacity: 16, pricePerDay: 950000, driverIncluded: true, description: "Minibus medium untuk group 16 penumpang, dilengkapi AC dan audio system.", imageUrl: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=600", status: "Active" },
-  { id: "veh-004", name: "Bus Pariwisata 40 Seat", type: "Bus", brand: "Mercedes-Benz", location: "Jakarta", capacity: 40, pricePerDay: 1500000, driverIncluded: true, description: "Bus pariwisata besar kapasitas 40 penumpang untuk corporate event dan tour besar.", imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600", status: "Active" },
-  { id: "veh-005", name: "Honda PCX 160", type: "Motorcycle", brand: "Honda", location: "Bali", capacity: 2, pricePerDay: 80000, driverIncluded: false, description: "Skuter modern untuk menjelajahi Bali secara mandiri, nyaman dan irit.", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600", status: "Active" },
+  { id: "veh-001", name: "Toyota Innova Reborn", type: "Car", brand: "Toyota", locations: ["Bali"], capacity: 7, pricePerDay: 450000, driverIncluded: false, description: "Mobil keluarga nyaman untuk 7 penumpang, kondisi sangat baik dan terawat.", imageUrl: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600", status: "Active" },
+  { id: "veh-002", name: "Toyota Hiace Commuter", type: "Mini Bus", brand: "Toyota", locations: ["Bali"], capacity: 14, pricePerDay: 800000, driverIncluded: true, description: "Minibus kapasitas 14 penumpang dengan driver berpengalaman, cocok untuk group tour.", imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600", status: "Active" },
+  { id: "veh-003", name: "Isuzu Elf Medium", type: "Mini Bus", brand: "Isuzu", locations: ["Yogyakarta"], capacity: 16, pricePerDay: 950000, driverIncluded: true, description: "Minibus medium untuk group 16 penumpang, dilengkapi AC dan audio system.", imageUrl: "https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=600", status: "Active" },
+  { id: "veh-004", name: "Bus Pariwisata 40 Seat", type: "Bus", brand: "Mercedes-Benz", locations: ["Jakarta"], capacity: 40, pricePerDay: 1500000, driverIncluded: true, description: "Bus pariwisata besar kapasitas 40 penumpang untuk corporate event dan tour besar.", imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600", status: "Active" },
+  { id: "veh-005", name: "Honda PCX 160", type: "Motorcycle", brand: "Honda", locations: ["Bali"], capacity: 2, pricePerDay: 80000, driverIncluded: false, description: "Skuter modern untuk menjelajahi Bali secara mandiri, nyaman dan irit.", imageUrl: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600", status: "Active" },
 ];
 
 export const dummyGallery: GalleryItem[] = [
@@ -353,6 +379,14 @@ export const dummyGallery: GalleryItem[] = [
   { id: "gal-007", title: "Pelayanan Terbaik Kami", location: "Bali", imageUrl: "/images/layanan.jpg", status: "Active" },
   { id: "gal-008", title: "Budaya Yogyakarta", location: "Yogyakarta", imageUrl: "/images/yogyakarta.jpg", status: "Active" },
   { id: "gal-009", title: "Momen Tak Terlupakan", location: "Bali", imageUrl: "/images/galery.jpg", status: "Active" },
+];
+
+export const dummyWifis: Wifi[] = [
+  { id: "wifi-001", name: "Portable WiFi 4G", type: "Portable", locations: ["Bali"], price: 50000, description: "Koneksi internet cepat di mana saja selama di Bali.", features: ["Unlimited Kuota", "Baterai 12 Jam", "Share up to 5 devices"], imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600", status: "Active" },
+];
+
+export const dummyMice: Mice[] = [
+  { id: "mice-001", name: "Paket Meeting Half Day", location: "Denpasar", capacity: 50, price: 250000, description: "Paket meeting setengah hari dengan fasilitas lengkap dan 1x coffee break.", facilities: ["Projector", "Sound System", "Whiteboard", "Coffee Break"], imageUrl: "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=600", status: "Active" },
 ];
 
 export const dummyCustomers: Customer[] = [

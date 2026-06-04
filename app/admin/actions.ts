@@ -9,6 +9,8 @@ import { InvoiceSchema } from "@/lib/validations/invoice";
 import { ExpenseSchema } from "@/lib/validations/expense";
 import { AccommodationSchema } from "@/lib/validations/accommodation";
 import { VehicleSchema } from "@/lib/validations/vehicle";
+import { WifiSchema } from "@/lib/validations/wifi";
+import { MiceSchema } from "@/lib/validations/mice";
 
 // --- Helpers ---
 async function handleError(error: any, defaultMessage: string) {
@@ -124,7 +126,7 @@ export async function saveVehicle(rawData: any) {
       name: data.name,
       type: data.vehicleType,
       brand: data.brand || "",
-      location: data.location || "",
+      locations: data.locations || [],
       capacity: data.capacity || 4,
       pricePerDay: data.pricePerDay,
       discount: data.discount || 0,
@@ -354,3 +356,94 @@ export async function deleteExpense(id: string, invoiceId: string) {
     return handleError(error, "Gagal menghapus pengeluaran");
   }
 }
+
+// --- Wifi ---
+export async function saveWifi(rawData: any) {
+  await requireAdmin();
+  try {
+    const data = WifiSchema.parse(rawData);
+    const isNew = !data.id || data.id === "new";
+    
+    const dbData = {
+      name: data.name,
+      type: data.type,
+      locations: data.locations || [],
+      price: data.price,
+      discount: data.discount || 0,
+      description: data.description || "",
+      features: data.features || [],
+      imageUrl: data.imageUrl || null,
+      status: data.status,
+    };
+
+    const result = await prisma.wifi.upsert({
+      where: { id: (data.id && data.id !== "new") ? data.id : "new" },
+      update: dbData,
+      create: dbData,
+    });
+    revalidatePath("/admin/wifi");
+    revalidatePath("/destinasi");
+    revalidatePath("/");
+    return result;
+  } catch (error) {
+    return handleError(error, "Gagal menyimpan Wifi");
+  }
+}
+
+export async function deleteWifi(id: string) {
+  await requireAdmin();
+  try {
+    await prisma.wifi.delete({ where: { id } });
+    revalidatePath("/admin/wifi");
+    revalidatePath("/destinasi");
+    revalidatePath("/");
+  } catch (error) {
+    return handleError(error, "Gagal menghapus Wifi");
+  }
+}
+
+// --- MICE ---
+export async function saveMice(rawData: any) {
+  await requireAdmin();
+  try {
+    const data = MiceSchema.parse(rawData);
+    const isNew = !data.id || data.id === "new";
+    
+    const dbData = {
+      name: data.name,
+      location: data.location || "",
+      capacity: data.capacity,
+      price: data.price,
+      discount: data.discount || 0,
+      description: data.description || "",
+      facilities: data.facilities || [],
+      imageUrl: data.imageUrl || null,
+      status: data.status,
+    };
+
+    const result = await prisma.mice.upsert({
+      where: { id: (data.id && data.id !== "new") ? data.id : "new" },
+      update: dbData,
+      create: dbData,
+    });
+    revalidatePath("/admin/mice");
+    revalidatePath("/destinasi");
+    revalidatePath("/");
+    return result;
+  } catch (error) {
+    return handleError(error, "Gagal menyimpan MICE");
+  }
+}
+
+export async function deleteMice(id: string) {
+  await requireAdmin();
+  try {
+    await prisma.mice.delete({ where: { id } });
+    revalidatePath("/admin/mice");
+    revalidatePath("/destinasi");
+    revalidatePath("/");
+  } catch (error) {
+    return handleError(error, "Gagal menghapus MICE");
+  }
+}
+

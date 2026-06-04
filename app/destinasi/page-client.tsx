@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
-import { MapPin, Clock, Star, Check, ArrowRight, Menu, X, Home, Car, Users, X as XIcon } from "lucide-react";
+import { MapPin, Clock, Star, Check, ArrowRight, Menu, X, Home, Car, Users, X as XIcon, Wifi as WifiIcon } from "lucide-react";
 import { IconBrandX, IconBrandFacebook, IconBrandLinkedin, IconBrandInstagram } from "@tabler/icons-react";
 import { 
   Navbar, 
@@ -19,7 +19,7 @@ import {
 import { LanguageSwitcher } from "@/components/language-switcher";
 
 const CITIES = ["Semua", "Bali", "Jakarta", "Labuan Bajo", "Yogyakarta", "Malang", "Malaysia", "China", "Vietnam", "Thailand"];
-import { formatRupiah, TourPackage, Accommodation, Vehicle } from "@/lib/admin-data";
+import { formatRupiah, TourPackage, Accommodation, Vehicle, Wifi, Mice } from "@/lib/admin-data";
 
 const typeBadgeColors: Record<string, string> = {
   Hotel: "bg-blue-50 text-blue-700 border-blue-200",
@@ -38,15 +38,21 @@ const vehicleTypeColors: Record<string, string> = {
 export default function DestinasiClient({
   initialPackages,
   initialAccommodations,
-  initialVehicles
+  initialVehicles,
+  initialWifis,
+  initialMice
 }: {
   initialPackages: TourPackage[];
   initialAccommodations: Accommodation[];
   initialVehicles: Vehicle[];
+  initialWifis: Wifi[];
+  initialMice: Mice[];
 }) {
   const [packages] = useState<TourPackage[]>(initialPackages);
   const [accommodations] = useState<Accommodation[]>(initialAccommodations);
   const [vehicles] = useState<Vehicle[]>(initialVehicles);
+  const [wifis] = useState<Wifi[]>(initialWifis);
+  const [mice] = useState<Mice[]>(initialMice);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Semua");
@@ -72,7 +78,21 @@ export default function DestinasiClient({
 
   const handleVehicleClick = (veh: Vehicle) => {
     const waNumber = "628977857823";
-    const text = `Halo tim Infinity Go,\n\nSaya ingin menyewa kendaraan berikut:\n\n🚗 *Nama:* ${veh.name}\n📍 *Lokasi:* ${veh.location}\n👥 *Kapasitas:* ${veh.capacity}\n💰 *Harga:* ${formatRupiah(veh.pricePerDay)} / Hari\n\nMohon informasi ketersediaannya. Terima kasih!`;
+    const text = `Halo tim Infinity Go,\n\nSaya ingin menyewa kendaraan berikut:\n\n🚗 *Nama:* ${veh.name}\n📍 *Lokasi:* ${(veh.locations || []).join(", ")}\n👥 *Kapasitas:* ${veh.capacity}\n💰 *Harga:* ${formatRupiah(veh.pricePerDay)} / Hari\n\nMohon informasi ketersediaannya. Terima kasih!`;
+    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+  };
+
+  const handleWifiClick = (wifi: Wifi) => {
+    const waNumber = "628977857823";
+    const text = `Halo tim Infinity Go,\n\nSaya ingin menyewa layanan Wifi berikut:\n\n📶 *Nama:* ${wifi.name}\n🏷 *Tipe:* ${wifi.type}\n📍 *Lokasi:* ${(wifi.locations || []).join(", ")}\n💰 *Harga:* ${formatRupiah(wifi.price)}\n\nMohon informasi ketersediaannya. Terima kasih!`;
+    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+    window.open(waUrl, '_blank');
+  };
+
+  const handleMiceClick = (miceItem: Mice) => {
+    const waNumber = "628977857823";
+    const text = `Halo tim Infinity Go,\n\nSaya ingin memesan layanan MICE berikut:\n\n👥 *Nama:* ${miceItem.name}\n📍 *Lokasi:* ${miceItem.location}\n📈 *Kapasitas:* ${miceItem.capacity} Pax\n💰 *Harga:* ${formatRupiah(miceItem.price)}\n\nMohon informasi ketersediaannya. Terima kasih!`;
     const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
     window.open(waUrl, '_blank');
   };
@@ -88,7 +108,9 @@ export default function DestinasiClient({
 
   const filteredPackages = packages.filter(pkg => matchesCity(pkg.location, selectedCity));
   const filteredAccommodations = accommodations.filter(acc => matchesCity(acc.location, selectedCity));
-  const filteredVehicles = vehicles.filter(veh => matchesCity(veh.location, selectedCity));
+  const filteredVehicles = vehicles.filter(veh => (veh.locations || []).some(loc => matchesCity(loc, selectedCity)));
+  const filteredWifis = wifis.filter(wifi => (wifi.locations || []).some(loc => matchesCity(loc, selectedCity)));
+  const filteredMice = mice.filter(m => matchesCity(m.location, selectedCity));
 
   return (
     <div className="min-h-screen bg-slate-50 font-outfit">
@@ -385,7 +407,7 @@ export default function DestinasiClient({
                         </div>
                         
                         <div className="flex items-center gap-3 text-[12px] text-slate-500">
-                          <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{veh.location}</span></span>
+                          <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{(veh.locations || []).join(", ")}</span></span>
                           <span className="flex items-center gap-1 flex-shrink-0"><Users size={12} className="text-[#40B5AD]" /> {veh.capacity} org</span>
                         </div>
                         
@@ -422,6 +444,130 @@ export default function DestinasiClient({
                               )}
                             </p>
                             <p className="text-[10.5px] text-slate-400">per hari</p>
+                          </div>
+                          <button className="w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                            <ArrowRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+
+          {/* ── WIFI SECTION ── */}
+          {filteredWifis.length > 0 && (
+            <div className="mt-20">
+              <div className="mb-10">
+                <h2 className="text-3xl font-bold text-slate-900 mb-2">Layanan Wifi</h2>
+                <p className="text-slate-500 text-sm">Tetap terhubung di mana saja selama liburan Anda.</p>
+              </div>
+              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <AnimatePresence>
+                  {filteredWifis.map((wifi) => (
+                    <motion.div
+                      layout="position" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }}
+                      key={wifi.id} onClick={() => handleWifiClick(wifi)}
+                      className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col hover:-translate-y-1"
+                    >
+                      <div className="relative h-44 w-full flex-shrink-0">
+                        <Image src={wifi.imageUrl || "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600"} alt={wifi.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                      </div>
+                      <div className="p-4 space-y-2.5 flex flex-col flex-1">
+                        <h3 className="text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors">{wifi.name}</h3>
+                        
+                        <div className="flex items-center gap-3 text-[12px] text-slate-500">
+                          <span className="flex items-center gap-1"><WifiIcon size={12} className="text-[#40B5AD]" /> {wifi.type}</span>
+                          <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{(wifi.locations || []).join(", ") || "Bali"}</span></span>
+                        </div>
+                        
+                        <p className="text-[12.5px] text-slate-500 line-clamp-2">{wifi.description}</p>
+                        
+                        <div className="flex flex-wrap gap-1.5 pt-1 flex-1 content-start">
+                          {wifi.features.slice(0, 3).map((f) => (
+                            <span key={f} className="text-[10.5px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{f}</span>
+                          ))}
+                        </div>
+                        
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+                          <div>
+                            {(wifi.discount || 0) > 0 && (
+                              <span className="text-[12px] text-slate-400 line-through">
+                                {formatRupiah(wifi.price)}
+                              </span>
+                            )}
+                            <p className="text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1.5" translate="no">
+                              {formatRupiah(wifi.price - (wifi.price * (wifi.discount || 0) / 100))}
+                              {(wifi.discount || 0) > 0 && (
+                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
+                                  Hemat {wifi.discount}%
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                          <button className="w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                            <ArrowRight size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+
+          {/* ── MICE SECTION ── */}
+          {filteredMice.length > 0 && (
+            <div className="mt-20">
+              <div className="mb-10">
+                <h2 className="text-3xl font-bold text-slate-900 mb-2">Layanan MICE</h2>
+                <p className="text-slate-500 text-sm">Penyelenggaraan acara, konferensi, dan meeting di {selectedCity === "Semua" ? "berbagai destinasi" : selectedCity}.</p>
+              </div>
+              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                <AnimatePresence>
+                  {filteredMice.map((m) => (
+                    <motion.div
+                      layout="position" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }}
+                      key={m.id} onClick={() => handleMiceClick(m)}
+                      className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col hover:-translate-y-1"
+                    >
+                      <div className="relative h-44 w-full flex-shrink-0">
+                        <Image src={m.imageUrl || "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=600"} alt={m.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                      </div>
+                      <div className="p-4 space-y-2.5 flex flex-col flex-1">
+                        <h3 className="text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors">{m.name}</h3>
+                        
+                        <div className="flex items-center gap-3 text-[12px] text-slate-500">
+                          <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{m.location}</span></span>
+                          <span className="flex items-center gap-1 flex-shrink-0"><Users size={12} className="text-[#40B5AD]" /> {m.capacity} Pax</span>
+                        </div>
+                        
+                        <p className="text-[12.5px] text-slate-500 line-clamp-2">{m.description}</p>
+                        
+                        <div className="flex flex-wrap gap-1.5 pt-1 flex-1 content-start">
+                          {m.facilities.slice(0, 3).map((f) => (
+                            <span key={f} className="text-[10.5px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{f}</span>
+                          ))}
+                        </div>
+                        
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+                          <div>
+                            {(m.discount || 0) > 0 && (
+                              <span className="text-[12px] text-slate-400 line-through">
+                                {formatRupiah(m.price)}
+                              </span>
+                            )}
+                            <p className="text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1.5" translate="no">
+                              {formatRupiah(m.price - (m.price * (m.discount || 0) / 100))}
+                              {(m.discount || 0) > 0 && (
+                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
+                                  Hemat {m.discount}%
+                                </span>
+                              )}
+                            </p>
                           </div>
                           <button className="w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
                             <ArrowRight size={14} />
