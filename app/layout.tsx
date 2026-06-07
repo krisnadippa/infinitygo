@@ -12,13 +12,13 @@ export const metadata: Metadata = {
   description:
     "Infinity Go Travel menyediakan layanan tour dan travel di Bali, paket wisata, transportasi, guide, dokumentasi perjalanan, dan layanan perjalanan terpercaya untuk wisatawan lokal maupun internasional.",
   alternates: {
-    canonical: "https://infinitygotravel.com",
+    canonical: "https://www.infinitygotravel.com",
   },
   openGraph: {
     title: "Infinity Go Travel - Bali Indonesia Tour & Travel",
     description:
       "Infinity Go Travel menyediakan layanan tour dan travel di Bali, paket wisata, transportasi, guide, dokumentasi perjalanan, dan layanan perjalanan terpercaya untuk wisatawan lokal maupun internasional.",
-    url: "https://infinitygotravel.com",
+    url: "https://www.infinitygotravel.com",
     siteName: "Infinity Go Travel",
     type: "website",
   },
