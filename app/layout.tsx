@@ -8,6 +8,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.infinitygotravel.com"),
   title: "Infinity Go Travel - Bali Indonesia Tour & Travel",
   description:
     "Infinity Go Travel menyediakan layanan tour dan travel di Bali, paket wisata, transportasi, guide, dokumentasi perjalanan, dan layanan perjalanan terpercaya untuk wisatawan lokal maupun internasional.",
@@ -20,6 +21,14 @@ export const metadata: Metadata = {
       "Infinity Go Travel menyediakan layanan tour dan travel di Bali, paket wisata, transportasi, guide, dokumentasi perjalanan, dan layanan perjalanan terpercaya untuk wisatawan lokal maupun internasional.",
     url: "https://www.infinitygotravel.com",
     siteName: "Infinity Go Travel",
+    images: [
+      {
+        url: "/images/logo.png",
+        width: 500,
+        height: 500,
+        alt: "Infinity Go Travel",
+      },
+    ],
     type: "website",
   },
   twitter: {
@@ -27,12 +36,14 @@ export const metadata: Metadata = {
     title: "Infinity Go Travel - Bali Indonesia Tour & Travel",
     description:
       "Infinity Go Travel menyediakan layanan tour dan travel di Bali, paket wisata, transportasi, guide, dokumentasi perjalanan, dan layanan perjalanan terpercaya untuk wisatawan lokal maupun internasional.",
+    images: ["/images/logo.png"],
   },
   icons: {
-    icon: "/images/logo.png",
-    shortcut: "/images/logo.png",
-    apple: "/images/logo.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
+  manifest: "/site.webmanifest",
 };
 
 import SmoothScroll from "@/components/smooth-scroll";
@@ -47,9 +58,6 @@ export default function RootLayout({
       lang="id"
       className={`${outfit.variable} antialiased`}
     >
-      <head>
-        <link rel="icon" href="/images/logo.png" type="image/png" sizes="any" />
-      </head>
       <body className="font-outfit bg-white text-slate-800">
         <SmoothScroll>{children}</SmoothScroll>
       </body>
