@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import PageClient from "./page-client";
 import { TourPackage, Accommodation, Vehicle, Wifi, Mice, Bundle } from "@/lib/admin-data";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const accommodations = await prisma.accommodation.findMany({
     where: { status: "Active" },
