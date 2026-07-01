@@ -872,7 +872,7 @@ export default function DestinasiClient({
                   exit={{ y: "100%" }}
                   transition={{ type: "spring", damping: 30, stiffness: 280 }}
                   data-lenis-prevent
-                  className="fixed bottom-0 left-0 right-0 z-[101] w-full h-[85vh] rounded-t-[2.5rem] bg-white flex flex-col md:flex-row shadow-[0_-15px_50px_rgba(0,0,0,0.15)] overflow-hidden border-t border-slate-100"
+                  className="fixed bottom-0 left-0 right-0 z-[101] w-full h-[92vh] md:h-[85vh] rounded-t-[2.5rem] bg-white flex flex-col md:flex-row shadow-[0_-15px_50px_rgba(0,0,0,0.15)] overflow-hidden border-t border-slate-100"
                 >
                   {/* Close Button Mobile */}
                   <button 
@@ -883,7 +883,7 @@ export default function DestinasiClient({
                   </button>
 
                   {/* Left Side: Photo Gallery & Slider */}
-                  <div className="w-full md:w-1/2 h-[35vh] md:h-full flex flex-col bg-slate-50 flex-shrink-0 relative border-b md:border-b-0 md:border-r border-slate-100/75">
+                  <div className="w-full md:w-1/2 h-[22vh] md:h-full flex flex-col bg-slate-50 flex-shrink-0 relative border-b md:border-b-0 md:border-r border-slate-100/75">
                     
                     {/* Drag indicator for bottom sheet */}
                     <div className="w-12 h-1 bg-slate-300/60 rounded-full absolute top-2.5 left-1/2 -translate-x-1/2 z-40" />
@@ -930,12 +930,12 @@ export default function DestinasiClient({
 
                     {/* Thumbnail List Row */}
                     {images.length > 1 && (
-                      <div className="flex gap-2.5 p-3 overflow-x-auto justify-center bg-white border-t border-slate-100 flex-shrink-0 scrollbar-none">
+                      <div className="flex gap-2 p-1.5 overflow-x-auto justify-center bg-white border-t border-slate-100 flex-shrink-0 scrollbar-none">
                         {images.map((imgUrl, idx) => (
                           <button
                             key={idx}
                             onClick={() => setActiveImageIndex(idx)}
-                            className={`relative w-12 h-12 md:w-16 md:h-16 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${
+                            className={`relative w-8 h-8 md:w-16 md:h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-all ${
                               activeImageIndex === idx
                                 ? "border-[#40B5AD] scale-105 shadow-md"
                                 : "border-transparent opacity-65 hover:opacity-100"
