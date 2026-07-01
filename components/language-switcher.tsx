@@ -39,24 +39,34 @@ export function LanguageSwitcher() {
     setIsOpen(false);
     
     const domain = window.location.hostname;
+    const hostParts = domain.split('.');
     
-    // 1. Bersihkan semua kemungkinan cookie googtrans lama agar tidak bentrok (stuck)
-    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-    document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${domain}`;
-    if (domain !== 'localhost') {
-      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${domain}`;
+    // List all potential domains/subdomains to clear any stuck cookies
+    const domainsToClear = [
+      "", // host-only (no domain parameter)
+      domain,
+      `.${domain}`
+    ];
+    
+    if (hostParts.length > 2) {
+      const mainDomain = hostParts.slice(-2).join('.');
+      domainsToClear.push(mainDomain);
+      domainsToClear.push(`.${mainDomain}`);
     }
-
-    // 2. Jika bukan bahasa default (id), set cookie bahasa tujuan yang baru
-    if (lang !== "id") {
-      document.cookie = `googtrans=/id/${lang}; path=/;`;
-      document.cookie = `googtrans=/id/${lang}; path=/; domain=${domain}`;
-      if (domain !== 'localhost') {
-        document.cookie = `googtrans=/id/${lang}; path=/; domain=.${domain}`;
+    
+    // 1. Clear all possible googtrans cookies
+    const paths = ["/", window.location.pathname];
+    for (const d of domainsToClear) {
+      for (const p of paths) {
+        const domainAttr = d ? `; domain=${d}` : "";
+        document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=${p}${domainAttr}`;
       }
     }
+
+    // 2. Set the new cookie cleanly as host-only on the root path
+    document.cookie = `googtrans=/id/${lang}; path=/;`;
     
-    // Reload agar terjemahan aktif dengan mulus
+    // Reload to apply the translation smoothly
     window.location.reload();
   };
 

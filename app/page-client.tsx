@@ -68,11 +68,11 @@ export default function PageClient({
   };
 
   const services = [
-    { Icon: Globe,  label: "Tur & Paket",       desc: "Nikmati perjalanan tanpa beban bersama guide profesional kami di seluruh destinasi Bali." },
-    { Icon: Car,    label: "Sewa Kendaraan",     desc: "Armada mobil & motor terawat siap mengantar Anda menjelajahi setiap sudut Bali." },
-    { Icon: Home,   label: "Hotel & Villa",      desc: "Pilihan akomodasi terbaik mulai dari villa private hingga resort bintang lima." },
-    { Icon: Wifi,   label: "Wifi Portable",      desc: "Tetap terhubung di seluruh penjuru Bali dengan internet super cepat." },
-    { Icon: Users,  label: "MICE",                desc: "Solusi Meetings, Incentives, Conferences & Exhibitions profesional di Bali." },
+    { Icon: Globe,  label: "Tur & Paket",       desc: "Nikmati perjalanan tanpa beban bersama guide profesional kami di seluruh destinasi Bali.", link: "/layanan#agen-tour" },
+    { Icon: Car,    label: "Sewa Kendaraan",     desc: "Armada mobil & motor terawat siap mengantar Anda menjelajahi setiap sudut Bali.", link: "/layanan#transportasi" },
+    { Icon: Home,   label: "Hotel & Villa",      desc: "Pilihan akomodasi terbaik mulai dari villa private hingga resort bintang lima.", link: "/layanan#reservasi" },
+    { Icon: Wifi,   label: "Wifi Portable",      desc: "Tetap terhubung di seluruh penjuru Bali dengan internet super cepat.", link: "/layanan#wifi" },
+    { Icon: Users,  label: "MICE",                desc: "Solusi Meetings, Incentives, Conferences & Exhibitions profesional di Bali.", link: "/layanan#mice" },
   ];
 
   const destinations = [
@@ -305,8 +305,8 @@ export default function PageClient({
 
           <motion.div ref={svcRef as React.RefObject<HTMLDivElement>} variants={stagger} initial="hidden" animate={svcIn ? "visible" : "hidden"}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-            {services.map(({ Icon, label, desc }) => (
-              <a key={label} href="/layanan">
+            {services.map(({ Icon, label, desc, link }) => (
+              <a key={label} href={link}>
                 <motion.div variants={fadeUp}
                   className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 group cursor-pointer h-full">
                   <div className="w-12 h-12 rounded-xl bg-[#40B5AD]/10 flex items-center justify-center mb-5 group-hover:bg-[#40B5AD] transition-colors">
@@ -385,7 +385,7 @@ export default function PageClient({
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col sm:flex-row hover:-translate-y-1"
               >
                 <div className="relative h-48 sm:h-auto sm:w-36 flex-shrink-0">
-                  <Image src={acc.imageUrl || "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"} alt={acc.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 144px" />
+                  <Image src={(acc.imageUrl ? acc.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"} alt={acc.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 144px" />
                 </div>
                 <div className="p-4 flex-1 flex flex-col space-y-2">
                   <h3 className="text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors">{acc.name}</h3>
@@ -434,7 +434,7 @@ export default function PageClient({
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col hover:-translate-y-1"
               >
                 <div className="relative h-44 w-full flex-shrink-0">
-                  <Image src={veh.imageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600"} alt={veh.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                  <Image src={(veh.imageUrl ? veh.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600"} alt={veh.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                 </div>
                 <div className="p-4 space-y-2.5 flex flex-col flex-1">
                   <div className="flex items-start justify-between gap-2">

@@ -15,6 +15,7 @@ interface BundlingVoucherSectionProps {
   mice: any[];
   selectedCity?: string;
   hideHeader?: boolean;
+  onBundleClick?: (bundle: Bundle) => void;
 }
 
 export default function BundlingVoucherSection({
@@ -26,6 +27,7 @@ export default function BundlingVoucherSection({
   mice = [],
   selectedCity = "Semua",
   hideHeader = false,
+  onBundleClick,
 }: BundlingVoucherSectionProps) {
   const matchesCity = (location: string, city: string) => {
     if (city === "Semua") return true;
@@ -57,6 +59,10 @@ export default function BundlingVoucherSection({
   if (filteredBundles.length === 0) return null;
 
   const handleBundleClick = (bundle: Bundle) => {
+    if (onBundleClick) {
+      onBundleClick(bundle);
+      return;
+    }
     const waNumber = "628977857823";
     const text = `Halo tim Infinity Go,\n\nSaya tertarik dengan Promo Bundling berikut:\n\n🎟 *Paket:* ${
       bundle.name
@@ -116,7 +122,7 @@ export default function BundlingVoucherSection({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:flex xl:flex-row xl:flex-wrap items-stretch gap-6 xl:gap-8">
+                <div className="grid grid-cols-2 sm:grid-cols-2 xl:flex xl:flex-row xl:flex-wrap items-stretch gap-3 sm:gap-6 xl:gap-8">
                   {displayItems.length > 0 ? (
                     displayItems.map((item: any, idx: number) => {
                       let match: any = null;
@@ -143,19 +149,18 @@ export default function BundlingVoucherSection({
                         match = p || a || v || w || m;
                       }
 
-                      let finalImage = match?.imageUrl || match?.image || item.imageUrl || item.image;
+                      let finalImageRaw = match?.imageUrl || match?.image || item.imageUrl || item.image;
+                      let finalImage = (finalImageRaw ? finalImageRaw.split(',')[0].trim() : "") || "";
                       let displayName = match?.name || item.name;
                       let desc = match?.description || "Layanan eksklusif Infinity Go.";
                       let location = match?.location || (match?.locations ? match.locations[0] : null) || "Tersedia";
-                      let tags = ["Promo"];
-
 
                       return (
-                        <div key={idx} className="flex items-center xl:gap-8 gap-6 w-full xl:w-auto">
+                        <div key={idx} className="flex items-center xl:gap-8 gap-3 sm:gap-6 w-full xl:w-auto">
                           {/* Katalog Card */}
                           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm w-full xl:w-[240px] flex-shrink-0 overflow-hidden flex flex-col group/card hover:-translate-y-1 hover:shadow-lg hover:border-slate-200 transition-all duration-300">
                             {/* Image Header */}
-                            <div className="relative h-32 w-full flex-shrink-0 bg-slate-100 overflow-hidden">
+                            <div className="relative h-20 sm:h-32 w-full flex-shrink-0 bg-slate-100 overflow-hidden">
                               {finalImage ? (
                                 <Image
                                   src={finalImage}
@@ -165,32 +170,32 @@ export default function BundlingVoucherSection({
                                 />
                               ) : (
                                 <div className="absolute inset-0 flex items-center justify-center text-slate-300">
-                                  <Check size={32} />
+                                  <Check size={24} />
                                 </div>
                               )}
                               <div className="absolute top-2 left-2 flex gap-1">
-                                <span className="bg-white/90 backdrop-blur-sm text-slate-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                                <span className="bg-white/90 backdrop-blur-sm text-slate-700 text-[8px] sm:text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                                   {item.type || "Layanan"}
                                 </span>
                               </div>
                             </div>
                             
                             {/* Card Body */}
-                            <div className="p-4 flex-1 flex flex-col bg-white">
-                              <h4 className="text-[14px] font-bold text-slate-800 leading-tight mb-1.5 group-hover/card:text-[#40B5AD] transition-colors line-clamp-2">
+                            <div className="p-3 sm:p-4 flex-1 flex flex-col bg-white">
+                              <h4 className="text-[12px] sm:text-[14px] font-bold text-slate-800 leading-tight mb-1 group-hover/card:text-[#40B5AD] transition-colors line-clamp-2">
                                 {displayName}
                               </h4>
-                              <div className="flex items-center gap-1 text-[11px] text-slate-500 mb-2">
+                              <div className="flex items-center gap-1 text-[10px] sm:text-[11px] text-slate-500 mb-1.5">
                                 <MapPin size={10} className="text-[#40B5AD]" />
                                 <span className="line-clamp-1">{location}</span>
                               </div>
-                              <p className="text-[11.5px] text-slate-500 line-clamp-2 leading-relaxed mb-3">
+                              <p className="hidden sm:block text-[11.5px] text-slate-500 line-clamp-2 leading-relaxed mb-3">
                                 {desc}
                               </p>
-                              <div className="mt-auto flex items-center justify-between border-t border-slate-50 pt-3">
-                                <span className="text-[10px] text-slate-400 font-medium">Included in Bundle</span>
-                                <button className="w-6 h-6 rounded-full bg-slate-50 flex items-center justify-center text-[#40B5AD] group-hover/card:bg-[#40B5AD] group-hover/card:text-white transition-colors">
-                                  <ArrowRight size={12} />
+                              <div className="mt-auto flex items-center justify-between border-t border-slate-50 pt-2 sm:pt-3">
+                                <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium">Included</span>
+                                <button className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-slate-50 flex items-center justify-center text-[#40B5AD] group-hover/card:bg-[#40B5AD] group-hover/card:text-white transition-colors">
+                                  <ArrowRight size={10} />
                                 </button>
                               </div>
                             </div>

@@ -242,18 +242,7 @@ function SidebarContent({
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-slate-200 space-y-3">
-        <div className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
-          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold text-sm flex-shrink-0">
-            A
-          </div>
-          {!collapsed && (
-            <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-medium text-slate-700 truncate">Admin InfinityGo</p>
-              <p className="text-[11px] text-slate-400 truncate">infinitygo.travel@gmail.com</p>
-            </div>
-          )}
-        </div>
+      <div className="p-4 border-t border-slate-200">
         <button 
           onClick={() => signOut({ callbackUrl: "/login" })}
           className={`w-full flex items-center gap-3 py-2 rounded-lg text-[13px] font-medium text-rose-600 hover:bg-rose-50 transition-colors ${collapsed ? "justify-center px-0" : "px-3"}`}

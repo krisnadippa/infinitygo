@@ -39,6 +39,8 @@ export async function saveTourPackage(rawData: any) {
       location: data.location || "",
       duration: data.duration || "",
       price: data.price,
+      priceSharing: data.priceSharing || 0,
+      priceRules: data.priceRules || null,
       discount: data.discount || 0,
       description: data.description || "",
       facilities: data.facilities || [],
@@ -134,6 +136,8 @@ export async function saveVehicle(rawData: any) {
       description: data.description || "",
       imageUrl: data.imageUrl || null,
       status: data.status,
+      priceSettings: data.priceSettings || null,
+      facilities: data.facilities || [],
     };
 
     const result = await prisma.vehicle.upsert({

@@ -273,10 +273,14 @@ export default function LayananPage() {
           <div className="flex flex-col gap-24 md:gap-32">
             {servicesData.map((service, index) => {
               const isEven = index % 2 === 0;
+              const targetHash = service.id === "agen-tour" ? "paket-tour" : service.id === "reservasi" ? "akomodasi" : service.id;
+              const targetUrl = `/destinasi#${targetHash}`;
+
               return (
                 <div
                   key={service.id}
-                  className={`flex flex-col ${isEven ? "md:flex-row" : "md:flex-row-reverse"} gap-10 md:gap-20 items-center`}
+                  id={service.id}
+                  className={`flex flex-col ${isEven ? "md:flex-row" : "md:flex-row-reverse"} gap-10 md:gap-20 items-center scroll-mt-28`}
                 >
                   {/* Image Side */}
                   <motion.div
@@ -286,18 +290,20 @@ export default function LayananPage() {
                     transition={{ duration: 0.7 }}
                     className="w-full md:w-1/2"
                   >
-                    <div className="relative aspect-video rounded-[2rem] overflow-hidden bg-slate-200">
-                      <Image
-                        src={service.image}
-                        alt={service.title}
-                        fill
-                        className="object-cover"
-                      />
-                      {/* Cyan Badge Icon (bottom left) */}
-                      <div className="absolute bottom-6 left-6 w-14 h-14 bg-[#40B5AD]/90 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg border border-white/20">
-                        {service.icon}
+                    <a href={targetUrl} className="block group">
+                      <div className="relative aspect-video rounded-[2rem] overflow-hidden bg-slate-200 shadow-sm group-hover:shadow-md transition-shadow duration-300">
+                        <Image
+                          src={service.image}
+                          alt={service.title}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        {/* Cyan Badge Icon (bottom left) */}
+                        <div className="absolute bottom-6 left-6 w-14 h-14 bg-[#40B5AD]/90 backdrop-blur-md rounded-xl flex items-center justify-center shadow-lg border border-white/20">
+                          {service.icon}
+                        </div>
                       </div>
-                    </div>
+                    </a>
                   </motion.div>
 
                   {/* Content Side */}
@@ -311,12 +317,19 @@ export default function LayananPage() {
                     <div className="inline-block border border-[#40B5AD] text-[#40B5AD] px-4 py-1.5 rounded-full text-xs font-bold mb-6 tracking-wide bg-[#40B5AD]/5">
                       Layanan Kami
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-5">
-                      {service.title}
+                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-5 hover:text-[#40B5AD] transition-colors">
+                      <a href={targetUrl}>{service.title}</a>
                     </h2>
-                    <p className="text-slate-500 leading-relaxed mb-8">
+                    <p className="text-slate-500 leading-relaxed mb-4">
                       {service.description}
                     </p>
+                    <a
+                      href={targetUrl}
+                      className="inline-flex items-center gap-1.5 text-sm font-bold text-[#40B5AD] hover:text-[#2d9d96] transition-colors mb-8 group"
+                    >
+                      Lihat Semua Destinasi & Pilihan
+                      <span className="transform group-hover:translate-x-1 transition-transform">→</span>
+                    </a>
 
                     {/* Fitur Unggulan Box */}
                     <div className="border border-slate-100 bg-white rounded-2xl p-6 mb-8 shadow-sm">
@@ -346,19 +359,17 @@ export default function LayananPage() {
                     {/* Paket Tersedia Box */}
                     <div className="bg-gradient-to-br from-[#40B5AD] to-[#2c8e87] rounded-2xl p-6 shadow-lg shadow-[#40B5AD]/20">
                       <h4 className="font-bold text-white text-sm mb-5">
-                        Paket Tersedia (Klik untuk Pesan)
+                        Paket Tersedia (Klik untuk Detail)
                       </h4>
                       <div className="flex flex-wrap gap-3">
                         {service.packages.map((pkg, i) => (
-                          <div
+                          <a
                             key={i}
-                            onClick={() =>
-                              handleServicePackageClick(service.title, pkg)
-                            }
+                            href={targetUrl}
                             className="bg-white/20 backdrop-blur-md px-4 py-2 rounded-lg text-xs font-semibold border border-white/10 text-white cursor-pointer hover:bg-white hover:text-[#40B5AD] transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
                           >
                             {pkg}
-                          </div>
+                          </a>
                         ))}
                       </div>
                     </div>

@@ -68,6 +68,8 @@ export interface TourPackage {
   location: string;
   duration: string;
   price: number;
+  priceSharing?: number;
+  priceRules?: string | null;
   description: string;
   facilities: string[];
   imageUrl?: string;
@@ -101,6 +103,8 @@ export interface Vehicle {
   imageUrl?: string;
   discount?: number;
   status: "Active" | "Inactive";
+  priceSettings?: string | null;
+  facilities?: string[];
 }
 
 export interface GalleryItem {

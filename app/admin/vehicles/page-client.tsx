@@ -13,6 +13,43 @@ import { uploadImage } from "../upload-action";
 
 function generateId() { return Math.random().toString(36).slice(2, 9); }
 
+function compressImage(base64Str: string, maxWidth = 1200, maxHeight = 1200, quality = 0.75): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(base64Str);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressed = canvas.toDataURL("image/jpeg", quality);
+      resolve(compressed);
+    };
+    img.onerror = () => {
+      resolve(base64Str);
+    };
+  });
+}
+
 const typeOptions = [
   { value: "Car", label: "Car" },
   { value: "Mini Bus", label: "Mini Bus" },
@@ -52,7 +89,28 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Vehicle | null>(null);
   const [form, setForm] = useState<Partial<Vehicle>>(defaultForm);
+  const [facilitiesText, setFacilitiesText] = useState("");
   const [uploading, setUploading] = useState(false);
+
+  const getDisplayPrice = (veh: any) => {
+    let settings: any[] = [];
+    try {
+      settings = typeof veh.priceSettings === 'string' ? JSON.parse(veh.priceSettings) : (veh.priceSettings || []);
+    } catch(e) {}
+    
+    if (settings.length > 0) {
+      const discountedPrices = settings.flatMap((s: any) => {
+        const disc = s.discount || 0;
+        return [s.priceSelfDrive, s.priceWithDriver]
+          .filter(p => p > 0)
+          .map(p => p - (p * disc / 100));
+      });
+      if (discountedPrices.length > 0) {
+        return Math.min(...discountedPrices);
+      }
+    }
+    return (veh.pricePerDay || 0) - ((veh.pricePerDay || 0) * (veh.discount || 0) / 100);
+  };
 
   const filtered = items.filter((v) => {
     const matchSearch = v.name.toLowerCase().includes(search.toLowerCase()) || v.brand.toLowerCase().includes(search.toLowerCase());
@@ -60,10 +118,29 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
     return matchSearch && matchLocation;
   });
 
-  const openCreate = () => { setEditing(null); setForm(defaultForm); setModalOpen(true); };
-  const openEdit = (v: Vehicle) => { setEditing(v); setForm({ ...v }); setModalOpen(true); };
+  const openCreate = () => { setEditing(null); setForm(defaultForm); setFacilitiesText(""); setModalOpen(true); };
+  const openEdit = (v: Vehicle) => { setEditing(v); setForm({ ...v }); setFacilitiesText((v.facilities || []).join(", ")); setModalOpen(true); };
 
   const handleSave = async () => {
+    let settingsList: any[] = [];
+    try {
+      settingsList = typeof form.priceSettings === 'string' ? JSON.parse(form.priceSettings) : (form.priceSettings || []);
+    } catch(e) {}
+    
+    let calculatedMinPrice = form.pricePerDay || 0;
+    if (settingsList.length > 0) {
+      const prices = settingsList.flatMap((s: any) => [s.priceSelfDrive, s.priceWithDriver].filter(p => p > 0));
+      if (prices.length > 0) {
+        calculatedMinPrice = Math.min(...prices);
+      }
+    }
+
+    const isAnyActive = (form.locations || []).some(loc => {
+      const setting = settingsList.find((s: any) => s.location === loc);
+      return setting ? setting.isActive !== false : true;
+    });
+    const calculatedStatus = isAnyActive ? "Active" : "Inactive";
+
     const veh = {
       ...(editing ? { id: editing.id } : {}),
       name: form.name || "",
@@ -72,13 +149,16 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
       brand: form.brand || "",
       locations: form.locations || ["Bali"],
       capacity: form.capacity || 4,
-      pricePerDay: form.pricePerDay || 0,
+      pricePerDay: calculatedMinPrice,
       discount: form.discount || 0,
       driverIncluded: form.driverIncluded || false,
       description: form.description || "",
       imageUrl: form.imageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600",
-      status: form.status || "Active",
+      status: calculatedStatus,
+      priceSettings: form.priceSettings || null,
+      facilities: facilitiesText.split(",").map((f) => f.trim()).filter(Boolean),
     };
+
     
     const tempId = editing?.id || Math.random().toString();
     if (editing) setItems((prev) => prev.map((v) => (v.id === editing.id ? { ...v, ...veh } : v)));
@@ -129,7 +209,7 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
           <div key={veh.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
             <div className="relative h-44">
               <Image
-                src={veh.imageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600"}
+                src={(veh.imageUrl ? veh.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600"}
                 alt={veh.name}
                 fill
                 className="object-cover"
@@ -172,18 +252,8 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
               
               <div className="flex items-center justify-between pt-1 border-t border-slate-100 mt-2">
                 <div className="flex flex-col">
-                  {(veh.discount || 0) > 0 && (
-                    <span className="text-[12px] text-slate-400 line-through">
-                      {formatRupiah(veh.pricePerDay)}
-                    </span>
-                  )}
                   <p className="text-[15px] font-bold text-blue-600 flex items-center gap-1.5">
-                    {formatRupiah(veh.pricePerDay - (veh.pricePerDay * (veh.discount || 0) / 100))}
-                    {(veh.discount || 0) > 0 && (
-                      <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
-                        Hemat {veh.discount}%
-                      </span>
-                    )}
+                    Mulai {formatRupiah(getDisplayPrice(veh))}
                   </p>
                   <p className="text-[10.5px] text-slate-400">per hari</p>
                 </div>
@@ -207,7 +277,6 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
           <Select label="Tipe Kendaraan" id="veh-type" options={typeOptions} value={(form as any).vehicleType || (form as any).type || "Car"} onChange={(e) => setForm((p) => ({ ...p, vehicleType: e.target.value }))} />
           <Input label="Brand" placeholder="Toyota, Honda, dll" value={form.brand || ""} onChange={(e) => setForm((p) => ({ ...p, brand: e.target.value }))} id="veh-brand" />
           <Input label="Kapasitas Penumpang" type="number" value={form.capacity || ""} onChange={(e) => setForm((p) => ({ ...p, capacity: Number(e.target.value) }))} id="veh-capacity" />
-          <CurrencyInput label="Harga per Hari (Rp)" value={form.pricePerDay || 0} onChange={(val) => setForm((p) => ({ ...p, pricePerDay: val }))} id="veh-price" />
           <div className="sm:col-span-2">
             <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Lokasi (Bisa pilih lebih dari satu)</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg max-h-40 overflow-y-auto">
@@ -233,49 +302,205 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
               })}
             </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <Input label="Diskon (%) opsional" type="number" min="0" max="100" value={form.discount || ""} onChange={(e) => setForm((p) => ({ ...p, discount: Number(e.target.value) }))} id="veh-discount" />
-            {!!form.discount && !!form.pricePerDay && (
-              <p className="text-[12px] text-emerald-600 font-medium">
-                Harga setelah diskon: {formatRupiah(form.pricePerDay - (form.pricePerDay * form.discount / 100))}
-              </p>
-            )}
-          </div>
-          <Select label="Driver Included" id="veh-driver" options={[{ value: "true", label: "Ya" }, { value: "false", label: "Tidak" }]} value={String(form.driverIncluded || false)} onChange={(e) => setForm((p) => ({ ...p, driverIncluded: e.target.value === "true" }))} />
-          <Select label="Status" id="veh-status" options={[{ value: "Active", label: "Active" }, { value: "Inactive", label: "Inactive" }]} value={form.status || "Active"} onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as "Active" | "Inactive" }))} />
-          <div className="sm:col-span-2"><Textarea label="Deskripsi" rows={3} value={form.description || ""} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} id="veh-desc" /></div>
-          <div className="sm:col-span-2">
-            <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Upload Gambar</label>
-            <div className="flex items-center gap-4">
-              {form.imageUrl && (
-                <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0">
-                  <Image src={form.imageUrl} alt="Preview" fill className="object-cover" sizes="64px" />
+          
+          {/* Location Pricing Grid */}
+          <div className="sm:col-span-2 border-t border-slate-200 pt-5 mt-4">
+            <h3 className="text-[14px] font-bold text-slate-800 mb-1">Pengaturan Harga & Diskon per Lokasi</h3>
+            <p className="text-[11.5px] text-slate-400 mb-4">Tentukan tarif sewa harian dan diskon khusus untuk masing-masing kota destinasi.</p>
+            <div className="space-y-4">
+              {(form.locations || []).map((loc) => {
+                let settingsList: any[] = [];
+                try {
+                  settingsList = typeof form.priceSettings === 'string' ? JSON.parse(form.priceSettings) : (form.priceSettings || []);
+                } catch(e) {}
+                const setting = settingsList.find((s: any) => s.location === loc) || { location: loc, priceWithDriver: 0, priceSelfDrive: 0, discount: 0, isActive: true };
+                return (
+                  <div key={loc} className="p-4 bg-slate-50/50 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
+                    {/* Header Row */}
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wide">
+                          <MapPin size={12} className="stroke-[2.5]" /> {loc}
+                        </span>
+                        
+                        <select
+                          value={setting.isActive !== false ? "Active" : "Inactive"}
+                          onChange={(e) => {
+                            const updatedList = [...settingsList];
+                            const idx = updatedList.findIndex((s: any) => s.location === loc);
+                            const val = e.target.value === "Active";
+                            if (idx > -1) {
+                              updatedList[idx] = { ...updatedList[idx], isActive: val };
+                            } else {
+                              updatedList.push({ location: loc, priceWithDriver: 0, priceSelfDrive: 0, discount: 0, isActive: val });
+                            }
+                            setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
+                          }}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border focus:outline-none transition-colors cursor-pointer ${
+                            setting.isActive !== false 
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                              : "bg-rose-50 text-rose-700 border-rose-200"
+                          }`}
+                        >
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </select>
+                      </div>
+                      <span className="text-[11px] text-slate-400 italic">Tarif khusus {loc}</span>
+                    </div>
+                    {/* Inputs Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <CurrencyInput
+                        label="Harga Lepas Kunci (Rp)"
+                        value={setting.priceSelfDrive}
+                        onChange={(val) => {
+                          const updatedList = [...settingsList];
+                          const idx = updatedList.findIndex((s: any) => s.location === loc);
+                          if (idx > -1) {
+                            updatedList[idx] = { ...updatedList[idx], priceSelfDrive: val };
+                          } else {
+                            updatedList.push({ location: loc, priceWithDriver: 0, priceSelfDrive: val, discount: 0, isActive: true });
+                          }
+                          setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
+                        }}
+                      />
+                      <CurrencyInput
+                        label="Harga Dengan Driver (Rp)"
+                        value={setting.priceWithDriver}
+                        onChange={(val) => {
+                          const updatedList = [...settingsList];
+                          const idx = updatedList.findIndex((s: any) => s.location === loc);
+                          if (idx > -1) {
+                            updatedList[idx] = { ...updatedList[idx], priceWithDriver: val };
+                          } else {
+                            updatedList.push({ location: loc, priceWithDriver: val, priceSelfDrive: 0, discount: 0, isActive: true });
+                          }
+                          setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
+                        }}
+                      />
+                      <Input
+                        label="Diskon Lokasi (%)"
+                        type="number"
+                        min="0"
+                        max="100"
+                        placeholder="Contoh: 10"
+                        value={setting.discount !== undefined ? setting.discount : 0}
+                        onChange={(e) => {
+                          const updatedList = [...settingsList];
+                          const idx = updatedList.findIndex((s: any) => s.location === loc);
+                          const val = Number(e.target.value);
+                          if (idx > -1) {
+                            updatedList[idx] = { ...updatedList[idx], discount: val };
+                          } else {
+                            updatedList.push({ location: loc, priceWithDriver: 0, priceSelfDrive: 0, discount: val, isActive: true });
+                          }
+                          setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              {(form.locations || []).length === 0 && (
+                <div className="flex flex-col items-center justify-center p-6 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-slate-400">
+                  <MapPin size={24} className="stroke-[1.5] mb-1 text-slate-300" />
+                  <p className="text-[12px] italic">Pilih minimal satu lokasi di atas untuk mengatur harga.</p>
                 </div>
               )}
-              <input
-                type="file"
-                accept="image/*"
-                id="veh-image-upload"
-                disabled={uploading}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setUploading(true);
-                    const reader = new FileReader();
-                    reader.onloadend = async () => {
-                      const res = await uploadImage(reader.result as string);
-                      if (res.success && res.url) setForm((p) => ({ ...p, imageUrl: res.url }));
-                      else alert(res.error || "Gagal upload gambar");
-                      setUploading(false);
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
-                className="w-full text-[13px] text-slate-500 file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[12.5px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer disabled:opacity-50"
-              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <Input label="Fasilitas (pisahkan dengan koma)" placeholder="AC, Air Mineral, Supir, Bensin" value={facilitiesText} onChange={(e) => setFacilitiesText(e.target.value)} id="veh-facilities" />
+          </div>
+          <div className="sm:col-span-2"><Textarea label="Deskripsi" rows={3} value={form.description || ""} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} id="veh-desc" /></div>
+          <div className="sm:col-span-2">
+            <label className="block text-[13px] font-medium text-slate-700 mb-2">
+              Upload Gambar (Maksimal 5)
+            </label>
+            
+            {/* Image Preview & Upload Grid */}
+            <div className="flex flex-wrap gap-3 mb-3 items-center">
+              {(form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean) : []).map((url, index) => (
+                <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 group flex-shrink-0">
+                  <Image src={url} alt={`Preview ${index + 1}`} fill className="object-cover" sizes="80px" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean) : [];
+                      const updated = current.filter((_, idx) => idx !== index);
+                      setForm((p) => ({ ...p, imageUrl: updated.join(',') }));
+                    }}
+                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-md transition-colors flex items-center justify-center cursor-pointer z-10"
+                  >
+                    <XIcon size={12} className="stroke-[3]" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Styled Upload Card as "+" Button */}
+              {!(form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean).length >= 5 : false) && (
+                <label className="flex flex-col items-center justify-center w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer relative flex-shrink-0">
+                  <PlusCircle size={20} className="text-slate-400" />
+                  <span className="text-[10px] text-slate-400 mt-1 font-semibold">Tambah</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={uploading}
+                    onChange={async (e) => {
+                      const files = e.target.files;
+                      if (files && files.length > 0) {
+                        const current = form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean) : [];
+                        const remainingSlots = 5 - current.length;
+                        
+                        if (files.length > remainingSlots) {
+                          alert(`Maksimal 5 gambar diperbolehkan. Anda hanya bisa memilih ${remainingSlots} gambar lagi.`);
+                          e.target.value = ""; // reset input
+                          return;
+                        }
+
+                        setUploading(true);
+                        const uploadedUrls: string[] = [];
+                        for (let i = 0; i < files.length; i++) {
+                          const file = files[i];
+                          try {
+                            const base64 = await new Promise<string>((resolve, reject) => {
+                              const reader = new FileReader();
+                              reader.onloadend = () => resolve(reader.result as string);
+                              reader.onerror = reject;
+                              reader.readAsDataURL(file);
+                            });
+                            
+                            // Compress client-side
+                            const compressedBase64 = await compressImage(base64);
+                            
+                            const res = await uploadImage(compressedBase64);
+                            if (res.success && res.url) {
+                              uploadedUrls.push(res.url);
+                            } else {
+                              alert(res.error || `Gagal upload gambar: ${file.name}`);
+                            }
+                          } catch (err) {
+                            alert(`Gagal membaca/mengompresi file: ${file.name}`);
+                          }
+                        }
+                        if (uploadedUrls.length > 0) {
+                          setForm((p) => ({ ...p, imageUrl: [...current, ...uploadedUrls].join(',') }));
+                        }
+                        setUploading(false);
+                        e.target.value = ""; // reset input
+                      }
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
             {uploading && <p className="text-[11px] text-blue-600 mt-1 animate-pulse">Mengunggah...</p>}
-            <p className="text-[11px] text-slate-400 mt-1">Pilih file gambar dari komputer Anda (.jpg, .png)</p>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Klik kotak "+" di atas untuk mengunggah gambar (.jpg, .png). Maksimal 5 gambar terpilih ({form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean).length : 0}/5).
+            </p>
           </div>
           <div className="sm:col-span-2 flex gap-3 pt-2">
             <Button className="flex-1" onClick={handleSave}>Simpan</Button>

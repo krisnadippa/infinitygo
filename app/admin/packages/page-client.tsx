@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlusCircle, Edit2, Trash2, Search, MapPin, Clock } from "lucide-react";
+import { PlusCircle, Edit2, Trash2, Search, MapPin, Clock, X as XIcon } from "lucide-react";
 import { StatusBadge } from "@/components/admin/Badge";
 import Button from "@/components/admin/Button";
 import Modal from "@/components/admin/Modal";
@@ -12,6 +12,43 @@ import { saveTourPackage, deleteTourPackage } from "../actions";
 import { uploadImage } from "../upload-action";
 
 function generateId() { return Math.random().toString(36).slice(2, 9); }
+
+function compressImage(base64Str: string, maxWidth = 1200, maxHeight = 1200, quality = 0.75): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(base64Str);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressed = canvas.toDataURL("image/jpeg", quality);
+      resolve(compressed);
+    };
+    img.onerror = () => {
+      resolve(base64Str);
+    };
+  });
+}
 
 const locationOptions = [
   { value: "Bali", label: "Bali" },
@@ -26,7 +63,7 @@ const locationOptions = [
 ];
 
 const defaultForm: Partial<TourPackage> = {
-  name: "", location: "Bali", duration: "", price: 0, discount: 0,
+  name: "", location: "Bali", duration: "", price: 0, priceSharing: 0, priceRules: "[]", discount: 0,
   facilities: [], description: "", imageUrl: "", status: "Active",
 };
 
@@ -68,6 +105,8 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
       location: form.location || "Bali",
       duration: form.duration || "",
       price: form.price || 0,
+      priceSharing: 0,
+      priceRules: form.priceRules || "[]",
       discount: form.discount || 0,
       description: form.description || "",
       facilities: facilitiesText.split(",").map((f) => f.trim()).filter(Boolean),
@@ -138,7 +177,7 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
           <div key={pkg.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
             <div className="relative h-44">
               <Image
-                src={pkg.imageUrl || "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600"}
+                src={(pkg.imageUrl ? pkg.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600"}
                 alt={pkg.name}
                 fill
                 className="object-cover"
@@ -168,19 +207,41 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
               </div>
               <div className="flex items-center justify-between pt-1 border-t border-slate-100">
               <div className="flex flex-col">
-                {(pkg.discount || 0) > 0 && (
-                  <span className="text-[12px] text-slate-400 line-through">
+                <div className="text-[12.5px] text-slate-500 font-medium">
+                  <span>Harga Mulai: </span>
+                  <span className={pkg.discount ? "line-through text-slate-400 mr-1" : "font-semibold text-blue-600"}>
                     {formatRupiah(pkg.price)}
                   </span>
-                )}
-                <p className="text-[15px] font-bold text-blue-600 flex items-center gap-1.5">
-                  {formatRupiah(pkg.price - (pkg.price * (pkg.discount || 0) / 100))}
-                  {(pkg.discount || 0) > 0 && (
-                    <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
-                      Hemat {pkg.discount}%
+                  {!!pkg.discount && (
+                    <span className="font-semibold text-blue-600">
+                      {formatRupiah(pkg.price - (pkg.price * pkg.discount / 100))}
                     </span>
                   )}
-                </p>
+                </div>
+                {(() => {
+                  let rulesList: any[] = [];
+                  try {
+                    rulesList = typeof pkg.priceRules === 'string' ? JSON.parse(pkg.priceRules) : (pkg.priceRules || []);
+                  } catch(e) {}
+                  if (rulesList.length > 0) {
+                    return (
+                      <div className="mt-1 pt-1 border-t border-slate-100 space-y-0.5">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">Tingkatan Harga:</p>
+                        {rulesList.map((r: any, idx: number) => (
+                          <div key={idx} className="text-[11.5px] text-slate-500 flex justify-between">
+                            <span>&ge; {r.minParticipants} Orang:</span>
+                            <span className="font-semibold text-blue-600">
+                              {pkg.discount 
+                                ? formatRupiah(r.price - (r.price * pkg.discount / 100))
+                                : formatRupiah(r.price)} / pax
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -210,14 +271,111 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
           </div>
           <Select label="Lokasi" id="pkg-location" options={locationOptions} value={form.location || "Bali"} onChange={(e) => setForm((p) => ({ ...p, location: e.target.value }))} />
           <Input label="Durasi" placeholder="Contoh: 3 Hari 2 Malam" value={form.duration || ""} onChange={(e) => setForm((p) => ({ ...p, duration: e.target.value }))} id="pkg-duration" />
-          <CurrencyInput label="Harga (Rp)" value={form.price || 0} onChange={(val) => setForm((p) => ({ ...p, price: val }))} id="pkg-price" />
+          <CurrencyInput label="Harga Standar / 1 Orang (Rp)" value={form.price || 0} onChange={(val) => setForm((p) => ({ ...p, price: val }))} id="pkg-price" />
+          
           <div className="flex flex-col gap-1">
             <Input label="Diskon (%) opsional" type="number" min="0" max="100" value={form.discount || ""} onChange={(e) => setForm((p) => ({ ...p, discount: Number(e.target.value) }))} id="pkg-discount" />
-            {!!form.discount && !!form.price && (
-              <p className="text-[12px] text-emerald-600 font-medium">
-                Harga setelah diskon: {formatRupiah(form.price - (form.price * form.discount / 100))}
-              </p>
+            {!!form.discount && (
+              <div className="text-[12px] text-emerald-600 font-medium space-y-0.5">
+                {!!form.price && <p>Harga Standar setelah diskon: {formatRupiah(form.price - (form.price * form.discount / 100))}</p>}
+              </div>
             )}
+          </div>
+
+          {/* Tier-Based Pricing Rules */}
+          <div className="sm:col-span-2 border-t border-slate-100 pt-4 mt-2">
+            <h4 className="font-bold text-slate-800 text-[13px] uppercase tracking-wider mb-1">Tarif Group & Rombongan (Opsional)</h4>
+            <p className="text-[12px] text-slate-500 mb-3">Atur harga per orang yang lebih hemat berdasarkan jumlah peserta (misal: jika &ge; 2 orang atau &ge; 10 orang).</p>
+            
+            {(() => {
+              let rulesList: { minParticipants: number; price: number }[] = [];
+              try {
+                rulesList = typeof form.priceRules === 'string' ? JSON.parse(form.priceRules) : (form.priceRules || []);
+              } catch(e) {}
+              
+              return (
+                <div className="space-y-2 mb-3">
+                  {rulesList.map((rule, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                      <div className="text-[13px] font-semibold text-slate-750">
+                        Min. {rule.minParticipants} Peserta
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-[13px] font-bold text-blue-600">
+                          {formatRupiah(rule.price)} / Orang
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = rulesList.filter((_, i) => i !== idx);
+                            setForm(p => ({ ...p, priceRules: JSON.stringify(updated) }));
+                          }}
+                          className="text-red-500 hover:text-red-750 hover:bg-red-50 p-1.5 rounded-lg transition-colors flex items-center justify-center"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Add New Rule Form */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4 items-end border-t border-dashed border-slate-200 mt-2">
+                    <div className="flex-1">
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Min. Peserta (Orang)</label>
+                      <input
+                        type="number"
+                        id="new-rule-min"
+                        min="1"
+                        placeholder="Contoh: 2"
+                        className="w-full px-3 py-2 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Harga per Orang (Rp)</label>
+                      <input
+                        type="number"
+                        id="new-rule-price"
+                        min="0"
+                        placeholder="Contoh: 1200000"
+                        className="w-full px-3 py-2 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="px-4 py-2"
+                      onClick={() => {
+                        const minEl = document.getElementById("new-rule-min") as HTMLInputElement;
+                        const priceEl = document.getElementById("new-rule-price") as HTMLInputElement;
+                        const minVal = Number(minEl?.value);
+                        const priceVal = Number(priceEl?.value);
+                        
+                        if (!minVal || minVal < 1 || isNaN(priceVal) || priceVal < 0) {
+                          alert("Harap isi jumlah peserta dan harga dengan benar.");
+                          return;
+                        }
+                        
+                        const updated = [...rulesList];
+                        const existingIdx = updated.findIndex(r => r.minParticipants === minVal);
+                        if (existingIdx > -1) {
+                          updated[existingIdx] = { minParticipants: minVal, price: priceVal };
+                        } else {
+                          updated.push({ minParticipants: minVal, price: priceVal });
+                        }
+                        updated.sort((a, b) => a.minParticipants - b.minParticipants);
+                        
+                        setForm(p => ({ ...p, priceRules: JSON.stringify(updated) }));
+                        
+                        if (minEl) minEl.value = "";
+                        if (priceEl) priceEl.value = "";
+                      }}
+                    >
+                      Tambah Aturan
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           <Select
             label="Status"
@@ -233,41 +391,92 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
             <Input label="Fasilitas (pisahkan dengan koma)" placeholder="Guide lokal, Transport AC, Sarapan" value={facilitiesText} onChange={(e) => setFacilitiesText(e.target.value)} id="pkg-facilities" />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Upload Gambar</label>
-            <div className="flex items-center gap-4">
-              {form.imageUrl && (
-                <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0">
-                  <Image src={form.imageUrl} alt="Preview" fill className="object-cover" sizes="64px" />
+            <label className="block text-[13px] font-medium text-slate-700 mb-2">
+              Upload Gambar (Maksimal 5)
+            </label>
+            
+            {/* Image Preview & Upload Grid */}
+            <div className="flex flex-wrap gap-3 mb-3 items-center">
+              {(form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean) : []).map((url, index) => (
+                <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 group flex-shrink-0">
+                  <Image src={url} alt={`Preview ${index + 1}`} fill className="object-cover" sizes="80px" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean) : [];
+                      const updated = current.filter((_, idx) => idx !== index);
+                      setForm((p) => ({ ...p, imageUrl: updated.join(',') }));
+                    }}
+                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-md transition-colors flex items-center justify-center cursor-pointer z-10"
+                  >
+                    <XIcon size={12} className="stroke-[3]" />
+                  </button>
                 </div>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                id="pkg-image-upload"
-                disabled={uploading}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setUploading(true);
-                    const reader = new FileReader();
-                    reader.onloadend = async () => {
-                      const base64 = reader.result as string;
-                      const res = await uploadImage(base64);
-                      if (res.success && res.url) {
-                        setForm((p) => ({ ...p, imageUrl: res.url }));
-                      } else {
-                        alert(res.error || "Gagal upload gambar");
+              ))}
+
+              {/* Styled Upload Card as "+" Button */}
+              {!(form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean).length >= 5 : false) && (
+                <label className="flex flex-col items-center justify-center w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer relative flex-shrink-0">
+                  <PlusCircle size={20} className="text-slate-400" />
+                  <span className="text-[10px] text-slate-400 mt-1 font-semibold">Tambah</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={uploading}
+                    onChange={async (e) => {
+                      const files = e.target.files;
+                      if (files && files.length > 0) {
+                        const current = form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean) : [];
+                        const remainingSlots = 5 - current.length;
+                        
+                        if (files.length > remainingSlots) {
+                          alert(`Maksimal 5 gambar diperbolehkan. Anda hanya bisa memilih ${remainingSlots} gambar lagi.`);
+                          e.target.value = ""; // reset input
+                          return;
+                        }
+
+                        setUploading(true);
+                        const uploadedUrls: string[] = [];
+                        for (let i = 0; i < files.length; i++) {
+                          const file = files[i];
+                          try {
+                            const base64 = await new Promise<string>((resolve, reject) => {
+                              const reader = new FileReader();
+                              reader.onloadend = () => resolve(reader.result as string);
+                              reader.onerror = reject;
+                              reader.readAsDataURL(file);
+                            });
+                            
+                            // Compress client-side
+                            const compressedBase64 = await compressImage(base64);
+                            
+                            const res = await uploadImage(compressedBase64);
+                            if (res.success && res.url) {
+                              uploadedUrls.push(res.url);
+                            } else {
+                              alert(res.error || `Gagal upload gambar: ${file.name}`);
+                            }
+                          } catch (err) {
+                            alert(`Gagal membaca/mengompresi file: ${file.name}`);
+                          }
+                        }
+                        if (uploadedUrls.length > 0) {
+                          setForm((p) => ({ ...p, imageUrl: [...current, ...uploadedUrls].join(',') }));
+                        }
+                        setUploading(false);
+                        e.target.value = ""; // reset input
                       }
-                      setUploading(false);
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
-                className="w-full text-[13px] text-slate-500 file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[12.5px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer disabled:opacity-50"
-              />
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
             {uploading && <p className="text-[11px] text-blue-600 mt-1 animate-pulse">Mengunggah ke Cloudinary...</p>}
-            <p className="text-[11px] text-slate-400 mt-1">Pilih file gambar dari komputer Anda (.jpg, .png)</p>
+            <p className="text-[11px] text-slate-400 mt-1">
+              Klik kotak "+" di atas untuk mengunggah gambar (.jpg, .png). Maksimal 5 gambar terpilih ({form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean).length : 0}/5).
+            </p>
           </div>
           <div className="sm:col-span-2 flex gap-3 pt-2">
             <Button className="flex-1" onClick={handleSave}>Simpan</Button>

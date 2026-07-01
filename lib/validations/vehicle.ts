@@ -13,4 +13,6 @@ export const VehicleSchema = z.object({
   description: z.string().optional(),
   imageUrl: z.string().url("Format URL tidak valid").or(z.string().min(1)).optional(),
   status: z.enum(["Active", "Inactive"]).default("Active"),
+  priceSettings: z.string().optional().nullable(),
+  facilities: z.array(z.string()).optional(),
 });

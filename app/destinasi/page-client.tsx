@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
-import { MapPin, Clock, Star, Check, ArrowRight, Menu, X, Home, Car, Users, X as XIcon, Wifi as WifiIcon } from "lucide-react";
+import { MapPin, Clock, Star, Check, ArrowRight, Menu, Home, Car, Users, X as XIcon, Wifi as WifiIcon, Snowflake, Coffee, Bath, Wind, Tv, Shield, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { IconBrandX, IconBrandFacebook, IconBrandLinkedin, IconBrandInstagram } from "@tabler/icons-react";
 import { 
   Navbar, 
@@ -36,6 +36,18 @@ const vehicleTypeColors: Record<string, string> = {
   Motorcycle: "bg-teal-50 text-teal-700 border-teal-200",
 };
 
+const getFacilityIcon = (facilityName: string) => {
+  const name = facilityName.toLowerCase();
+  if (name.includes("wifi") || name.includes("internet")) return <WifiIcon size={16} className="text-[#40B5AD] flex-shrink-0" />;
+  if (name.includes("ac") || name.includes("air cond") || name.includes("pendingin")) return <Snowflake size={16} className="text-[#40B5AD] flex-shrink-0" />;
+  if (name.includes("breakfast") || name.includes("sarapan") || name.includes("makan") || name.includes("snack") || name.includes("kuliner") || name.includes("kopi")) return <Coffee size={16} className="text-[#40B5AD] flex-shrink-0" />;
+  if (name.includes("shower") || name.includes("kamar mandi") || name.includes("bath") || name.includes("air hangat") || name.includes("toilet")) return <Bath size={16} className="text-[#40B5AD] flex-shrink-0" />;
+  if (name.includes("hairdryer") || name.includes("hair dryer") || name.includes("pengering")) return <Wind size={16} className="text-[#40B5AD] flex-shrink-0" />;
+  if (name.includes("tv") || name.includes("televisi") || name.includes("hiburan")) return <Tv size={16} className="text-[#40B5AD] flex-shrink-0" />;
+  if (name.includes("safe") || name.includes("brankas") || name.includes("keamanan") || name.includes("guard") || name.includes("supir") || name.includes("driver")) return <Shield size={16} className="text-[#40B5AD] flex-shrink-0" />;
+  return <Sparkles size={16} className="text-[#40B5AD] flex-shrink-0" />;
+};
+
 export default function DestinasiClient({
   initialPackages,
   initialAccommodations,
@@ -60,52 +72,148 @@ export default function DestinasiClient({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Semua");
+  const [selectedItem, setSelectedItem] = useState<{
+    type: "package" | "accommodation" | "vehicle" | "wifi" | "mice" | "bundle";
+    data: any;
+  } | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  const [selectedVehLocation, setSelectedVehLocation] = useState<string>("");
+  const [selectedDriverOption, setSelectedDriverOption] = useState<"self" | "driver">("self");
+
+  const [bookingStartDate, setBookingStartDate] = useState<string>("");
+  const [bookingEndDate, setBookingEndDate] = useState<string>("");
+  const [bookingGuests, setBookingGuests] = useState<number>(1);
+
+  useEffect(() => {
+    setBookingStartDate("");
+    setBookingEndDate("");
+    setBookingGuests(1);
+    setActiveImageIndex(0);
+  }, [selectedItem]);
+
+  const getVehiclePriceDetails = (veh: any, loc: string, option: "self" | "driver") => {
+    let settings: any[] = [];
+    try {
+      settings = typeof veh.priceSettings === 'string' ? JSON.parse(veh.priceSettings) : (veh.priceSettings || []);
+    } catch(e) {}
+    
+    const setting = settings.find((s: any) => s.location === loc);
+    if (setting) {
+      const basePrice = option === "driver" ? setting.priceWithDriver : setting.priceSelfDrive;
+      const discount = setting.discount !== undefined ? setting.discount : (veh.discount || 0);
+      return { basePrice: basePrice || veh.pricePerDay || 0, discount };
+    }
+    return { basePrice: veh.pricePerDay || 0, discount: veh.discount || 0 };
+  };
+
+  const getVehicleCardPriceDetails = (veh: any) => {
+    let settings: any[] = [];
+    try {
+      settings = typeof veh.priceSettings === 'string' ? JSON.parse(veh.priceSettings) : (veh.priceSettings || []);
+    } catch(e) {}
+    
+    let basePrice = veh.pricePerDay || 0;
+    let discount = veh.discount || 0;
+    
+    if (selectedCity !== "Semua") {
+      const setting = settings.find((s: any) => s.location === selectedCity);
+      if (setting) {
+        basePrice = setting.priceSelfDrive || setting.priceWithDriver || veh.pricePerDay || 0;
+        discount = setting.discount !== undefined ? setting.discount : (veh.discount || 0);
+      }
+    } else {
+      if (settings.length > 0) {
+        let lowestDiscounted = Infinity;
+        let bestSetting = null;
+        for (const s of settings) {
+          const disc = s.discount !== undefined ? s.discount : (veh.discount || 0);
+          const pSelf = s.priceSelfDrive ? s.priceSelfDrive - (s.priceSelfDrive * disc / 100) : Infinity;
+          const pDriver = s.priceWithDriver ? s.priceWithDriver - (s.priceWithDriver * disc / 100) : Infinity;
+          const minP = Math.min(pSelf, pDriver);
+          if (minP < lowestDiscounted) {
+            lowestDiscounted = minP;
+            bestSetting = { base: s.priceSelfDrive || s.priceWithDriver || veh.pricePerDay || 0, discount: disc };
+          }
+        }
+        if (bestSetting) {
+          basePrice = bestSetting.base;
+          discount = bestSetting.discount;
+        }
+      }
+    }
+    
+    return { basePrice, discount };
+  };
+
+  useEffect(() => {
+    setActiveImageIndex(0);
+  }, [selectedItem]);
+
+  useEffect(() => {
+    if (selectedItem) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [selectedItem]);
 
   const { scrollY } = useScroll();
   useMotionValueEvent(scrollY, "change", (latest) => {
     setScrolled(latest > 50);
   });
 
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = decodeURIComponent(window.location.hash.substring(1));
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 500); // 500ms delay to ensure elements are fully rendered/mounted
+    }
+  }, []);
+
   const handlePackageClick = (pkg: TourPackage) => {
-    const waNumber = "628977857823";
-    const text = `Halo tim Infinity Go,\n\nSaya tertarik untuk memesan/bertanya mengenai paket tour berikut:\n\n📌 *Paket:* ${pkg.name}\n📍 *Lokasi:* ${pkg.location}\n⏱ *Durasi:* ${pkg.duration}\n💰 *Harga:* ${formatRupiah(pkg.price)}\n\nMohon informasi ketersediaan dan detail jadwalnya. Terima kasih!`;
-    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    setSelectedItem({ type: "package", data: pkg });
   };
 
   const handleBundleClick = (bundle: Bundle) => {
-    const waNumber = "628977857823";
-    const text = `Halo tim Infinity Go,\n\nSaya tertarik dengan Promo Bundling berikut:\n\n🎟 *Paket:* ${bundle.name}\n📍 *Lokasi:* ${(bundle.locations || []).join(", ") || "Bali"}\n💰 *Harga Promo:* ${formatRupiah(bundle.discountedPrice)}\n\nMohon informasi lebih lanjut. Terima kasih!`;
-    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    setSelectedItem({ type: "bundle", data: bundle });
   };
 
   const handleAccommodationClick = (acc: Accommodation) => {
-    const waNumber = "628977857823";
-    const text = `Halo tim Infinity Go,\n\nSaya ingin memesan/bertanya mengenai akomodasi berikut:\n\n🏨 *Nama:* ${acc.name}\n📍 *Lokasi:* ${acc.location}\n🛏 *Tipe:* ${acc.type}\n💰 *Harga:* ${formatRupiah(acc.pricePerNight)}\n\nMohon informasi ketersediaan kamar. Terima kasih!`;
-    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    setSelectedItem({ type: "accommodation", data: acc });
   };
 
   const handleVehicleClick = (veh: Vehicle) => {
-    const waNumber = "628977857823";
-    const text = `Halo tim Infinity Go,\n\nSaya ingin menyewa kendaraan berikut:\n\n🚗 *Nama:* ${veh.name}\n📍 *Lokasi:* ${(veh.locations || []).join(", ")}\n👥 *Kapasitas:* ${veh.capacity}\n💰 *Harga:* ${formatRupiah(veh.pricePerDay)} / Hari\n\nMohon informasi ketersediaannya. Terima kasih!`;
-    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    setSelectedItem({ type: "vehicle", data: veh });
+    
+    let settings: any[] = [];
+    try {
+      settings = typeof veh.priceSettings === 'string' ? JSON.parse(veh.priceSettings) : (veh.priceSettings || []);
+    } catch(e) {}
+    
+    const activeLocs = (veh.locations || []).filter((loc: string) => {
+      const setting = settings.find((s: any) => s.location === loc);
+      return setting ? setting.isActive !== false : true;
+    });
+
+    const hasCurrentCity = activeLocs.includes(selectedCity);
+    setSelectedVehLocation(hasCurrentCity ? selectedCity : (activeLocs[0] || "Bali"));
+    setSelectedDriverOption("self");
   };
 
   const handleWifiClick = (wifi: Wifi) => {
-    const waNumber = "628977857823";
-    const text = `Halo tim Infinity Go,\n\nSaya ingin menyewa layanan Wifi berikut:\n\n📶 *Nama:* ${wifi.name}\n🏷 *Tipe:* ${wifi.type}\n📍 *Lokasi:* ${(wifi.locations || []).join(", ")}\n💰 *Harga:* ${formatRupiah(wifi.price)}\n\nMohon informasi ketersediaannya. Terima kasih!`;
-    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    setSelectedItem({ type: "wifi", data: wifi });
   };
 
   const handleMiceClick = (miceItem: Mice) => {
-    const waNumber = "628977857823";
-    const text = `Halo tim Infinity Go,\n\nSaya ingin memesan layanan MICE berikut:\n\n👥 *Nama:* ${miceItem.name}\n📍 *Lokasi:* ${miceItem.location}\n📈 *Kapasitas:* ${miceItem.capacity} Pax\n💰 *Harga:* ${formatRupiah(miceItem.price)}\n\nMohon informasi ketersediaannya. Terima kasih!`;
-    const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
+    setSelectedItem({ type: "mice", data: miceItem });
   };
 
   const matchesCity = (location: string, city: string) => {
@@ -117,9 +225,32 @@ export default function DestinasiClient({
     return false;
   };
 
+  const isVehicleActiveInCity = (veh: any, city: string) => {
+    if (veh.status === "Inactive") return false;
+    let settings: any[] = [];
+    try {
+      settings = typeof veh.priceSettings === 'string' ? JSON.parse(veh.priceSettings) : (veh.priceSettings || []);
+    } catch(e) {}
+
+    if (city === "Semua") {
+      if (settings.length === 0) return (veh.locations || []).length > 0;
+      return settings.some((s: any) => s.isActive !== false);
+    }
+
+    const setting = settings.find((s: any) => s.location === city);
+    if (setting) {
+      return setting.isActive !== false;
+    }
+    return (veh.locations || []).includes(city);
+  };
+
   const filteredPackages = packages.filter(pkg => matchesCity(pkg.location, selectedCity));
   const filteredAccommodations = accommodations.filter(acc => matchesCity(acc.location, selectedCity));
-  const filteredVehicles = vehicles.filter(veh => selectedCity === "Semua" || (veh.locations || []).some(loc => matchesCity(loc, selectedCity)));
+  const filteredVehicles = vehicles.filter(veh => 
+    veh.status === "Active" &&
+    (selectedCity === "Semua" || (veh.locations || []).some(loc => matchesCity(loc, selectedCity))) &&
+    isVehicleActiveInCity(veh, selectedCity)
+  );
   const filteredWifis = wifis.filter(wifi => selectedCity === "Semua" || (wifi.locations || []).some(loc => matchesCity(loc, selectedCity)));
   const filteredMice = mice.filter(m => matchesCity(m.location, selectedCity));
   const filteredBundles = bundles.filter(b => selectedCity === "Semua" || (b.locations || []).some(loc => matchesCity(loc, selectedCity)));
@@ -233,7 +364,7 @@ export default function DestinasiClient({
       </section>
 
       {/* ── FILTER & PACKAGE LIST ── */}
-      <section className="py-16 md:py-24 bg-slate-50">
+      <section id="paket-tour" className="py-16 md:py-24 bg-slate-50 scroll-mt-28">
         <div className="max-w-7xl mx-auto px-6 md:px-10">
           
           {/* City Filter */}
@@ -248,7 +379,8 @@ export default function DestinasiClient({
                 <button
                   key={city}
                   onClick={() => setSelectedCity(city)}
-                  className={`px-5 py-2 rounded-full text-[13.5px] font-semibold whitespace-nowrap transition-all duration-300 ${
+                  translate="no"
+                  className={`notranslate px-5 py-2 rounded-full text-[13.5px] font-semibold whitespace-nowrap transition-all duration-300 ${
                     selectedCity === city 
                       ? "bg-[#40B5AD] text-white shadow-md shadow-[#40B5AD]/30 -translate-y-[1px]" 
                       : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-800 border border-slate-200"
@@ -271,6 +403,7 @@ export default function DestinasiClient({
                 wifis={wifis}
                 mice={mice}
                 selectedCity={selectedCity}
+                onBundleClick={handleBundleClick}
               />
             </div>
           )}
@@ -278,7 +411,7 @@ export default function DestinasiClient({
           {/* Packages Grid */}
           <motion.div 
             layout
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+            className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5"
           >
             <AnimatePresence>
               {filteredPackages.map((pkg) => (
@@ -292,23 +425,23 @@ export default function DestinasiClient({
                   onClick={() => handlePackageClick(pkg)}
                   className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col hover:-translate-y-1"
                 >
-                  <div className="relative h-44 w-full flex-shrink-0">
+                  <div className="relative h-28 sm:h-44 w-full flex-shrink-0">
                     <Image
-                      src={pkg.imageUrl || "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600"}
+                      src={(pkg.imageUrl ? pkg.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600"}
                       alt={pkg.name}
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
                   </div>
-                  <div className="p-4 space-y-2.5 flex flex-col flex-1">
-                    <h3 className="text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors">{pkg.name}</h3>
-                    <div className="flex items-center gap-3 text-[12px] text-slate-500">
-                      <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{pkg.location}</span></span>
-                      <span className="flex items-center gap-1 flex-shrink-0"><Clock size={12} className="text-[#40B5AD]" /> {pkg.duration}</span>
+                  <div className="p-3 sm:p-4 space-y-2 flex flex-col flex-1">
+                    <h3 className="text-[13px] sm:text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors line-clamp-2">{pkg.name}</h3>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-[11px] sm:text-[12px] text-slate-500">
+                      <span className="flex items-center gap-1"><MapPin size={11} className="text-[#40B5AD]" /> <span className="line-clamp-1">{pkg.location}</span></span>
+                      <span className="flex items-center gap-1 flex-shrink-0"><Clock size={11} className="text-[#40B5AD]" /> {pkg.duration}</span>
                     </div>
-                    <p className="text-[12.5px] text-slate-500 line-clamp-2">{pkg.description}</p>
-                    <div className="flex flex-wrap gap-1.5 flex-1 content-start">
+                    <p className="text-[11.5px] sm:text-[12.5px] text-slate-500 line-clamp-2">{pkg.description}</p>
+                    <div className="hidden sm:flex flex-wrap gap-1.5 flex-1 content-start">
                       {pkg.facilities.slice(0, 3).map((f) => (
                         <span key={f} className="text-[11px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full border border-blue-100">{f}</span>
                       ))}
@@ -318,23 +451,23 @@ export default function DestinasiClient({
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2.5 border-t border-slate-100 mt-auto gap-1">
                       <div className="flex flex-col">
                         {(pkg.discount || 0) > 0 && (
-                          <span className="text-[12px] text-slate-400 line-through">
+                          <span className="text-[11px] sm:text-[12px] text-slate-400 line-through">
                             {formatRupiah(pkg.price)}
                           </span>
                         )}
-                        <p className="text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1.5" translate="no">
+                        <p className="text-[13px] sm:text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1" translate="no">
                           {formatRupiah(pkg.price - (pkg.price * (pkg.discount || 0) / 100))}
                           {(pkg.discount || 0) > 0 && (
-                            <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
-                              Hemat {pkg.discount}%
+                            <span className="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
+                              -{pkg.discount}%
                             </span>
                           )}
                         </p>
                       </div>
-                      <button className="w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                      <button className="hidden sm:flex w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white items-center justify-center transition-all shadow-sm">
                         <ArrowRight size={14} />
                       </button>
                     </div>
@@ -357,7 +490,7 @@ export default function DestinasiClient({
                 <h2 className="text-3xl font-bold text-slate-900 mb-2">Akomodasi Pilihan</h2>
                 <p className="text-slate-500 text-sm">Temukan penginapan terbaik untuk melengkapi liburan Anda di {selectedCity === "Semua" ? "berbagai destinasi" : selectedCity}.</p>
               </div>
-              <motion.div layout className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              <motion.div layout className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-5">
                 <AnimatePresence>
                   {filteredAccommodations.map((acc) => (
                     <motion.div
@@ -365,37 +498,37 @@ export default function DestinasiClient({
                       key={acc.id} onClick={() => handleAccommodationClick(acc)}
                       className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col sm:flex-row hover:-translate-y-1"
                     >
-                      <div className="relative h-48 sm:h-auto sm:w-36 flex-shrink-0">
-                        <Image src={acc.imageUrl || "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"} alt={acc.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 144px" />
+                      <div className="relative h-28 sm:h-auto sm:w-36 flex-shrink-0">
+                        <Image src={(acc.imageUrl ? acc.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600"} alt={acc.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, 144px" />
                       </div>
-                      <div className="p-4 flex-1 flex flex-col space-y-2">
-                        <h3 className="text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors">{acc.name}</h3>
-                        <div className="flex items-center gap-2">
-                          <span className={`text-[11px] px-2.5 py-0.5 rounded-full border font-medium ${typeBadgeColors[acc.type]}`}>{acc.type}</span>
-                          <span className="flex items-center gap-1 text-[12px] text-slate-400"><MapPin size={11} className="text-[#40B5AD]" /> <span className="line-clamp-1">{acc.location}</span></span>
+                      <div className="p-3 sm:p-4 flex-1 flex flex-col space-y-2">
+                        <h3 className="text-[13px] sm:text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors line-clamp-2">{acc.name}</h3>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+                          <span className={`text-[10px] sm:text-[11px] px-2 py-0.5 rounded-full border font-medium w-fit ${typeBadgeColors[acc.type]}`}>{acc.type}</span>
+                          <span className="flex items-center gap-1 text-[11px] sm:text-[12px] text-slate-400"><MapPin size={11} className="text-[#40B5AD]" /> <span className="line-clamp-1">{acc.location}</span></span>
                         </div>
-                        <p className="text-[12px] text-slate-500 line-clamp-2">{acc.description}</p>
-                        <div className="flex flex-wrap gap-1 flex-1 content-start">
+                        <p className="text-[11.5px] sm:text-[12px] text-slate-500 line-clamp-2">{acc.description}</p>
+                        <div className="hidden sm:flex flex-wrap gap-1 flex-1 content-start">
                           {acc.facilities.slice(0, 3).map((f) => <span key={f} className="text-[10.5px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{f}</span>)}
                         </div>
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2.5 border-t border-slate-100 mt-auto gap-1">
                           <div>
                             {(acc.discount || 0) > 0 && (
-                              <span className="text-[12px] text-slate-400 line-through">
+                              <span className="text-[11px] sm:text-[12px] text-slate-400 line-through">
                                 {formatRupiah(acc.pricePerNight)}
                               </span>
                             )}
-                            <p className="text-[13px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1.5" translate="no">
+                            <p className="text-[13px] sm:text-[14px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1" translate="no">
                               {formatRupiah(acc.pricePerNight - (acc.pricePerNight * (acc.discount || 0) / 100))}
                               {(acc.discount || 0) > 0 && (
-                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
-                                  Hemat {acc.discount}%
+                                <span className="text-[9px] bg-red-100 text-red-600 px-1 py-0.5 rounded-full font-semibold">
+                                  -{acc.discount}%
                                 </span>
                               )}
                             </p>
-                            <p className="text-[10.5px] text-slate-400">per malam</p>
+                            <p className="text-[10px] text-slate-400">per malam</p>
                           </div>
-                          <button className="w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                          <button className="hidden sm:flex w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white items-center justify-center transition-all shadow-sm">
                             <ArrowRight size={14} />
                           </button>
                         </div>
@@ -409,12 +542,12 @@ export default function DestinasiClient({
 
           {/* ── VEHICLES SECTION ── */}
           {filteredVehicles.length > 0 && (
-            <div className="mt-20">
+            <div id="transportasi" className="mt-20 scroll-mt-28">
               <div className="mb-10">
                 <h2 className="text-3xl font-bold text-slate-900 mb-2">Sewa Kendaraan</h2>
                 <p className="text-slate-500 text-sm">Armada kendaraan terawat untuk mobilitas Anda di {selectedCity === "Semua" ? "berbagai destinasi" : selectedCity}.</p>
               </div>
-              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <motion.div layout className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                 <AnimatePresence>
                   {filteredVehicles.map((veh) => (
                     <motion.div
@@ -422,57 +555,58 @@ export default function DestinasiClient({
                       key={veh.id} onClick={() => handleVehicleClick(veh)}
                       className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col hover:-translate-y-1"
                     >
-                      <div className="relative h-44 w-full flex-shrink-0">
-                        <Image src={veh.imageUrl || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600"} alt={veh.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                      <div className="relative h-28 sm:h-44 w-full flex-shrink-0">
+                        <Image src={(veh.imageUrl ? veh.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600"} alt={veh.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                       </div>
-                      <div className="p-4 space-y-2.5 flex flex-col flex-1">
+                      <div className="p-3 sm:p-4 space-y-2 flex flex-col flex-1">
                         <div className="flex items-start justify-between gap-2">
                           <div>
-                            <h3 className="text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors">{veh.name}</h3>
-                            <p className="text-[11.5px] text-slate-500 mt-0.5 font-medium">{veh.brand}</p>
+                            <h3 className="text-[13px] sm:text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors line-clamp-2">{veh.name}</h3>
+                            <p className="text-[11px] sm:text-[11.5px] text-slate-500 mt-0.5 font-medium">{veh.brand}</p>
                           </div>
                         </div>
                         
-                        <div className="flex items-center gap-3 text-[12px] text-slate-500">
-                          <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{(veh.locations || []).join(", ")}</span></span>
-                          <span className="flex items-center gap-1 flex-shrink-0"><Users size={12} className="text-[#40B5AD]" /> {veh.capacity} org</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-[11px] sm:text-[12px] text-slate-500">
+                          <span className="flex items-center gap-1"><MapPin size={11} className="text-[#40B5AD]" /> <span className="line-clamp-1">{(veh.locations || []).join(", ")}</span></span>
+                          <span className="flex items-center gap-1 flex-shrink-0"><Users size={11} className="text-[#40B5AD]" /> {veh.capacity} org</span>
                         </div>
                         
-                        <p className="text-[12.5px] text-slate-500 line-clamp-2">{veh.description}</p>
+                        <p className="text-[11.5px] sm:text-[12.5px] text-slate-500 line-clamp-2">{veh.description}</p>
                         
-                        <div className="flex flex-wrap gap-1.5 pt-1 flex-1 content-start">
-                          <span className={`text-[10.5px] px-2 py-0.5 rounded-full border font-medium ${vehicleTypeColors[veh.type]}`}>
+                        <div className="flex flex-wrap gap-1 pt-1 flex-1 content-start">
+                          <span className={`text-[10px] sm:text-[10.5px] px-2 py-0.5 rounded-full border font-medium ${vehicleTypeColors[veh.type]}`}>
                             {veh.type}
                           </span>
-                          {veh.driverIncluded ? (
-                            <span className="flex items-center gap-1 text-[10.5px] bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">
-                              <Check size={11} /> Plus Driver
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1 text-[10.5px] bg-slate-50 text-slate-500 px-2 py-0.5 rounded-full border border-slate-200">
-                              <XIcon size={11} /> Lepas Kunci
-                            </span>
-                          )}
+                          <span className="flex items-center gap-1 text-[10px] sm:text-[10.5px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-100">
+                            Lepas Kunci / Supir
+                          </span>
                         </div>
                         
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2.5 border-t border-slate-100 mt-auto gap-1">
                           <div>
-                            {(veh.discount || 0) > 0 && (
-                              <span className="text-[12px] text-slate-400 line-through">
-                                {formatRupiah(veh.pricePerDay)}
-                              </span>
-                            )}
-                            <p className="text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1.5" translate="no">
-                              {formatRupiah(veh.pricePerDay - (veh.pricePerDay * (veh.discount || 0) / 100))}
-                              {(veh.discount || 0) > 0 && (
-                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
-                                  Hemat {veh.discount}%
-                                </span>
-                              )}
-                            </p>
-                            <p className="text-[10.5px] text-slate-400">per hari</p>
+                            {(() => {
+                              const { basePrice, discount } = getVehicleCardPriceDetails(veh);
+                              return (
+                                <>
+                                  {discount > 0 && (
+                                    <span className="text-[11px] sm:text-[12px] text-slate-400 line-through">
+                                      {formatRupiah(basePrice)}
+                                    </span>
+                                  )}
+                                  <p className="text-[13px] sm:text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1" translate="no">
+                                    {selectedCity === "Semua" ? "Mulai " : ""}{formatRupiah(basePrice - (basePrice * discount / 100))}
+                                    {discount > 0 && (
+                                      <span className="text-[9px] bg-red-100 text-red-600 px-1 py-0.5 rounded-full font-semibold">
+                                        -{discount}%
+                                      </span>
+                                    )}
+                                  </p>
+                                </>
+                              );
+                            })()}
+                            <p className="text-[10px] text-slate-400">per hari</p>
                           </div>
-                          <button className="w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                          <button className="hidden sm:flex w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white items-center justify-center transition-all shadow-sm">
                             <ArrowRight size={14} />
                           </button>
                         </div>
@@ -486,12 +620,12 @@ export default function DestinasiClient({
 
           {/* ── WIFI SECTION ── */}
           {filteredWifis.length > 0 && (
-            <div className="mt-20">
+            <div id="wifi" className="mt-20 scroll-mt-28">
               <div className="mb-10">
                 <h2 className="text-3xl font-bold text-slate-900 mb-2">Layanan Wifi</h2>
                 <p className="text-slate-500 text-sm">Tetap terhubung di mana saja selama liburan Anda.</p>
               </div>
-              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <motion.div layout className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                 <AnimatePresence>
                   {filteredWifis.map((wifi) => (
                     <motion.div
@@ -499,42 +633,42 @@ export default function DestinasiClient({
                       key={wifi.id} onClick={() => handleWifiClick(wifi)}
                       className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col hover:-translate-y-1"
                     >
-                      <div className="relative h-44 w-full flex-shrink-0">
-                        <Image src={wifi.imageUrl || "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600"} alt={wifi.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                      <div className="relative h-28 sm:h-44 w-full flex-shrink-0">
+                        <Image src={(wifi.imageUrl ? wifi.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600"} alt={wifi.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                       </div>
-                      <div className="p-4 space-y-2.5 flex flex-col flex-1">
-                        <h3 className="text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors">{wifi.name}</h3>
+                      <div className="p-3 sm:p-4 space-y-2 flex flex-col flex-1">
+                        <h3 className="text-[13px] sm:text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors line-clamp-2">{wifi.name}</h3>
                         
-                        <div className="flex items-center gap-3 text-[12px] text-slate-500">
-                          <span className="flex items-center gap-1"><WifiIcon size={12} className="text-[#40B5AD]" /> {wifi.type}</span>
-                          <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{(wifi.locations || []).join(", ") || "Bali"}</span></span>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-[11px] sm:text-[12px] text-slate-500">
+                          <span className="flex items-center gap-1"><WifiIcon size={11} className="text-[#40B5AD]" /> {wifi.type}</span>
+                          <span className="flex items-center gap-1"><MapPin size={11} className="text-[#40B5AD]" /> <span className="line-clamp-1">{(wifi.locations || []).join(", ") || "Bali"}</span></span>
                         </div>
                         
-                        <p className="text-[12.5px] text-slate-500 line-clamp-2">{wifi.description}</p>
+                        <p className="text-[11.5px] sm:text-[12.5px] text-slate-500 line-clamp-2">{wifi.description}</p>
                         
-                        <div className="flex flex-wrap gap-1.5 pt-1 flex-1 content-start">
+                        <div className="hidden sm:flex flex-wrap gap-1.5 pt-1 flex-1 content-start">
                           {wifi.features.slice(0, 3).map((f) => (
                             <span key={f} className="text-[10.5px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{f}</span>
                           ))}
                         </div>
                         
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2.5 border-t border-slate-100 mt-auto gap-1">
                           <div>
                             {(wifi.discount || 0) > 0 && (
-                              <span className="text-[12px] text-slate-400 line-through">
+                              <span className="text-[11px] sm:text-[12px] text-slate-400 line-through">
                                 {formatRupiah(wifi.price)}
                               </span>
                             )}
-                            <p className="text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1.5" translate="no">
+                            <p className="text-[13px] sm:text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1" translate="no">
                               {formatRupiah(wifi.price - (wifi.price * (wifi.discount || 0) / 100))}
                               {(wifi.discount || 0) > 0 && (
-                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
-                                  Hemat {wifi.discount}%
+                                <span className="text-[9px] bg-red-100 text-red-600 px-1 py-0.5 rounded-full font-semibold">
+                                  -{wifi.discount}%
                                 </span>
                               )}
                             </p>
                           </div>
-                          <button className="w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                          <button className="hidden sm:flex w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white items-center justify-center transition-all shadow-sm">
                             <ArrowRight size={14} />
                           </button>
                         </div>
@@ -548,12 +682,12 @@ export default function DestinasiClient({
 
           {/* ── MICE SECTION ── */}
           {filteredMice.length > 0 && (
-            <div className="mt-20">
+            <div id="mice" className="mt-20 scroll-mt-28">
               <div className="mb-10">
                 <h2 className="text-3xl font-bold text-slate-900 mb-2">Layanan MICE</h2>
                 <p className="text-slate-500 text-sm">Penyelenggaraan acara, konferensi, dan meeting di {selectedCity === "Semua" ? "berbagai destinasi" : selectedCity}.</p>
               </div>
-              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              <motion.div layout className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                 <AnimatePresence>
                   {filteredMice.map((m) => (
                     <motion.div
@@ -561,42 +695,42 @@ export default function DestinasiClient({
                       key={m.id} onClick={() => handleMiceClick(m)}
                       className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col hover:-translate-y-1"
                     >
-                      <div className="relative h-44 w-full flex-shrink-0">
-                        <Image src={m.imageUrl || "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=600"} alt={m.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
+                      <div className="relative h-28 sm:h-44 w-full flex-shrink-0">
+                        <Image src={(m.imageUrl ? m.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=600"} alt={m.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, 33vw" />
                       </div>
-                      <div className="p-4 space-y-2.5 flex flex-col flex-1">
-                        <h3 className="text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors">{m.name}</h3>
+                      <div className="p-3 sm:p-4 space-y-2 flex flex-col flex-1">
+                        <h3 className="text-[13px] sm:text-[14px] font-semibold text-slate-800 leading-tight group-hover:text-[#40B5AD] transition-colors line-clamp-2">{m.name}</h3>
                         
-                        <div className="flex items-center gap-3 text-[12px] text-slate-500">
-                          <span className="flex items-center gap-1"><MapPin size={12} className="text-[#40B5AD]" /> <span className="line-clamp-1">{m.location}</span></span>
-                          <span className="flex items-center gap-1 flex-shrink-0"><Users size={12} className="text-[#40B5AD]" /> {m.capacity} Pax</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 text-[11px] sm:text-[12px] text-slate-500">
+                          <span className="flex items-center gap-1"><MapPin size={11} className="text-[#40B5AD]" /> <span className="line-clamp-1">{m.location}</span></span>
+                          <span className="flex items-center gap-1 flex-shrink-0"><Users size={11} className="text-[#40B5AD]" /> {m.capacity} Pax</span>
                         </div>
                         
-                        <p className="text-[12.5px] text-slate-500 line-clamp-2">{m.description}</p>
+                        <p className="text-[11.5px] sm:text-[12.5px] text-slate-500 line-clamp-2">{m.description}</p>
                         
-                        <div className="flex flex-wrap gap-1.5 pt-1 flex-1 content-start">
+                        <div className="hidden sm:flex flex-wrap gap-1.5 pt-1 flex-1 content-start">
                           {m.facilities.slice(0, 3).map((f) => (
                             <span key={f} className="text-[10.5px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">{f}</span>
                           ))}
                         </div>
                         
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 mt-auto">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2.5 border-t border-slate-100 mt-auto gap-1">
                           <div>
                             {(m.discount || 0) > 0 && (
-                              <span className="text-[12px] text-slate-400 line-through">
+                              <span className="text-[11px] sm:text-[12px] text-slate-400 line-through">
                                 {formatRupiah(m.price)}
                               </span>
                             )}
-                            <p className="text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1.5" translate="no">
+                            <p className="text-[13px] sm:text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1" translate="no">
                               {formatRupiah(m.price - (m.price * (m.discount || 0) / 100))}
                               {(m.discount || 0) > 0 && (
-                                <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-semibold">
-                                  Hemat {m.discount}%
+                                <span className="text-[9px] bg-red-100 text-red-600 px-1 py-0.5 rounded-full font-semibold">
+                                  -{m.discount}%
                                 </span>
                               )}
                             </p>
                           </div>
-                          <button className="w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white flex items-center justify-center transition-all shadow-sm">
+                          <button className="hidden sm:flex w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white items-center justify-center transition-all shadow-sm">
                             <ArrowRight size={14} />
                           </button>
                         </div>
@@ -694,6 +828,586 @@ export default function DestinasiClient({
           </div>
         </div>
       </footer>
+
+      {/* ── DETAIL BOTTOM SHEET / MODAL DRAWER ── */}
+      <AnimatePresence>
+        {selectedItem && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedItem(null)}
+              className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
+            />
+            
+            {/* Responsive Modal/Bottom Sheet Box */}
+            {(() => {
+              const imageUrl: string = selectedItem.data.imageUrl || "";
+              const fallbackDefault = selectedItem.type === "package" ? "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800" :
+                selectedItem.type === "accommodation" ? "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800" :
+                selectedItem.type === "vehicle" ? "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800" :
+                selectedItem.type === "wifi" ? "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800" :
+                "https://images.unsplash.com/photo-1517502884422-41eaead166d4?w=800";
+              
+              const images: string[] = imageUrl.includes(",")
+                ? imageUrl.split(",").map((url: string) => url.trim()).filter(Boolean)
+                : [imageUrl || fallbackDefault].filter(Boolean);
+
+              const handlePrev = () => {
+                setActiveImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+              };
+              
+              const handleNext = () => {
+                setActiveImageIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+              };
+
+              const activeImg = images[activeImageIndex] || fallbackDefault;
+
+              return (
+                <motion.div
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 30, stiffness: 280 }}
+                  data-lenis-prevent
+                  className="fixed bottom-0 left-0 right-0 z-[101] w-full h-[85vh] rounded-t-[2.5rem] bg-white flex flex-col md:flex-row shadow-[0_-15px_50px_rgba(0,0,0,0.15)] overflow-hidden border-t border-slate-100"
+                >
+                  {/* Close Button Mobile */}
+                  <button 
+                    onClick={() => setSelectedItem(null)}
+                    className="absolute top-4 right-4 z-50 bg-black/45 hover:bg-black/60 text-white p-2.5 rounded-full transition-colors backdrop-blur-md md:hidden shadow-sm"
+                  >
+                    <XIcon size={16} />
+                  </button>
+
+                  {/* Left Side: Photo Gallery & Slider */}
+                  <div className="w-full md:w-1/2 h-[35vh] md:h-full flex flex-col bg-slate-50 flex-shrink-0 relative border-b md:border-b-0 md:border-r border-slate-100/75">
+                    
+                    {/* Drag indicator for bottom sheet */}
+                    <div className="w-12 h-1 bg-slate-300/60 rounded-full absolute top-2.5 left-1/2 -translate-x-1/2 z-40" />
+
+                    {/* Main Image Slider View */}
+                    <div className="relative flex-1 w-full bg-slate-100 overflow-hidden">
+                      <Image
+                        src={activeImg}
+                        alt={`${selectedItem.data.name} Gallery`}
+                        fill
+                        className="object-cover transition-all duration-300"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+
+                      {/* Navigation Chevrons */}
+                      {images.length > 1 && (
+                        <>
+                          <button
+                            onClick={handlePrev}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-slate-800 hover:text-slate-950 flex items-center justify-center shadow-md transition-colors z-20 cursor-pointer"
+                          >
+                            <ChevronLeft size={16} />
+                          </button>
+                          <button
+                            onClick={handleNext}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/80 hover:bg-white text-slate-800 hover:text-slate-950 flex items-center justify-center shadow-md transition-colors z-20 cursor-pointer"
+                          >
+                            <ChevronRight size={16} />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Floating Category Tag inside photo */}
+                      <span className="absolute bottom-4 left-4 bg-[#40B5AD] text-white text-[10px] font-black uppercase tracking-wider px-3.5 py-1.5 rounded-full shadow-sm">
+                        {selectedItem.type === "package" ? "Paket Wisata" :
+                         selectedItem.type === "accommodation" ? "Akomodasi" :
+                         selectedItem.type === "vehicle" ? "Transportasi" :
+                         selectedItem.type === "wifi" ? "Internet Portable" :
+                         selectedItem.type === "mice" ? "MICE Event" : "Bundling Promo"}
+                      </span>
+                    </div>
+
+                    {/* Thumbnail List Row */}
+                    {images.length > 1 && (
+                      <div className="flex gap-2.5 p-3 overflow-x-auto justify-center bg-white border-t border-slate-100 flex-shrink-0 scrollbar-none">
+                        {images.map((imgUrl, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setActiveImageIndex(idx)}
+                            className={`relative w-12 h-12 md:w-16 md:h-16 rounded-xl overflow-hidden flex-shrink-0 border-2 transition-all ${
+                              activeImageIndex === idx
+                                ? "border-[#40B5AD] scale-105 shadow-md"
+                                : "border-transparent opacity-65 hover:opacity-100"
+                            }`}
+                          >
+                            <Image
+                              src={imgUrl}
+                              alt={`Gallery Thumbnail ${idx + 1}`}
+                              fill
+                              className="object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Side: Details Content */}
+                  <div className="flex-1 flex flex-col h-full min-h-0 bg-white relative">
+                    
+                    {/* Sticky Header */}
+                    <div className="p-6 md:p-8 pb-4 border-b border-slate-100 flex-shrink-0 flex items-start justify-between">
+                      <div>
+                        {/* Sub Category Type Tag */}
+                        {selectedItem.data.type && (
+                          <span className="text-[10px] font-extrabold text-[#40B5AD] uppercase bg-[#40B5AD]/10 px-3 py-1 rounded-full mb-1.5 inline-block">
+                            {selectedItem.data.type}
+                          </span>
+                        )}
+                        <h2 className="text-lg md:text-2xl font-extrabold text-slate-800 leading-snug">
+                          {selectedItem.data.name}
+                        </h2>
+                      </div>
+                      
+                      {/* Close Button Desktop */}
+                      <button 
+                        onClick={() => setSelectedItem(null)}
+                        className="text-slate-400 hover:text-slate-600 transition-colors ml-4 p-2 rounded-full hover:bg-slate-100 hidden md:flex flex-shrink-0 items-center justify-center border border-slate-100"
+                      >
+                        <XIcon size={20} className="stroke-[2.5]" />
+                      </button>
+                    </div>
+
+                    {/* Scrollable Middle Content (Description & Facilities) */}
+                    <div className="flex-1 overflow-y-auto p-6 md:p-8 pt-4 space-y-6 min-h-0 scrollbar-thin scrollbar-thumb-slate-200">
+                      
+                      {/* Meta list */}
+                      <div className="flex flex-wrap gap-x-5 gap-y-2 text-[12.5px] text-slate-500 pb-4 border-b border-slate-100/60">
+                        {selectedItem.data.location && (
+                          <div className="flex items-center gap-1.5">
+                            <MapPin size={14} className="text-[#40B5AD]" />
+                            <span>{selectedItem.data.location}</span>
+                          </div>
+                        )}
+                        {selectedItem.data.duration && (
+                          <div className="flex items-center gap-1.5">
+                            <Clock size={14} className="text-[#40B5AD]" />
+                            <span>{selectedItem.data.duration}</span>
+                          </div>
+                        )}
+                        {selectedItem.data.capacity && (
+                          <div className="flex items-center gap-1.5">
+                            <Users size={14} className="text-[#40B5AD]" />
+                            <span>Kapasitas: {selectedItem.data.capacity} {selectedItem.type === "mice" ? "Pax" : "Orang"}</span>
+                          </div>
+                        )}
+                        {selectedItem.data.brand && (
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-slate-600">Brand:</span>
+                            <span>{selectedItem.data.brand}</span>
+                          </div>
+                        )}
+                        {selectedItem.type === "vehicle" && (
+                          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 py-3 border-y border-slate-100 my-2">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[11px] font-bold text-slate-500 uppercase">Pilih Lokasi</label>
+                              <select
+                                value={selectedVehLocation}
+                                onChange={(e) => setSelectedVehLocation(e.target.value)}
+                                className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                              >
+                                {(selectedItem.data.locations || [])
+                                  .filter((loc: string) => {
+                                    let settings: any[] = [];
+                                    try {
+                                      settings = typeof selectedItem.data.priceSettings === 'string' 
+                                        ? JSON.parse(selectedItem.data.priceSettings) 
+                                        : (selectedItem.data.priceSettings || []);
+                                    } catch(e) {}
+                                    const setting = settings.find((s: any) => s.location === loc);
+                                    return setting ? setting.isActive !== false : true;
+                                  })
+                                  .map((loc: string) => (
+                                    <option key={loc} value={loc}>{loc}</option>
+                                  ))}
+                              </select>
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[11px] font-bold text-slate-500 uppercase">Opsi Rental</label>
+                              <select
+                                value={selectedDriverOption}
+                                onChange={(e) => setSelectedDriverOption(e.target.value as "self" | "driver")}
+                                className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                              >
+                                <option value="self">Lepas Kunci</option>
+                                <option value="driver">Dengan Driver</option>
+                              </select>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Booking Options for Tour Package */}
+                      {selectedItem.type === "package" && (
+                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/60 space-y-3">
+                          <h4 className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">Pilihan Pemesanan Tour</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[11px] font-bold text-slate-500 uppercase">Tanggal Mulai</label>
+                              <input
+                                type="date"
+                                value={bookingStartDate}
+                                onChange={(e) => setBookingStartDate(e.target.value)}
+                                className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[11px] font-bold text-slate-500 uppercase">Tanggal Selesai</label>
+                              <input
+                                type="date"
+                                value={bookingEndDate}
+                                onChange={(e) => setBookingEndDate(e.target.value)}
+                                className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[11px] font-bold text-slate-500 uppercase">Jumlah Peserta (Orang)</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={bookingGuests}
+                              onChange={(e) => setBookingGuests(Math.max(1, Number(e.target.value)))}
+                              className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                            />
+                          </div>
+
+                          {/* Display Pricing Tiers inside detail card */}
+                          {(() => {
+                            let rulesList: any[] = [];
+                            try {
+                              rulesList = typeof selectedItem.data.priceRules === 'string'
+                                ? JSON.parse(selectedItem.data.priceRules)
+                                : (selectedItem.data.priceRules || []);
+                            } catch(e) {}
+                            
+                            if (rulesList.length > 0) {
+                              return (
+                                <div className="pt-2.5 border-t border-slate-200/60 mt-2 space-y-1.5">
+                                  <p className="text-[10px] font-extrabold text-[#40B5AD] uppercase tracking-wider">Tarif Khusus Group & Rombongan (Hemat Bersama):</p>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div className="text-[12px] text-slate-600 bg-white p-2 rounded-xl border border-slate-200/50 flex flex-col shadow-sm">
+                                      <span className="text-[9px] text-[#40B5AD] font-bold uppercase">Standar (1 Orang)</span>
+                                      <span className="font-extrabold text-slate-800 mt-0.5">
+                                        {formatRupiah(selectedItem.data.price - (selectedItem.data.price * (selectedItem.data.discount || 0) / 100))}
+                                      </span>
+                                    </div>
+                                    {rulesList.map((r: any, idx: number) => (
+                                      <div key={idx} className="text-[12px] text-slate-600 bg-white p-2 rounded-xl border border-slate-200/50 flex flex-col shadow-sm">
+                                        <span className="text-[9px] text-[#40B5AD] font-bold uppercase">&ge; {r.minParticipants} Orang</span>
+                                        <span className="font-extrabold text-slate-800 mt-0.5">
+                                          {formatRupiah(r.price - (r.price * (selectedItem.data.discount || 0) / 100))} <span className="text-[9px] font-normal text-slate-400">/ pax</span>
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })()}
+                        </div>
+                      )}
+
+                      {/* Booking Options for Accommodation */}
+                      {selectedItem.type === "accommodation" && (
+                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100/60 space-y-3">
+                          <h4 className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">Pilihan Menginap</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[11px] font-bold text-slate-500 uppercase">Tanggal Check-in</label>
+                              <input
+                                type="date"
+                                value={bookingStartDate}
+                                onChange={(e) => setBookingStartDate(e.target.value)}
+                                className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <label className="text-[11px] font-bold text-slate-500 uppercase">Tanggal Check-out</label>
+                              <input
+                                type="date"
+                                value={bookingEndDate}
+                                onChange={(e) => setBookingEndDate(e.target.value)}
+                                className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[11px] font-bold text-slate-500 uppercase">Jumlah Tamu</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={bookingGuests}
+                              onChange={(e) => setBookingGuests(Math.max(1, Number(e.target.value)))}
+                              className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Description */}
+                      <div>
+                        <h4 className="font-bold text-slate-800 text-[12px] uppercase tracking-wider mb-2.5">Deskripsi Lengkap</h4>
+                        <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-line pr-1">
+                          {selectedItem.data.description || "Dapatkan kenyamanan ekstra dengan layanan eksklusif dari Infinity Go."}
+                        </p>
+                      </div>
+
+                      {/* Facilities / Features Grid */}
+                      {((selectedItem.data.facilities && selectedItem.data.facilities.length > 0) || 
+                        (selectedItem.data.features && selectedItem.data.features.length > 0)) && (
+                        <div>
+                          <h4 className="font-bold text-slate-800 text-[12px] uppercase tracking-wider mb-3">Fasilitas & Fitur</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {(selectedItem.data.facilities || selectedItem.data.features || []).map((f: string, i: number) => (
+                              <div key={i} className="flex items-center gap-2.5 text-xs text-slate-600 bg-slate-50/50 p-2.5 rounded-xl border border-slate-100/40">
+                                {getFacilityIcon(f)}
+                                <span className="line-clamp-1">{f}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Sticky Action Footer */}
+                    <div className="p-5 md:px-8 md:py-5 border-t border-slate-100 bg-slate-50/30 flex-shrink-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+                      
+                      {/* Price Section */}
+                      <div className="flex flex-col items-start">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Harga Terbaik</span>
+                        <div className="flex flex-col">
+                          {selectedItem.type === "bundle" ? (
+                            <div className="flex items-baseline gap-1.5">
+                              <span className="text-lg md:text-xl font-extrabold text-[#40B5AD] notranslate" translate="no">
+                                {formatRupiah(selectedItem.data.discountedPrice)}
+                              </span>
+                              {selectedItem.data.originalPrice > selectedItem.data.discountedPrice && (
+                                <span className="text-xs text-slate-400 line-through">
+                                  {formatRupiah(selectedItem.data.originalPrice)}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <>
+                              {(() => {
+                                const isVehicle = selectedItem.type === "vehicle";
+                                const isPackage = selectedItem.type === "package";
+                                
+                                let basePrice = selectedItem.data.price || selectedItem.data.pricePerNight || selectedItem.data.pricePerDay || 0;
+                                let discount = selectedItem.data.discount || 0;
+                                let singlePrice = basePrice;
+
+                                if (isVehicle) {
+                                  const vehiclePriceObj = getVehiclePriceDetails(selectedItem.data, selectedVehLocation, selectedDriverOption);
+                                  basePrice = vehiclePriceObj.basePrice;
+                                  discount = vehiclePriceObj.discount;
+                                  singlePrice = basePrice;
+                                } else if (isPackage) {
+                                  let packagePrice = selectedItem.data.price || 0;
+                                  let rulesList: any[] = [];
+                                  try {
+                                    rulesList = typeof selectedItem.data.priceRules === 'string'
+                                      ? JSON.parse(selectedItem.data.priceRules)
+                                      : (selectedItem.data.priceRules || []);
+                                  } catch(e) {}
+
+                                  if (rulesList.length > 0) {
+                                    const sortedRules = [...rulesList].sort((a, b) => b.minParticipants - a.minParticipants);
+                                    const matchedRule = sortedRules.find(r => bookingGuests >= r.minParticipants);
+                                    if (matchedRule) {
+                                      packagePrice = matchedRule.price;
+                                    } else {
+                                      packagePrice = (bookingGuests > 1 && selectedItem.data.priceSharing > 0)
+                                        ? selectedItem.data.priceSharing
+                                        : selectedItem.data.price;
+                                    }
+                                  } else {
+                                    packagePrice = (bookingGuests > 1 && selectedItem.data.priceSharing > 0)
+                                      ? selectedItem.data.priceSharing
+                                      : selectedItem.data.price;
+                                  }
+                                  singlePrice = packagePrice;
+                                  basePrice = packagePrice * bookingGuests;
+                                } else if (selectedItem.type === "accommodation") {
+                                  let nights = 1;
+                                  if (bookingStartDate && bookingEndDate) {
+                                    const start = new Date(bookingStartDate);
+                                    const end = new Date(bookingEndDate);
+                                    if (end > start) {
+                                      nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+                                    }
+                                  }
+                                  singlePrice = selectedItem.data.pricePerNight || 0;
+                                  basePrice = singlePrice * nights;
+                                }
+                                
+                                const originalTotalAfterPerc = (selectedItem.data.price * bookingGuests) - ((selectedItem.data.price * bookingGuests) * discount / 100);
+                                const discountedTotal = basePrice - (basePrice * discount / 100);
+                                const discountedSingle = singlePrice - (singlePrice * discount / 100);
+                                const savingsAmount = originalTotalAfterPerc - discountedTotal;
+
+                                return (
+                                  <div className="flex flex-col gap-0.5">
+                                    {isPackage && bookingGuests > 0 && (
+                                      <span className="text-[11px] text-slate-500 font-semibold">
+                                        Tarif per orang: <span className="text-[#40B5AD] font-bold">{formatRupiah(discountedSingle)}</span>
+                                      </span>
+                                    )}
+                                    <div className="flex items-baseline gap-1.5">
+                                      <span className="text-lg md:text-xl font-extrabold text-[#40B5AD] notranslate" translate="no">
+                                        {formatRupiah(discountedTotal)}
+                                      </span>
+                                      {isPackage && savingsAmount > 0 ? (
+                                        <>
+                                          <span className="text-xs text-slate-400 line-through">
+                                            {formatRupiah(originalTotalAfterPerc)}
+                                          </span>
+                                          <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold ml-1">
+                                            Hemat {formatRupiah(savingsAmount)}
+                                          </span>
+                                        </>
+                                      ) : (
+                                        discount > 0 && (
+                                          <>
+                                            <span className="text-xs text-slate-400 line-through">
+                                              {formatRupiah(basePrice)}
+                                            </span>
+                                            <span className="text-[9px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full font-bold ml-1">
+                                              -{discount}%
+                                            </span>
+                                          </>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </>
+                          )}
+                        </div>
+                        {selectedItem.type === "accommodation" && (
+                          <span className="text-[9px] text-slate-400">
+                            {(() => {
+                              let nights = 1;
+                              if (bookingStartDate && bookingEndDate) {
+                                const start = new Date(bookingStartDate);
+                                const end = new Date(bookingEndDate);
+                                if (end > start) {
+                                  nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+                                }
+                              }
+                              return `untuk ${nights} malam, ${bookingGuests} tamu`;
+                            })()}
+                          </span>
+                        )}
+                        {selectedItem.type === "package" && (
+                          <span className="text-[9px] text-slate-400">
+                            {`untuk ${bookingGuests} peserta`}
+                          </span>
+                        )}
+                        {selectedItem.type === "vehicle" && <span className="text-[9px] text-slate-400">per hari</span>}
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          const waNumber = "628977857823";
+                          let text = "";
+                          
+                          if (selectedItem.type === "package") {
+                            let packagePrice = selectedItem.data.price;
+                            let rulesList: any[] = [];
+                            try {
+                              rulesList = typeof selectedItem.data.priceRules === 'string'
+                                ? JSON.parse(selectedItem.data.priceRules)
+                                : (selectedItem.data.priceRules || []);
+                            } catch(e) {}
+                            
+                            if (rulesList.length > 0) {
+                              const sortedRules = [...rulesList].sort((a, b) => b.minParticipants - a.minParticipants);
+                              const matchedRule = sortedRules.find(r => bookingGuests >= r.minParticipants);
+                              if (matchedRule) {
+                                packagePrice = matchedRule.price;
+                              } else {
+                                packagePrice = (bookingGuests > 1 && selectedItem.data.priceSharing > 0)
+                                  ? selectedItem.data.priceSharing
+                                  : selectedItem.data.price;
+                              }
+                            } else {
+                              packagePrice = (bookingGuests > 1 && selectedItem.data.priceSharing > 0)
+                                ? selectedItem.data.priceSharing
+                                : selectedItem.data.price;
+                            }
+
+                            const totalBase = packagePrice * bookingGuests;
+                            const disc = selectedItem.data.discount || 0;
+                            const finalPrice = totalBase - (totalBase * disc / 100);
+                            
+                            const dateInfo = (bookingStartDate && bookingEndDate) 
+                              ? `\n📅 *Tanggal:* ${bookingStartDate} s/d ${bookingEndDate}`
+                              : "";
+
+                            text = `Halo tim Infinity Go,\n\nSaya ingin memesan paket tour berikut:\n\n📌 *Paket:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedItem.data.location}\n⏱ *Durasi:* ${selectedItem.data.duration}${dateInfo}\n👥 *Peserta:* ${bookingGuests} Orang\n💰 *Total Harga:* ${formatRupiah(finalPrice)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
+                          } else if (selectedItem.type === "accommodation") {
+                            let nights = 1;
+                            if (bookingStartDate && bookingEndDate) {
+                              const start = new Date(bookingStartDate);
+                              const end = new Date(bookingEndDate);
+                              if (end > start) {
+                                nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
+                              }
+                            }
+                            const totalBase = (selectedItem.data.pricePerNight || 0) * nights;
+                            const disc = selectedItem.data.discount || 0;
+                            const finalPrice = totalBase - (totalBase * disc / 100);
+
+                            const dateInfo = (bookingStartDate && bookingEndDate) 
+                              ? `\n📅 *Check-in:* ${bookingStartDate}\n📅 *Check-out:* ${bookingEndDate} (${nights} Malam)`
+                              : "";
+
+                            text = `Halo tim Infinity Go,\n\nSaya ingin memesan akomodasi berikut:\n\n🏨 *Nama:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedItem.data.location}\n🛏 *Tipe:* ${selectedItem.data.type}${dateInfo}\n👥 *Tamu:* ${bookingGuests} Orang\n💰 *Total Harga:* ${formatRupiah(finalPrice)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
+                          } else if (selectedItem.type === "vehicle") {
+                            const { basePrice, discount } = getVehiclePriceDetails(selectedItem.data, selectedVehLocation, selectedDriverOption);
+                            const finalPrice = basePrice - (basePrice * discount / 100);
+                            text = `Halo tim Infinity Go,\n\nSaya ingin menyewa kendaraan berikut:\n\n🚗 *Nama:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedVehLocation}\n🔧 *Opsi:* ${selectedDriverOption === "driver" ? "Dengan Driver" : "Lepas Kunci"}\n👥 *Kapasitas:* ${selectedItem.data.capacity} Orang\n💰 *Harga:* ${formatRupiah(finalPrice)} / Hari\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
+                          } else if (selectedItem.type === "wifi") {
+                            text = `Halo tim Infinity Go,\n\nSaya ingin menyewa layanan Wifi berikut:\n\n📶 *Nama:* ${selectedItem.data.name}\n🏷 *Tipe:* ${selectedItem.data.type}\n💰 *Harga:* ${formatRupiah(selectedItem.data.price)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
+                          } else if (selectedItem.type === "mice") {
+                            text = `Halo tim Infinity Go,\n\nSaya ingin memesan layanan MICE berikut:\n\n👥 *Nama:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedItem.data.location}\n📈 *Kapasitas:* ${selectedItem.data.capacity} Pax\n💰 *Harga:* ${formatRupiah(selectedItem.data.price)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
+                          } else if (selectedItem.type === "bundle") {
+                            text = `Halo tim Infinity Go,\n\nSaya tertarik dengan Promo Bundling berikut:\n\n🎟 *Paket:* ${selectedItem.data.name}\n💰 *Harga Promo:* ${formatRupiah(selectedItem.data.discountedPrice)}\n\nMohon informasi lebih lanjut. Terima kasih!`;
+                          }
+
+                          const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(text)}`;
+                          window.open(waUrl, "_blank");
+                        }}
+                        className="w-full sm:w-auto bg-[#0B1528] hover:bg-[#1e2d4a] text-white py-4 px-8 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <span>Pesan Sekarang</span>
+                        <svg className="w-4 h-4 fill-current text-white" viewBox="0 0 24 24">
+                          <path d="M12.004 2c-5.518 0-9.996 4.477-9.996 9.996 0 1.764.459 3.486 1.333 5.003L2 22l5.132-1.347a9.927 9.927 0 0 0 4.872 1.343c5.518 0 9.996-4.477 9.996-9.996C22 6.477 17.522 2 12.004 2zm5.82 14.127c-.246.696-1.22 1.272-1.684 1.319-.464.047-.927.232-2.927-.562-2.557-1.015-4.184-3.606-4.312-3.774-.128-.168-1.037-1.383-1.037-2.637 0-1.254.646-1.871.876-2.115.23-.244.5-.306.666-.306.167 0 .334.004.478.01.15.006.353-.058.552.424.204.496.7.1.7.204a.43.43 0 0 1-.044.22c-.11.23-.246.39-.39.55-.145.163-.3.34-.128.636.172.296.766 1.264 1.644 2.044.9.8 1.657 1.047 1.953 1.168.297.12.47.102.646-.1.176-.202.766-.89.97-1.196.204-.306.408-.255.687-.153.28.102 1.774.836 2.08 1.04.306.204.51.306.586.438.077.133.077.766-.17 1.462z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })()}
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlusCircle, Edit2, Trash2, Search, Wifi as WifiIcon, MapPin } from "lucide-react";
+import { PlusCircle, Edit2, Trash2, Search, Wifi as WifiIcon, MapPin, X as XIcon } from "lucide-react";
 import { StatusBadge } from "@/components/admin/Badge";
 import Button from "@/components/admin/Button";
 import Modal from "@/components/admin/Modal";
@@ -10,6 +10,43 @@ import { formatRupiah, Wifi } from "@/lib/admin-data";
 import Image from "next/image";
 import { saveWifi, deleteWifi } from "../actions";
 import { uploadImage } from "../upload-action";
+
+function compressImage(base64Str: string, maxWidth = 1200, maxHeight = 1200, quality = 0.75): Promise<string> {
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxWidth || height > maxHeight) {
+        if (width > height) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        } else {
+          width = Math.round((width * maxHeight) / height);
+          height = maxHeight;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(base64Str);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      const compressed = canvas.toDataURL("image/jpeg", quality);
+      resolve(compressed);
+    };
+    img.onerror = () => {
+      resolve(base64Str);
+    };
+  });
+}
 
 const locationOptions = [
   { value: "Bali", label: "Bali" },
@@ -122,7 +159,7 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
           <div key={wifi.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
             <div className="relative h-44">
               <Image
-                src={wifi.imageUrl || "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600"}
+                src={(wifi.imageUrl ? wifi.imageUrl.split(',')[0].trim() : "") || "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600"}
                 alt={wifi.name}
                 fill
                 className="object-cover"
@@ -228,40 +265,92 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
             <Input label="Fitur (pisahkan dengan koma)" placeholder="Unlimited Kuota, Baterai 12 jam" value={featuresText} onChange={(e) => setFeaturesText(e.target.value)} id="wifi-features" />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-[13px] font-medium text-slate-700 mb-1.5">Upload Gambar</label>
-            <div className="flex items-center gap-4">
-              {form.imageUrl && (
-                <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0">
-                  <Image src={form.imageUrl} alt="Preview" fill className="object-cover" sizes="64px" />
+            <label className="block text-[13px] font-medium text-slate-700 mb-2">
+              Upload Gambar (Maksimal 5)
+            </label>
+            
+            {/* Image Preview & Upload Grid */}
+            <div className="flex flex-wrap gap-3 mb-3 items-center">
+              {(form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean) : []).map((url, index) => (
+                <div key={index} className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 group flex-shrink-0">
+                  <Image src={url} alt={`Preview ${index + 1}`} fill className="object-cover" sizes="80px" />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean) : [];
+                      const updated = current.filter((_, idx) => idx !== index);
+                      setForm((p) => ({ ...p, imageUrl: updated.join(',') }));
+                    }}
+                    className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-md transition-colors flex items-center justify-center cursor-pointer z-10"
+                  >
+                    <XIcon size={12} className="stroke-[3]" />
+                  </button>
                 </div>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                id="wifi-image-upload"
-                disabled={uploading}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setUploading(true);
-                    const reader = new FileReader();
-                    reader.onloadend = async () => {
-                      const base64 = reader.result as string;
-                      const res = await uploadImage(base64);
-                      if (res.success && res.url) {
-                        setForm((p) => ({ ...p, imageUrl: res.url }));
-                      } else {
-                        alert(res.error || "Gagal upload gambar");
+              ))}
+
+              {/* Styled Upload Card as "+" Button */}
+              {!(form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean).length >= 5 : false) && (
+                <label className="flex flex-col items-center justify-center w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-colors cursor-pointer relative flex-shrink-0">
+                  <PlusCircle size={20} className="text-slate-400" />
+                  <span className="text-[10px] text-slate-400 mt-1 font-semibold">Tambah</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={uploading}
+                    onChange={async (e) => {
+                      const files = e.target.files;
+                      if (files && files.length > 0) {
+                        const current = form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean) : [];
+                        const remainingSlots = 5 - current.length;
+                        
+                        if (files.length > remainingSlots) {
+                          alert(`Maksimal 5 gambar diperbolehkan. Anda hanya bisa memilih ${remainingSlots} gambar lagi.`);
+                          e.target.value = ""; // reset input
+                          return;
+                        }
+
+                        setUploading(true);
+                        const uploadedUrls: string[] = [];
+                        for (let i = 0; i < files.length; i++) {
+                          const file = files[i];
+                          try {
+                            const base64 = await new Promise<string>((resolve, reject) => {
+                              const reader = new FileReader();
+                              reader.onloadend = () => resolve(reader.result as string);
+                              reader.onerror = reject;
+                              reader.readAsDataURL(file);
+                            });
+                            
+                            // Compress client-side
+                            const compressedBase64 = await compressImage(base64);
+                            
+                            const res = await uploadImage(compressedBase64);
+                            if (res.success && res.url) {
+                              uploadedUrls.push(res.url);
+                            } else {
+                              alert(res.error || `Gagal upload gambar: ${file.name}`);
+                            }
+                          } catch (err) {
+                            alert(`Gagal membaca/mengompresi file: ${file.name}`);
+                          }
+                        }
+                        if (uploadedUrls.length > 0) {
+                          setForm((p: any) => ({ ...p, imageUrl: [...current, ...uploadedUrls].join(',') }));
+                        }
+                        setUploading(false);
+                        e.target.value = ""; // reset input
                       }
-                      setUploading(false);
-                    };
-                    reader.readAsDataURL(file);
-                  }
-                }}
-                className="w-full text-[13px] text-slate-500 file:mr-4 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-[12.5px] file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer disabled:opacity-50"
-              />
+                    }}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
             {uploading && <p className="text-[11px] text-blue-600 mt-1 animate-pulse">Mengunggah ke Cloudinary...</p>}
+            <p className="text-[11px] text-slate-400 mt-1">
+              Klik kotak "+" di atas untuk mengunggah gambar (.jpg, .png). Maksimal 5 gambar terpilih ({form.imageUrl ? form.imageUrl.split(',').map(u => u.trim()).filter(Boolean).length : 0}/5).
+            </p>
           </div>
           <div className="sm:col-span-2 flex gap-3 pt-2">
             <Button className="flex-1" onClick={handleSave}>Simpan</Button>
