@@ -378,6 +378,7 @@ export async function saveWifi(rawData: any) {
       features: data.features || [],
       imageUrl: data.imageUrl || null,
       status: data.status,
+      priceSettings: data.priceSettings || null,
     };
 
     const result = await prisma.wifi.upsert({

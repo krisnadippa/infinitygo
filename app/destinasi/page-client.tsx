@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { MapPin, Clock, Star, Check, ArrowRight, Menu, Home, Car, Users, X as XIcon, Wifi as WifiIcon, Snowflake, Coffee, Bath, Wind, Tv, Shield, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
-import { IconBrandX, IconBrandFacebook, IconBrandLinkedin, IconBrandInstagram } from "@tabler/icons-react";
+import { IconBrandX, IconBrandFacebook, IconBrandLinkedin, IconBrandInstagram, IconBrandTiktok } from "@tabler/icons-react";
 import { 
   Navbar, 
   NavBody, 
@@ -45,7 +45,7 @@ const getFacilityIcon = (facilityName: string) => {
   if (name.includes("hairdryer") || name.includes("hair dryer") || name.includes("pengering")) return <Wind size={16} className="text-[#40B5AD] flex-shrink-0" />;
   if (name.includes("tv") || name.includes("televisi") || name.includes("hiburan")) return <Tv size={16} className="text-[#40B5AD] flex-shrink-0" />;
   if (name.includes("safe") || name.includes("brankas") || name.includes("keamanan") || name.includes("guard") || name.includes("supir") || name.includes("driver")) return <Shield size={16} className="text-[#40B5AD] flex-shrink-0" />;
-  return <Sparkles size={16} className="text-[#40B5AD] flex-shrink-0" />;
+  return null;
 };
 
 export default function DestinasiClient({
@@ -83,7 +83,7 @@ export default function DestinasiClient({
 
   const [bookingStartDate, setBookingStartDate] = useState<string>("");
   const [bookingEndDate, setBookingEndDate] = useState<string>("");
-  const [bookingGuests, setBookingGuests] = useState<number>(1);
+  const [bookingGuests, setBookingGuests] = useState<number | "">(1);
 
   useEffect(() => {
     setBookingStartDate("");
@@ -145,6 +145,59 @@ export default function DestinasiClient({
     
     return { basePrice, discount };
   };
+
+  const getWifiPriceDetails = (wifi: any, loc: string) => {
+    let settings: any[] = [];
+    try {
+      settings = typeof wifi.priceSettings === 'string' ? JSON.parse(wifi.priceSettings) : (wifi.priceSettings || []);
+    } catch(e) {}
+    
+    const setting = settings.find((s: any) => s.location === loc);
+    if (setting) {
+      const basePrice = setting.price;
+      const discount = setting.discount !== undefined ? setting.discount : (wifi.discount || 0);
+      return { basePrice: basePrice || wifi.price || 0, discount };
+    }
+    return { basePrice: wifi.price || 0, discount: wifi.discount || 0 };
+  };
+
+  const getWifiCardPriceDetails = (wifi: any) => {
+    let settings: any[] = [];
+    try {
+      settings = typeof wifi.priceSettings === 'string' ? JSON.parse(wifi.priceSettings) : (wifi.priceSettings || []);
+    } catch(e) {}
+    
+    let basePrice = wifi.price || 0;
+    let discount = wifi.discount || 0;
+    
+    if (selectedCity !== "Semua") {
+      const setting = settings.find((s: any) => s.location === selectedCity);
+      if (setting) {
+        basePrice = setting.price || wifi.price || 0;
+        discount = setting.discount !== undefined ? setting.discount : (wifi.discount || 0);
+      }
+    } else {
+      if (settings.length > 0) {
+        let lowestDiscounted = Infinity;
+        let bestSetting = null;
+        for (const s of settings) {
+          const disc = s.discount !== undefined ? s.discount : (wifi.discount || 0);
+          const p = s.price ? s.price - (s.price * disc / 100) : Infinity;
+          if (p < lowestDiscounted) {
+            lowestDiscounted = p;
+            bestSetting = { base: s.price || wifi.price || 0, discount: disc };
+          }
+        }
+        if (bestSetting) {
+          basePrice = bestSetting.base;
+          discount = bestSetting.discount;
+        }
+      }
+    }
+    
+    return { basePrice, discount };
+  };
+
 
   useEffect(() => {
     setActiveImageIndex(0);
@@ -210,6 +263,19 @@ export default function DestinasiClient({
 
   const handleWifiClick = (wifi: Wifi) => {
     setSelectedItem({ type: "wifi", data: wifi });
+    
+    let settings: any[] = [];
+    try {
+      settings = typeof wifi.priceSettings === 'string' ? JSON.parse(wifi.priceSettings) : (wifi.priceSettings || []);
+    } catch(e) {}
+    
+    const activeLocs = (wifi.locations || []).filter((loc: string) => {
+      const setting = settings.find((s: any) => s.location === loc);
+      return setting ? setting.isActive !== false : true;
+    });
+
+    const hasCurrentCity = activeLocs.includes(selectedCity);
+    setSelectedVehLocation(hasCurrentCity ? selectedCity : (activeLocs[0] || "Bali"));
   };
 
   const handleMiceClick = (miceItem: Mice) => {
@@ -244,6 +310,25 @@ export default function DestinasiClient({
     return (veh.locations || []).includes(city);
   };
 
+  const isWifiActiveInCity = (wifi: any, city: string) => {
+    if (wifi.status === "Inactive") return false;
+    let settings: any[] = [];
+    try {
+      settings = typeof wifi.priceSettings === 'string' ? JSON.parse(wifi.priceSettings) : (wifi.priceSettings || []);
+    } catch(e) {}
+
+    if (city === "Semua") {
+      if (settings.length === 0) return (wifi.locations || []).length > 0;
+      return settings.some((s: any) => s.isActive !== false);
+    }
+
+    const setting = settings.find((s: any) => s.location === city);
+    if (setting) {
+      return setting.isActive !== false;
+    }
+    return (wifi.locations || []).includes(city);
+  };
+
   const filteredPackages = packages.filter(pkg => matchesCity(pkg.location, selectedCity));
   const filteredAccommodations = accommodations.filter(acc => matchesCity(acc.location, selectedCity));
   const filteredVehicles = vehicles.filter(veh => 
@@ -251,7 +336,11 @@ export default function DestinasiClient({
     (selectedCity === "Semua" || (veh.locations || []).some(loc => matchesCity(loc, selectedCity))) &&
     isVehicleActiveInCity(veh, selectedCity)
   );
-  const filteredWifis = wifis.filter(wifi => selectedCity === "Semua" || (wifi.locations || []).some(loc => matchesCity(loc, selectedCity)));
+  const filteredWifis = wifis.filter(wifi => 
+    wifi.status === "Active" &&
+    (selectedCity === "Semua" || (wifi.locations || []).some(loc => matchesCity(loc, selectedCity))) &&
+    isWifiActiveInCity(wifi, selectedCity)
+  );
   const filteredMice = mice.filter(m => matchesCity(m.location, selectedCity));
   const filteredBundles = bundles.filter(b => selectedCity === "Semua" || (b.locations || []).some(loc => matchesCity(loc, selectedCity)));
 
@@ -654,19 +743,26 @@ export default function DestinasiClient({
                         
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2.5 border-t border-slate-100 mt-auto gap-1">
                           <div>
-                            {(wifi.discount || 0) > 0 && (
-                              <span className="text-[11px] sm:text-[12px] text-slate-400 line-through">
-                                {formatRupiah(wifi.price)}
-                              </span>
-                            )}
-                            <p className="text-[13px] sm:text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1" translate="no">
-                              {formatRupiah(wifi.price - (wifi.price * (wifi.discount || 0) / 100))}
-                              {(wifi.discount || 0) > 0 && (
-                                <span className="text-[9px] bg-red-100 text-red-600 px-1 py-0.5 rounded-full font-semibold">
-                                  -{wifi.discount}%
-                                </span>
-                              )}
-                            </p>
+                            {(() => {
+                              const { basePrice, discount } = getWifiCardPriceDetails(wifi);
+                              return (
+                                <>
+                                  {discount > 0 && (
+                                    <span className="text-[11px] sm:text-[12px] text-slate-400 line-through">
+                                      {formatRupiah(basePrice)}
+                                    </span>
+                                  )}
+                                  <p className="text-[13px] sm:text-[15px] font-bold text-[#40B5AD] notranslate flex flex-wrap items-center gap-1" translate="no">
+                                    {selectedCity === "Semua" ? "Mulai " : ""}{formatRupiah(basePrice - (basePrice * discount / 100))}
+                                    {discount > 0 && (
+                                      <span className="text-[9px] bg-red-100 text-red-600 px-1 py-0.5 rounded-full font-semibold">
+                                        -{discount}%
+                                      </span>
+                                    )}
+                                  </p>
+                                </>
+                              );
+                            })()}
                           </div>
                           <button className="hidden sm:flex w-8 h-8 rounded-full bg-slate-50 hover:bg-[#40B5AD] text-slate-600 hover:text-white items-center justify-center transition-all shadow-sm">
                             <ArrowRight size={14} />
@@ -755,9 +851,9 @@ export default function DestinasiClient({
         </div>
 
         <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
             {/* Logo & Description */}
-            <div className="lg:col-span-3">
+            <div className="col-span-2 md:col-span-2 lg:col-span-3">
               <div className="flex items-center gap-2 mb-6">
                 <div className="relative w-10 h-10">
                   <Image src="/images/logo.png" alt="Infinity Go" fill className="object-contain" />
@@ -770,36 +866,37 @@ export default function DestinasiClient({
             </div>
 
             {/* Links Columns */}
-            <div className="lg:col-span-2">
-              <h4 className="text-slate-900 font-bold mb-6">Support</h4>
+            <div className="col-span-1 lg:col-span-2">
+              <h4 className="text-slate-900 font-bold mb-6">Layanan</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Support Center</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">FAQs</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Troubleshooting</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Feedback</a></li>
+                <li><a href="/destinasi#paket" className="hover:text-[#40B5AD] transition-colors">Paket Tour</a></li>
+                <li><a href="/destinasi#akomodasi" className="hover:text-[#40B5AD] transition-colors">Akomodasi</a></li>
+                <li><a href="/destinasi#kendaraan" className="hover:text-[#40B5AD] transition-colors">Sewa Kendaraan</a></li>
+                <li><a href="/destinasi#wifi" className="hover:text-[#40B5AD] transition-colors">Wifi Portable</a></li>
               </ul>
             </div>
-            <div className="lg:col-span-2">
-              <h4 className="text-slate-900 font-bold mb-6">Company</h4>
+            <div className="col-span-1 lg:col-span-2">
+              <h4 className="text-slate-900 font-bold mb-6">Menu Utama</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Contact</a></li>
+                <li><a href="/" className="hover:text-[#40B5AD] transition-colors">Beranda</a></li>
+                <li><a href="/layanan" className="hover:text-[#40B5AD] transition-colors">Layanan</a></li>
+                <li><a href="/destinasi" className="hover:text-[#40B5AD] transition-colors">Destinasi</a></li>
+                <li><a href="/galeri" className="hover:text-[#40B5AD] transition-colors">Galeri</a></li>
+                <li><a href="/kontak" className="hover:text-[#40B5AD] transition-colors">Kontak</a></li>
               </ul>
             </div>
-            <div className="lg:col-span-2">
+            <div className="col-span-1 lg:col-span-2">
               <h4 className="text-slate-900 font-bold mb-6">Legal</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Cookie Policy</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Compliance</a></li>
+                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Kebijakan Privasi</a></li>
+                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Syarat & Ketentuan</a></li>
+                <li><a href="/#testimoni" className="hover:text-[#40B5AD] transition-colors">Testimoni</a></li>
+                <li><a href="/kontak" className="hover:text-[#40B5AD] transition-colors">Hubungi Kami</a></li>
               </ul>
             </div>
 
             {/* Newsletter & Socials */}
-            <div className="lg:col-span-3 flex flex-col gap-8">
+            <div className="col-span-2 md:col-span-2 lg:col-span-3 flex flex-col gap-8">
               <div className="relative flex items-center bg-white border border-slate-200 rounded-full p-2 shadow-sm w-full">
                 <input 
                   type="email" 
@@ -810,11 +907,12 @@ export default function DestinasiClient({
                   Subscribe
                 </button>
               </div>
-              <div className="flex items-center gap-4">
-                <a href="#" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandX size={16} /></a>
-                <a href="#" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandFacebook size={16} /></a>
-                <a href="#" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandLinkedin size={16} /></a>
-                <a href="#" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandInstagram size={16} /></a>
+              <div className="flex items-center justify-center md:justify-start gap-4">
+                <a href="https://www.instagram.com/go.infinity/" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandInstagram size={16} /></a>
+                <a href="https://www.facebook.com/8infinitygo/?locale=id_ID" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandFacebook size={16} /></a>
+                <a href="https://www.tiktok.com/@infinity.go6" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandTiktok size={16} /></a>
+                <a href="#" onClick={(e) => e.preventDefault()} className="p-2.5 rounded-full border border-slate-200/50 text-slate-300 cursor-not-allowed opacity-40" title="Not available"><IconBrandX size={16} /></a>
+                <a href="#" onClick={(e) => e.preventDefault()} className="p-2.5 rounded-full border border-slate-200/50 text-slate-300 cursor-not-allowed opacity-40" title="Not available"><IconBrandLinkedin size={16} /></a>
               </div>
             </div>
           </div>
@@ -822,8 +920,8 @@ export default function DestinasiClient({
           <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
             <p className="text-slate-400 text-sm">Copyright © Infinity Go {new Date().getFullYear()}</p>
             <div className="flex items-center gap-8 text-sm text-slate-400">
-              <a href="#" className="hover:text-slate-600 transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-slate-600 transition-colors">Terms Of Use</a>
+              <a href="#" className="hover:text-slate-600 transition-colors">Kebijakan Privasi</a>
+              <a href="#" className="hover:text-slate-600 transition-colors">Syarat & Ketentuan</a>
             </div>
           </div>
         </div>
@@ -1008,45 +1106,112 @@ export default function DestinasiClient({
                             <span>{selectedItem.data.brand}</span>
                           </div>
                         )}
-                        {selectedItem.type === "vehicle" && (
-                          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-3 py-3 border-y border-slate-100 my-2">
-                            <div className="flex flex-col gap-1">
-                              <label className="text-[11px] font-bold text-slate-500 uppercase">Pilih Lokasi</label>
-                              <select
-                                value={selectedVehLocation}
-                                onChange={(e) => setSelectedVehLocation(e.target.value)}
-                                className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
-                              >
-                                {(selectedItem.data.locations || [])
-                                  .filter((loc: string) => {
-                                    let settings: any[] = [];
-                                    try {
-                                      settings = typeof selectedItem.data.priceSettings === 'string' 
-                                        ? JSON.parse(selectedItem.data.priceSettings) 
-                                        : (selectedItem.data.priceSettings || []);
-                                    } catch(e) {}
-                                    const setting = settings.find((s: any) => s.location === loc);
-                                    return setting ? setting.isActive !== false : true;
-                                  })
-                                  .map((loc: string) => (
-                                    <option key={loc} value={loc}>{loc}</option>
-                                  ))}
-                              </select>
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <label className="text-[11px] font-bold text-slate-500 uppercase">Opsi Rental</label>
-                              <select
-                                value={selectedDriverOption}
-                                onChange={(e) => setSelectedDriverOption(e.target.value as "self" | "driver")}
-                                className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
-                              >
-                                <option value="self">Lepas Kunci</option>
-                                <option value="driver">Dengan Driver</option>
-                              </select>
-                            </div>
-                          </div>
-                        )}
                       </div>
+
+                      {/* Clean Rental Options for Vehicle */}
+                      {selectedItem.type === "vehicle" && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 pb-4 border-b border-slate-100/60">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lokasi</label>
+                            <select
+                              value={selectedVehLocation}
+                              onChange={(e) => setSelectedVehLocation(e.target.value)}
+                              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                            >
+                              {(selectedItem.data.locations || [])
+                                .filter((loc: string) => {
+                                  let settings: any[] = [];
+                                  try {
+                                    settings = typeof selectedItem.data.priceSettings === 'string' 
+                                      ? JSON.parse(selectedItem.data.priceSettings) 
+                                      : (selectedItem.data.priceSettings || []);
+                                  } catch(e) {}
+                                  const setting = settings.find((s: any) => s.location === loc);
+                                  return setting ? setting.isActive !== false : true;
+                                })
+                                .map((loc: string) => (
+                                  <option key={loc} value={loc}>{loc}</option>
+                                ))}
+                            </select>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Opsi Rental</label>
+                            <select
+                              value={selectedDriverOption}
+                              onChange={(e) => setSelectedDriverOption(e.target.value as "self" | "driver")}
+                              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                            >
+                              <option value="self">Lepas Kunci</option>
+                              <option value="driver">Dengan Driver</option>
+                            </select>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mulai Sewa</label>
+                            <input
+                              type="date"
+                              value={bookingStartDate}
+                              onChange={(e) => setBookingStartDate(e.target.value)}
+                              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Selesai Sewa</label>
+                            <input
+                              type="date"
+                              value={bookingEndDate}
+                              onChange={(e) => setBookingEndDate(e.target.value)}
+                              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Clean Rental Options for Wifi */}
+                      {selectedItem.type === "wifi" && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pb-4 border-b border-slate-100/60">
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lokasi</label>
+                            <select
+                              value={selectedVehLocation}
+                              onChange={(e) => setSelectedVehLocation(e.target.value)}
+                              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                            >
+                              {(selectedItem.data.locations || [])
+                                .filter((loc: string) => {
+                                  let settings: any[] = [];
+                                  try {
+                                    settings = typeof selectedItem.data.priceSettings === 'string' 
+                                      ? JSON.parse(selectedItem.data.priceSettings) 
+                                      : (selectedItem.data.priceSettings || []);
+                                  } catch(e) {}
+                                  const setting = settings.find((s: any) => s.location === loc);
+                                  return setting ? setting.isActive !== false : true;
+                                })
+                                .map((loc: string) => (
+                                  <option key={loc} value={loc}>{loc}</option>
+                                ))}
+                            </select>
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mulai Sewa</label>
+                            <input
+                              type="date"
+                              value={bookingStartDate}
+                              onChange={(e) => setBookingStartDate(e.target.value)}
+                              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Selesai Sewa</label>
+                            <input
+                              type="date"
+                              value={bookingEndDate}
+                              onChange={(e) => setBookingEndDate(e.target.value)}
+                              className="px-2.5 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       {/* Booking Options for Tour Package */}
                       {selectedItem.type === "package" && (
@@ -1078,7 +1243,10 @@ export default function DestinasiClient({
                               type="number"
                               min="1"
                               value={bookingGuests}
-                              onChange={(e) => setBookingGuests(Math.max(1, Number(e.target.value)))}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setBookingGuests(val === "" ? "" : Math.max(1, Number(val)));
+                              }}
                               className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
                             />
                           </div>
@@ -1150,7 +1318,10 @@ export default function DestinasiClient({
                               type="number"
                               min="1"
                               value={bookingGuests}
-                              onChange={(e) => setBookingGuests(Math.max(1, Number(e.target.value)))}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setBookingGuests(val === "" ? "" : Math.max(1, Number(val)));
+                              }}
                               className="px-3 py-2 text-[13px] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#40B5AD]/20 bg-white font-semibold text-slate-700"
                             />
                           </div>
@@ -1205,6 +1376,8 @@ export default function DestinasiClient({
                               {(() => {
                                 const isVehicle = selectedItem.type === "vehicle";
                                 const isPackage = selectedItem.type === "package";
+                                const isWifi = selectedItem.type === "wifi";
+                                const guestsCount = Number(bookingGuests) || 1;
                                 
                                 let basePrice = selectedItem.data.price || selectedItem.data.pricePerNight || selectedItem.data.pricePerDay || 0;
                                 let discount = selectedItem.data.discount || 0;
@@ -1212,9 +1385,36 @@ export default function DestinasiClient({
 
                                 if (isVehicle) {
                                   const vehiclePriceObj = getVehiclePriceDetails(selectedItem.data, selectedVehLocation, selectedDriverOption);
-                                  basePrice = vehiclePriceObj.basePrice;
+                                  singlePrice = vehiclePriceObj.basePrice;
                                   discount = vehiclePriceObj.discount;
-                                  singlePrice = basePrice;
+                                  
+                                  let rentalDays = 1;
+                                  if (bookingStartDate && bookingEndDate) {
+                                    const start = new Date(bookingStartDate);
+                                    const end = new Date(bookingEndDate);
+                                    if (end >= start) {
+                                      const diffTime = Math.abs(end.getTime() - start.getTime());
+                                      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                                      rentalDays = diffDays === 0 ? 1 : diffDays;
+                                    }
+                                  }
+                                  basePrice = singlePrice * rentalDays;
+                                } else if (isWifi) {
+                                  const wifiPriceObj = getWifiPriceDetails(selectedItem.data, selectedVehLocation);
+                                  singlePrice = wifiPriceObj.basePrice;
+                                  discount = wifiPriceObj.discount;
+                                  
+                                  let rentalDays = 1;
+                                  if (bookingStartDate && bookingEndDate) {
+                                    const start = new Date(bookingStartDate);
+                                    const end = new Date(bookingEndDate);
+                                    if (end >= start) {
+                                      const diffTime = Math.abs(end.getTime() - start.getTime());
+                                      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                                      rentalDays = diffDays === 0 ? 1 : diffDays;
+                                    }
+                                  }
+                                  basePrice = singlePrice * rentalDays;
                                 } else if (isPackage) {
                                   let packagePrice = selectedItem.data.price || 0;
                                   let rulesList: any[] = [];
@@ -1226,21 +1426,21 @@ export default function DestinasiClient({
 
                                   if (rulesList.length > 0) {
                                     const sortedRules = [...rulesList].sort((a, b) => b.minParticipants - a.minParticipants);
-                                    const matchedRule = sortedRules.find(r => bookingGuests >= r.minParticipants);
+                                    const matchedRule = sortedRules.find(r => guestsCount >= r.minParticipants);
                                     if (matchedRule) {
                                       packagePrice = matchedRule.price;
                                     } else {
-                                      packagePrice = (bookingGuests > 1 && selectedItem.data.priceSharing > 0)
+                                      packagePrice = (guestsCount > 1 && selectedItem.data.priceSharing > 0)
                                         ? selectedItem.data.priceSharing
                                         : selectedItem.data.price;
                                     }
                                   } else {
-                                    packagePrice = (bookingGuests > 1 && selectedItem.data.priceSharing > 0)
+                                    packagePrice = (guestsCount > 1 && selectedItem.data.priceSharing > 0)
                                       ? selectedItem.data.priceSharing
                                       : selectedItem.data.price;
                                   }
                                   singlePrice = packagePrice;
-                                  basePrice = packagePrice * bookingGuests;
+                                  basePrice = packagePrice * guestsCount;
                                 } else if (selectedItem.type === "accommodation") {
                                   let nights = 1;
                                   if (bookingStartDate && bookingEndDate) {
@@ -1254,14 +1454,15 @@ export default function DestinasiClient({
                                   basePrice = singlePrice * nights;
                                 }
                                 
-                                const originalTotalAfterPerc = (selectedItem.data.price * bookingGuests) - ((selectedItem.data.price * bookingGuests) * discount / 100);
+                                const originalPricePerItem = selectedItem.data.price || selectedItem.data.pricePerNight || selectedItem.data.pricePerDay || 0;
+                                const originalTotalAfterPerc = (originalPricePerItem * guestsCount) - ((originalPricePerItem * guestsCount) * discount / 100);
                                 const discountedTotal = basePrice - (basePrice * discount / 100);
                                 const discountedSingle = singlePrice - (singlePrice * discount / 100);
                                 const savingsAmount = originalTotalAfterPerc - discountedTotal;
 
                                 return (
                                   <div className="flex flex-col gap-0.5">
-                                    {isPackage && bookingGuests > 0 && (
+                                    {isPackage && guestsCount > 0 && (
                                       <span className="text-[11px] text-slate-500 font-semibold">
                                         Tarif per orang: <span className="text-[#40B5AD] font-bold">{formatRupiah(discountedSingle)}</span>
                                       </span>
@@ -1309,22 +1510,40 @@ export default function DestinasiClient({
                                   nights = Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));
                                 }
                               }
-                              return `untuk ${nights} malam, ${bookingGuests} tamu`;
+                              return `untuk ${nights} malam, ${Number(bookingGuests) || 1} tamu`;
                             })()}
                           </span>
                         )}
                         {selectedItem.type === "package" && (
                           <span className="text-[9px] text-slate-400">
-                            {`untuk ${bookingGuests} peserta`}
+                            {`untuk ${Number(bookingGuests) || 1} peserta`}
                           </span>
                         )}
-                        {selectedItem.type === "vehicle" && <span className="text-[9px] text-slate-400">per hari</span>}
+                        {(selectedItem.type === "vehicle" || selectedItem.type === "wifi") && (
+                          <span className="text-[9px] text-slate-400">
+                            {(() => {
+                              let rentalDays = 1;
+                              if (bookingStartDate && bookingEndDate) {
+                                const start = new Date(bookingStartDate);
+                                const end = new Date(bookingEndDate);
+                                if (end >= start) {
+                                  const diffTime = Math.abs(end.getTime() - start.getTime());
+                                  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                                  rentalDays = diffDays === 0 ? 1 : diffDays;
+                                }
+                                return `untuk ${rentalDays} hari`;
+                              }
+                              return "per hari";
+                            })()}
+                          </span>
+                        )}
                       </div>
                       
                       <button
                         onClick={() => {
                           const waNumber = "628977857823";
                           let text = "";
+                          const guestsCount = Number(bookingGuests) || 1;
                           
                           if (selectedItem.type === "package") {
                             let packagePrice = selectedItem.data.price;
@@ -1337,21 +1556,21 @@ export default function DestinasiClient({
                             
                             if (rulesList.length > 0) {
                               const sortedRules = [...rulesList].sort((a, b) => b.minParticipants - a.minParticipants);
-                              const matchedRule = sortedRules.find(r => bookingGuests >= r.minParticipants);
+                              const matchedRule = sortedRules.find(r => guestsCount >= r.minParticipants);
                               if (matchedRule) {
                                 packagePrice = matchedRule.price;
                               } else {
-                                packagePrice = (bookingGuests > 1 && selectedItem.data.priceSharing > 0)
+                                packagePrice = (guestsCount > 1 && selectedItem.data.priceSharing > 0)
                                   ? selectedItem.data.priceSharing
                                   : selectedItem.data.price;
                               }
                             } else {
-                              packagePrice = (bookingGuests > 1 && selectedItem.data.priceSharing > 0)
+                              packagePrice = (guestsCount > 1 && selectedItem.data.priceSharing > 0)
                                 ? selectedItem.data.priceSharing
                                 : selectedItem.data.price;
                             }
 
-                            const totalBase = packagePrice * bookingGuests;
+                            const totalBase = packagePrice * guestsCount;
                             const disc = selectedItem.data.discount || 0;
                             const finalPrice = totalBase - (totalBase * disc / 100);
                             
@@ -1359,7 +1578,7 @@ export default function DestinasiClient({
                               ? `\n📅 *Tanggal:* ${bookingStartDate} s/d ${bookingEndDate}`
                               : "";
 
-                            text = `Halo tim Infinity Go,\n\nSaya ingin memesan paket tour berikut:\n\n📌 *Paket:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedItem.data.location}\n⏱ *Durasi:* ${selectedItem.data.duration}${dateInfo}\n👥 *Peserta:* ${bookingGuests} Orang\n💰 *Total Harga:* ${formatRupiah(finalPrice)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
+                            text = `Halo tim Infinity Go,\n\nSaya ingin memesan paket tour berikut:\n\n📌 *Paket:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedItem.data.location}\n⏱ *Durasi:* ${selectedItem.data.duration}${dateInfo}\n👥 *Peserta:* ${guestsCount} Orang\n💰 *Total Harga:* ${formatRupiah(finalPrice)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
                           } else if (selectedItem.type === "accommodation") {
                             let nights = 1;
                             if (bookingStartDate && bookingEndDate) {
@@ -1377,13 +1596,45 @@ export default function DestinasiClient({
                               ? `\n📅 *Check-in:* ${bookingStartDate}\n📅 *Check-out:* ${bookingEndDate} (${nights} Malam)`
                               : "";
 
-                            text = `Halo tim Infinity Go,\n\nSaya ingin memesan akomodasi berikut:\n\n🏨 *Nama:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedItem.data.location}\n🛏 *Tipe:* ${selectedItem.data.type}${dateInfo}\n👥 *Tamu:* ${bookingGuests} Orang\n💰 *Total Harga:* ${formatRupiah(finalPrice)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
+                            text = `Halo tim Infinity Go,\n\nSaya ingin memesan akomodasi berikut:\n\n🏨 *Nama:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedItem.data.location}\n🛏 *Tipe:* ${selectedItem.data.type}${dateInfo}\n👥 *Tamu:* ${guestsCount} Orang\n💰 *Total Harga:* ${formatRupiah(finalPrice)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
                           } else if (selectedItem.type === "vehicle") {
                             const { basePrice, discount } = getVehiclePriceDetails(selectedItem.data, selectedVehLocation, selectedDriverOption);
-                            const finalPrice = basePrice - (basePrice * discount / 100);
-                            text = `Halo tim Infinity Go,\n\nSaya ingin menyewa kendaraan berikut:\n\n🚗 *Nama:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedVehLocation}\n🔧 *Opsi:* ${selectedDriverOption === "driver" ? "Dengan Driver" : "Lepas Kunci"}\n👥 *Kapasitas:* ${selectedItem.data.capacity} Orang\n💰 *Harga:* ${formatRupiah(finalPrice)} / Hari\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
+                            const singlePrice = basePrice - (basePrice * discount / 100);
+                            
+                            let rentalDays = 1;
+                            let dateInfo = "";
+                            if (bookingStartDate && bookingEndDate) {
+                              const start = new Date(bookingStartDate);
+                              const end = new Date(bookingEndDate);
+                              if (end >= start) {
+                                const diffTime = Math.abs(end.getTime() - start.getTime());
+                                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                                rentalDays = diffDays === 0 ? 1 : diffDays;
+                              }
+                              dateInfo = `\n📅 *Tanggal Sewa:* ${bookingStartDate} s/d ${bookingEndDate} (${rentalDays} Hari)`;
+                            }
+                            
+                            const finalPrice = singlePrice * rentalDays;
+                            text = `Halo tim Infinity Go,\n\nSaya ingin menyewa kendaraan berikut:\n\n🚗 *Nama:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedVehLocation}\n🔧 *Opsi:* ${selectedDriverOption === "driver" ? "Dengan Driver" : "Lepas Kunci"}${dateInfo}\n👥 *Kapasitas:* ${selectedItem.data.capacity} Orang\n💰 *Total Harga:* ${formatRupiah(finalPrice)}${rentalDays > 1 ? ` (${rentalDays} Hari)` : ""}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
                           } else if (selectedItem.type === "wifi") {
-                            text = `Halo tim Infinity Go,\n\nSaya ingin menyewa layanan Wifi berikut:\n\n📶 *Nama:* ${selectedItem.data.name}\n🏷 *Tipe:* ${selectedItem.data.type}\n💰 *Harga:* ${formatRupiah(selectedItem.data.price)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
+                            const { basePrice, discount } = getWifiPriceDetails(selectedItem.data, selectedVehLocation);
+                            const singlePrice = basePrice - (basePrice * discount / 100);
+                            
+                            let rentalDays = 1;
+                            let dateInfo = "";
+                            if (bookingStartDate && bookingEndDate) {
+                              const start = new Date(bookingStartDate);
+                              const end = new Date(bookingEndDate);
+                              if (end >= start) {
+                                const diffTime = Math.abs(end.getTime() - start.getTime());
+                                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                                rentalDays = diffDays === 0 ? 1 : diffDays;
+                              }
+                              dateInfo = `\n📅 *Tanggal Sewa:* ${bookingStartDate} s/d ${bookingEndDate} (${rentalDays} Hari)`;
+                            }
+                            
+                            const finalPrice = singlePrice * rentalDays;
+                            text = `Halo tim Infinity Go,\n\nSaya ingin menyewa layanan Wifi berikut:\n\n📶 *Nama:* ${selectedItem.data.name}\n🏷 *Tipe:* ${selectedItem.data.type}\n📍 *Lokasi:* ${selectedVehLocation}${dateInfo}\n💰 *Total Harga:* ${formatRupiah(finalPrice)}${rentalDays > 1 ? ` (${rentalDays} Hari)` : ""}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
                           } else if (selectedItem.type === "mice") {
                             text = `Halo tim Infinity Go,\n\nSaya ingin memesan layanan MICE berikut:\n\n👥 *Nama:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedItem.data.location}\n📈 *Kapasitas:* ${selectedItem.data.capacity} Pax\n💰 *Harga:* ${formatRupiah(selectedItem.data.price)}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
                           } else if (selectedItem.type === "bundle") {

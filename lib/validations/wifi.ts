@@ -11,4 +11,5 @@ export const WifiSchema = z.object({
   features: z.array(z.string()).optional(),
   imageUrl: z.string().url("Format URL gambar tidak valid").or(z.string().min(1)).optional(),
   status: z.enum(["Active", "Inactive"]).default("Active"),
+  priceSettings: z.string().optional().nullable(),
 });

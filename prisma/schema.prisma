@@ -160,6 +160,7 @@ model Wifi {
   status      String   @default("Active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  priceSettings String?
 }
 
 model Mice {

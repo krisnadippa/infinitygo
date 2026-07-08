@@ -126,6 +126,7 @@ export interface Wifi {
   features: string[];
   imageUrl?: string;
   status: "Active" | "Inactive";
+  priceSettings?: string | null;
 }
 
 export interface Mice {

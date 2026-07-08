@@ -62,7 +62,7 @@ const locationOptions = [
 
 const defaultForm: Partial<Wifi> = {
   name: "", type: "Portable", locations: ["Bali"], price: 0, discount: 0,
-  features: [], description: "", imageUrl: "", status: "Active",
+  features: [], description: "", imageUrl: "", status: "Active", priceSettings: null,
 };
 
 export default function WifiClient({ initialData }: { initialData: any[] }) {
@@ -107,6 +107,7 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
       features: featuresText.split(",").map((f) => f.trim()).filter(Boolean),
       imageUrl: form.imageUrl || "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600",
       status: form.status || "Active",
+      priceSettings: form.priceSettings || null,
     };
     
     const tempId = editing?.id || Math.random().toString();
@@ -256,6 +257,99 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
                   </label>
                 );
               })}
+            </div>
+          </div>
+
+          {/* Location Pricing Grid */}
+          <div className="sm:col-span-2 border-t border-slate-200 pt-5 mt-2">
+            <h3 className="text-[14px] font-bold text-slate-800 mb-1">Pengaturan Harga & Diskon per Lokasi</h3>
+            <p className="text-[11.5px] text-slate-400 mb-4">Tentukan tarif sewa harian Wifi dan diskon khusus untuk masing-masing kota destinasi.</p>
+            <div className="space-y-4">
+              {(form.locations || []).map((loc) => {
+                let settingsList: any[] = [];
+                try {
+                  settingsList = typeof form.priceSettings === 'string' ? JSON.parse(form.priceSettings) : (form.priceSettings || []);
+                } catch(e) {}
+                const setting = settingsList.find((s: any) => s.location === loc) || { location: loc, price: form.price || 0, discount: form.discount || 0, isActive: true };
+                return (
+                  <div key={loc} className="p-4 bg-slate-50/50 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
+                    {/* Header Row */}
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100 uppercase tracking-wide">
+                          <MapPin size={12} className="stroke-[2.5]" /> {loc}
+                        </span>
+                        
+                        <select
+                          value={setting.isActive !== false ? "Active" : "Inactive"}
+                          onChange={(e) => {
+                            const updatedList = [...settingsList];
+                            const idx = updatedList.findIndex((s: any) => s.location === loc);
+                            const val = e.target.value === "Active";
+                            if (idx > -1) {
+                              updatedList[idx] = { ...updatedList[idx], isActive: val };
+                            } else {
+                              updatedList.push({ location: loc, price: form.price || 0, discount: form.discount || 0, isActive: val });
+                            }
+                            setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
+                          }}
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md border focus:outline-none transition-colors cursor-pointer ${
+                            setting.isActive !== false 
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                              : "bg-rose-50 text-rose-700 border-rose-200"
+                          }`}
+                        >
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </select>
+                      </div>
+                      <span className="text-[11px] text-slate-400 italic">Tarif khusus {loc}</span>
+                    </div>
+                    {/* Inputs Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <CurrencyInput
+                        label="Harga Sewa (Rp / Hari)"
+                        value={setting.price}
+                        onChange={(val) => {
+                          const updatedList = [...settingsList];
+                          const idx = updatedList.findIndex((s: any) => s.location === loc);
+                          if (idx > -1) {
+                            updatedList[idx] = { ...updatedList[idx], price: val };
+                          } else {
+                            updatedList.push({ location: loc, price: val, discount: form.discount || 0, isActive: true });
+                          }
+                          setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
+                        }}
+                      />
+                      <Input
+                        label="Diskon Lokasi (%)"
+                        type="number"
+                        min="0"
+                        max="100"
+                        placeholder="Contoh: 10"
+                        value={setting.discount !== undefined ? setting.discount : 0}
+                        onChange={(e) => {
+                          const updatedList = [...settingsList];
+                          const idx = updatedList.findIndex((s: any) => s.location === loc);
+                          const val = Number(e.target.value);
+                          if (idx > -1) {
+                            updatedList[idx] = { ...updatedList[idx], discount: val };
+                          } else {
+                            updatedList.push({ location: loc, price: form.price || 0, discount: val, isActive: true });
+                          }
+                          setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+              {(form.locations || []).length === 0 && (
+                <div className="flex flex-col items-center justify-center p-6 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-slate-400">
+                  <MapPin size={24} className="stroke-[1.5] mb-1 text-slate-300" />
+                  <p className="text-[12px] italic">Pilih minimal satu lokasi di atas untuk mengatur harga.</p>
+                </div>
+              )}
             </div>
           </div>
           <div className="sm:col-span-2">

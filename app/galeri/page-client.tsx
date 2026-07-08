@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
-import { IconBrandX, IconBrandFacebook, IconBrandLinkedin, IconBrandInstagram } from "@tabler/icons-react";
+import { IconBrandX, IconBrandFacebook, IconBrandLinkedin, IconBrandInstagram, IconBrandTiktok } from "@tabler/icons-react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { 
   Navbar, 
@@ -229,9 +229,9 @@ export default function GaleriClient({ initialGallery }: { initialGallery: Galle
         </div>
 
         <div className="max-w-7xl mx-auto px-6 md:px-10 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-20">
             {/* Logo & Description */}
-            <div className="lg:col-span-3">
+            <div className="col-span-2 md:col-span-2 lg:col-span-3">
               <div className="flex items-center gap-2 mb-6">
                 <div className="relative w-10 h-10">
                   <Image src="/images/logo.png" alt="Infinity Go" fill className="object-contain" />
@@ -244,36 +244,37 @@ export default function GaleriClient({ initialGallery }: { initialGallery: Galle
             </div>
 
             {/* Links Columns */}
-            <div className="lg:col-span-2">
-              <h4 className="text-slate-900 font-bold mb-6">Support</h4>
+            <div className="col-span-1 lg:col-span-2">
+              <h4 className="text-slate-900 font-bold mb-6">Layanan</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Support Center</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">FAQs</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Troubleshooting</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Feedback</a></li>
+                <li><a href="/destinasi#paket" className="hover:text-[#40B5AD] transition-colors">Paket Tour</a></li>
+                <li><a href="/destinasi#akomodasi" className="hover:text-[#40B5AD] transition-colors">Akomodasi</a></li>
+                <li><a href="/destinasi#kendaraan" className="hover:text-[#40B5AD] transition-colors">Sewa Kendaraan</a></li>
+                <li><a href="/destinasi#wifi" className="hover:text-[#40B5AD] transition-colors">Wifi Portable</a></li>
               </ul>
             </div>
-            <div className="lg:col-span-2">
-              <h4 className="text-slate-900 font-bold mb-6">Company</h4>
+            <div className="col-span-1 lg:col-span-2">
+              <h4 className="text-slate-900 font-bold mb-6">Menu Utama</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Contact</a></li>
+                <li><a href="/" className="hover:text-[#40B5AD] transition-colors">Beranda</a></li>
+                <li><a href="/layanan" className="hover:text-[#40B5AD] transition-colors">Layanan</a></li>
+                <li><a href="/destinasi" className="hover:text-[#40B5AD] transition-colors">Destinasi</a></li>
+                <li><a href="/galeri" className="hover:text-[#40B5AD] transition-colors">Galeri</a></li>
+                <li><a href="/kontak" className="hover:text-[#40B5AD] transition-colors">Kontak</a></li>
               </ul>
             </div>
-            <div className="lg:col-span-2">
+            <div className="col-span-1 lg:col-span-2">
               <h4 className="text-slate-900 font-bold mb-6">Legal</h4>
               <ul className="space-y-4 text-sm text-slate-500">
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Cookie Policy</a></li>
-                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Compliance</a></li>
+                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Kebijakan Privasi</a></li>
+                <li><a href="#" className="hover:text-[#40B5AD] transition-colors">Syarat & Ketentuan</a></li>
+                <li><a href="/#testimoni" className="hover:text-[#40B5AD] transition-colors">Testimoni</a></li>
+                <li><a href="/kontak" className="hover:text-[#40B5AD] transition-colors">Hubungi Kami</a></li>
               </ul>
             </div>
 
             {/* Newsletter & Socials */}
-            <div className="lg:col-span-3 flex flex-col gap-8">
+            <div className="col-span-2 md:col-span-2 lg:col-span-3 flex flex-col gap-8">
               <div className="relative flex items-center bg-white border border-slate-200 rounded-full p-2 shadow-sm w-full">
                 <input 
                   type="email" 
@@ -284,11 +285,12 @@ export default function GaleriClient({ initialGallery }: { initialGallery: Galle
                   Subscribe
                 </button>
               </div>
-              <div className="flex items-center gap-4">
-                <a href="#" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandX size={16} /></a>
-                <a href="#" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandFacebook size={16} /></a>
-                <a href="#" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandLinkedin size={16} /></a>
-                <a href="#" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandInstagram size={16} /></a>
+              <div className="flex items-center justify-center md:justify-start gap-4">
+                <a href="https://www.instagram.com/go.infinity/" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandInstagram size={16} /></a>
+                <a href="https://www.facebook.com/8infinitygo/?locale=id_ID" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandFacebook size={16} /></a>
+                <a href="https://www.tiktok.com/@infinity.go6" target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-full border border-slate-200 text-slate-600 hover:bg-[#40B5AD] hover:text-white transition-all shadow-sm"><IconBrandTiktok size={16} /></a>
+                <a href="#" onClick={(e) => e.preventDefault()} className="p-2.5 rounded-full border border-slate-200/50 text-slate-300 cursor-not-allowed opacity-40" title="Not available"><IconBrandX size={16} /></a>
+                <a href="#" onClick={(e) => e.preventDefault()} className="p-2.5 rounded-full border border-slate-200/50 text-slate-300 cursor-not-allowed opacity-40" title="Not available"><IconBrandLinkedin size={16} /></a>
               </div>
             </div>
           </div>
@@ -296,8 +298,8 @@ export default function GaleriClient({ initialGallery }: { initialGallery: Galle
           <div className="pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
             <p className="text-slate-400 text-sm">Copyright © Infinity Go {new Date().getFullYear()}</p>
             <div className="flex items-center gap-8 text-sm text-slate-400">
-              <a href="#" className="hover:text-slate-600 transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-slate-600 transition-colors">Terms Of Use</a>
+              <a href="#" className="hover:text-slate-600 transition-colors">Kebijakan Privasi</a>
+              <a href="#" className="hover:text-slate-600 transition-colors">Syarat & Ketentuan</a>
             </div>
           </div>
         </div>

@@ -7,8 +7,20 @@ import { StatusBadge } from "@/components/admin/Badge";
 import { formatRupiah } from "@/lib/admin-data";
 
 export default function ReportsClient({ initialInvoices }: { initialInvoices: any[] }) {
-  const [dateFrom, setDateFrom] = useState("2026-05-01");
-  const [dateTo, setDateTo] = useState("2026-05-31");
+  const [dateFrom, setDateFrom] = useState(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    return `${y}-${m}-01`;
+  });
+  const [dateTo, setDateTo] = useState(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const lastDay = new Date(y, m + 1, 0).getDate();
+    const mm = String(m + 1).padStart(2, '0');
+    return `${y}-${mm}-${String(lastDay).padStart(2, '0')}`;
+  });
   const [statusFilter, setStatusFilter] = useState("All");
 
   // Filter logic
