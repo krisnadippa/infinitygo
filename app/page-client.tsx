@@ -490,7 +490,7 @@ export default function PageClient({
           </div>
 
           {/* Elfsight Google Reviews Widget */}
-          <div className="w-full">
+          <div className="w-full" style={{ touchAction: "pan-y" }}>
             <div className="elfsight-app-1904e8ff-14c3-4052-b91d-4b4d7c5ee6dd" data-elfsight-app-lazy></div>
           </div>
           
@@ -499,7 +499,7 @@ export default function PageClient({
       </section>
 
       {/* ── CTA BANNER ── */}
-      <section className="px-4 md:px-6 mb-16">
+      <section className="px-4 md:px-6 mb-16" style={{ touchAction: "pan-y" }}>
         <div className="relative h-[400px] md:h-[500px] w-full rounded-[2.5rem] overflow-hidden group">
           <Image
             src="/images/contact.jpg"
@@ -532,10 +532,10 @@ export default function PageClient({
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-white pt-20 pb-6 relative overflow-hidden">
+      <footer className="bg-white pt-20 pb-6 relative overflow-hidden" style={{ touchAction: "pan-y" }}>
         {/* Giant Faded Background Text Watermark */}
         <div className="absolute bottom-0 left-0 right-0 flex justify-center items-end select-none pointer-events-none z-0 w-full">
-          <span className="text-[14vw] font-black tracking-tight bg-gradient-to-b from-slate-900/[0.08] via-slate-900/[0.04] to-slate-900/[0.01] bg-clip-text text-transparent leading-[0.8] whitespace-nowrap">
+          <span className="text-[14vw] font-black tracking-tight bg-gradient-to-b from-slate-900/[0.08] via-slate-900/[0.04] to-slate-900/[0.01] bg-clip-text text-transparent leading-[0.8] whitespace-nowrap pointer-events-none select-none">
             INFINITY GO
           </span>
         </div>
