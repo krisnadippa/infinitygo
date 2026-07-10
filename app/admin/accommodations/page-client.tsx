@@ -116,7 +116,13 @@ export default function AccommodationsClient({ initialData }: { initialData: any
     setModalOpen(false);
     
     // Server Action
-    await saveAccommodation(acc as Accommodation);
+    try {
+      await saveAccommodation(acc as Accommodation);
+      alert("Data akomodasi berhasil disimpan!");
+    } catch (e: any) {
+      alert(e.message || "Gagal menyimpan data akomodasi");
+      window.location.reload();
+    }
   };
 
   const handleDelete = async () => {
@@ -124,7 +130,13 @@ export default function AccommodationsClient({ initialData }: { initialData: any
     const idToDelete = deleteId;
     setItems((p) => p.filter((acc) => acc.id !== idToDelete));
     setDeleteId(null);
-    await deleteAccommodation(idToDelete);
+    try {
+      await deleteAccommodation(idToDelete);
+      alert("Data akomodasi berhasil dihapus!");
+    } catch (e: any) {
+      alert("Gagal menghapus data akomodasi");
+      window.location.reload();
+    }
   };
 
   const typeBadgeColors: Record<string, string> = {

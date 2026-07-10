@@ -74,6 +74,8 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
   const [form, setForm] = useState<Partial<Wifi>>(defaultForm);
   const [featuresText, setFeaturesText] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [newRulePrices, setNewRulePrices] = useState<Record<string, number>>({});
+  const [newRuleDays, setNewRuleDays] = useState<Record<string, number | "">>({});
 
   const filtered = items.filter((p) => {
     return p.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -118,6 +120,7 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
     
     try {
       await saveWifi(wifi);
+      alert("Data wifi berhasil disimpan!");
     } catch (error: any) {
       alert(error.message || "Gagal menyimpan data");
       window.location.reload();
@@ -129,7 +132,12 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
     const idToDelete = deleteId;
     setItems((p) => p.filter((wifi) => wifi.id !== idToDelete));
     setDeleteId(null);
-    await deleteWifi(idToDelete);
+    try {
+      await deleteWifi(idToDelete);
+      alert("Data wifi berhasil dihapus!");
+    } catch (e: any) {
+      alert("Gagal menghapus data wifi");
+    }
   };
 
   return (
@@ -270,7 +278,7 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
                 try {
                   settingsList = typeof form.priceSettings === 'string' ? JSON.parse(form.priceSettings) : (form.priceSettings || []);
                 } catch(e) {}
-                const setting = settingsList.find((s: any) => s.location === loc) || { location: loc, price: form.price || 0, discount: form.discount || 0, isActive: true };
+                const setting = settingsList.find((s: any) => s.location === loc) || { location: loc, price: form.price || 0, discount: form.discount || 0, isActive: true, rules: [] };
                 return (
                   <div key={loc} className="p-4 bg-slate-50/50 border border-slate-200 rounded-xl hover:border-slate-300 transition-colors shadow-sm">
                     {/* Header Row */}
@@ -289,7 +297,7 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
                             if (idx > -1) {
                               updatedList[idx] = { ...updatedList[idx], isActive: val };
                             } else {
-                              updatedList.push({ location: loc, price: form.price || 0, discount: form.discount || 0, isActive: val });
+                              updatedList.push({ location: loc, price: form.price || 0, discount: form.discount || 0, isActive: val, rules: [] });
                             }
                             setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
                           }}
@@ -306,9 +314,9 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
                       <span className="text-[11px] text-slate-400 italic">Tarif khusus {loc}</span>
                     </div>
                     {/* Inputs Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                       <CurrencyInput
-                        label="Harga Sewa (Rp / Hari)"
+                        label="Harga Sewa Standar (Rp/Hari)"
                         value={setting.price}
                         onChange={(val) => {
                           const updatedList = [...settingsList];
@@ -316,7 +324,7 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
                           if (idx > -1) {
                             updatedList[idx] = { ...updatedList[idx], price: val };
                           } else {
-                            updatedList.push({ location: loc, price: val, discount: form.discount || 0, isActive: true });
+                            updatedList.push({ location: loc, price: val, discount: form.discount || 0, isActive: true, rules: [] });
                           }
                           setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
                         }}
@@ -335,11 +343,114 @@ export default function WifiClient({ initialData }: { initialData: any[] }) {
                           if (idx > -1) {
                             updatedList[idx] = { ...updatedList[idx], discount: val };
                           } else {
-                            updatedList.push({ location: loc, price: form.price || 0, discount: val, isActive: true });
+                            updatedList.push({ location: loc, price: form.price || 0, discount: val, isActive: true, rules: [] });
                           }
                           setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
                         }}
                       />
+                    </div>
+
+                    {/* Rules List */}
+                    <div className="mt-4 pt-3 border-t border-slate-200/60">
+                      <h4 className="text-[12px] font-bold text-slate-700 mb-2">Aturan Harga Berdasarkan Durasi Sewa</h4>
+                      
+                      {/* Existing Rules */}
+                      <div className="space-y-1.5 mb-3">
+                        {(setting.rules || []).map((rule: any, idx: number) => (
+                          <div key={idx} className="flex items-center justify-between bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm text-xs">
+                            <span className="font-semibold text-slate-650">Sewa &gt;= {rule.minDays} Hari</span>
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-blue-600">{formatRupiah(rule.price)} / Hari</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updatedList = [...settingsList];
+                                  const sIdx = updatedList.findIndex((s: any) => s.location === loc);
+                                  if (sIdx > -1) {
+                                    const locSetting = { ...updatedList[sIdx] };
+                                    locSetting.rules = (locSetting.rules || []).filter((_: any, i: number) => i !== idx);
+                                    updatedList[sIdx] = locSetting;
+                                  }
+                                  setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
+                                }}
+                                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-lg transition-colors flex items-center justify-center"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {(setting.rules || []).length === 0 && (
+                          <p className="text-[11px] text-slate-400 italic pl-1">Belum ada aturan khusus untuk durasi sewa di lokasi ini.</p>
+                        )}
+                      </div>
+
+                      {/* Add rule inline form */}
+                      <div className="flex items-end gap-2.5 pt-2 border-t border-dashed border-slate-200">
+                        <div className="w-24">
+                          <Input
+                            label="Min. Hari"
+                            type="number"
+                            min="1"
+                            placeholder="Contoh: 3"
+                            value={newRuleDays[loc] || ""}
+                            onChange={(e) => setNewRuleDays(p => ({ ...p, [loc]: e.target.value === "" ? "" : Number(e.target.value) }))}
+                            className="px-2.5 py-1 text-xs border border-slate-250 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                            id={`new-rule-days-${loc}`}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <CurrencyInput
+                            label="Harga/Hari (Rp)"
+                            value={newRulePrices[loc] || 0}
+                            onChange={(val) => setNewRulePrices(p => ({ ...p, [loc]: val }))}
+                            id={`new-rule-price-${loc}`}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const minDays = Number(newRuleDays[loc]);
+                            const price = newRulePrices[loc] || 0;
+
+                            if (!minDays || minDays < 1 || price < 0) {
+                              alert("Harap isi durasi hari dan harga dengan benar.");
+                              return;
+                            }
+
+                            const updatedList = [...settingsList];
+                            const sIdx = updatedList.findIndex((s: any) => s.location === loc);
+                            if (sIdx > -1) {
+                              const locSetting = { ...updatedList[sIdx] };
+                              const rules = [...(locSetting.rules || [])];
+                              const rIdx = rules.findIndex((r: any) => r.minDays === minDays);
+                              if (rIdx > -1) {
+                                rules[rIdx] = { minDays, price };
+                              } else {
+                                rules.push({ minDays, price });
+                              }
+                              rules.sort((a: any, b: any) => a.minDays - b.minDays);
+                              locSetting.rules = rules;
+                              updatedList[sIdx] = locSetting;
+                            } else {
+                              updatedList.push({
+                                location: loc,
+                                price: form.price || 0,
+                                discount: form.discount || 0,
+                                isActive: true,
+                                rules: [{ minDays, price }]
+                              });
+                            }
+
+                            setForm(p => ({ ...p, priceSettings: JSON.stringify(updatedList) }));
+                            setNewRuleDays(p => ({ ...p, [loc]: "" }));
+                            setNewRulePrices(p => ({ ...p, [loc]: 0 }));
+                          }}
+                          className="px-3.5 py-1.5 text-xs bg-white border border-slate-255 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors cursor-pointer shadow-sm mb-0.5"
+                        >
+                          Tambah
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

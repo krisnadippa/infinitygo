@@ -77,6 +77,8 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
   const [form, setForm] = useState<Partial<TourPackage>>(defaultForm);
   const [facilitiesText, setFacilitiesText] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [newRuleMin, setNewRuleMin] = useState<number | "">("");
+  const [newRulePrice, setNewRulePrice] = useState<number>(0);
 
   const filtered = items.filter((p) => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.location.toLowerCase().includes(search.toLowerCase());
@@ -124,6 +126,7 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
     // Server Action
     try {
       await saveTourPackage(pkg);
+      alert("Paket tour berhasil disimpan!");
     } catch (error: any) {
       alert(error.message || "Gagal menyimpan data");
       // Revert optimistic update if needed or refresh
@@ -136,7 +139,13 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
     const idToDelete = deleteId;
     setItems((p) => p.filter((pkg) => pkg.id !== idToDelete));
     setDeleteId(null);
-    await deleteTourPackage(idToDelete);
+    try {
+      await deleteTourPackage(idToDelete);
+      alert("Paket tour berhasil dihapus!");
+    } catch (e: any) {
+      alert("Gagal menghapus paket tour");
+      window.location.reload();
+    }
   };
 
   return (
@@ -321,36 +330,33 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
                   {/* Add New Rule Form */}
                   <div className="flex flex-col sm:flex-row gap-3 pt-4 items-end border-t border-dashed border-slate-200 mt-2">
                     <div className="flex-1">
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Min. Peserta (Orang)</label>
-                      <input
+                      <Input
+                        label="Min. Peserta (Orang)"
                         type="number"
-                        id="new-rule-min"
                         min="1"
                         placeholder="Contoh: 2"
-                        className="w-full px-3 py-2 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                        value={newRuleMin}
+                        onChange={(e) => setNewRuleMin(e.target.value === "" ? "" : Number(e.target.value))}
+                        id="new-rule-min"
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Harga per Orang (Rp)</label>
-                      <input
-                        type="number"
+                      <CurrencyInput
+                        label="Harga per Orang (Rp)"
+                        value={newRulePrice}
+                        onChange={(val) => setNewRulePrice(val)}
                         id="new-rule-price"
-                        min="0"
-                        placeholder="Contoh: 1200000"
-                        className="w-full px-3 py-2 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                       />
                     </div>
                     <Button
                       type="button"
                       variant="outline"
-                      className="px-4 py-2"
+                      className="px-4 py-2 text-xs font-bold"
                       onClick={() => {
-                        const minEl = document.getElementById("new-rule-min") as HTMLInputElement;
-                        const priceEl = document.getElementById("new-rule-price") as HTMLInputElement;
-                        const minVal = Number(minEl?.value);
-                        const priceVal = Number(priceEl?.value);
+                        const minVal = Number(newRuleMin);
+                        const priceVal = newRulePrice;
                         
-                        if (!minVal || minVal < 1 || isNaN(priceVal) || priceVal < 0) {
+                        if (!minVal || minVal < 1 || priceVal < 0) {
                           alert("Harap isi jumlah peserta dan harga dengan benar.");
                           return;
                         }
@@ -366,8 +372,8 @@ export default function PackagesClient({ initialData }: { initialData: any[] }) 
                         
                         setForm(p => ({ ...p, priceRules: JSON.stringify(updated) }));
                         
-                        if (minEl) minEl.value = "";
-                        if (priceEl) priceEl.value = "";
+                        setNewRuleMin("");
+                        setNewRulePrice(0);
                       }}
                     >
                       Tambah Aturan

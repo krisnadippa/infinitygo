@@ -146,7 +146,7 @@ export default function DestinasiClient({
     return { basePrice, discount };
   };
 
-  const getWifiPriceDetails = (wifi: any, loc: string) => {
+  const getWifiPriceDetails = (wifi: any, loc: string, rentalDays: number = 1) => {
     let settings: any[] = [];
     try {
       settings = typeof wifi.priceSettings === 'string' ? JSON.parse(wifi.priceSettings) : (wifi.priceSettings || []);
@@ -154,7 +154,13 @@ export default function DestinasiClient({
     
     const setting = settings.find((s: any) => s.location === loc);
     if (setting) {
-      const basePrice = setting.price;
+      let basePrice = setting.price;
+      const rules = setting.rules || [];
+      const sortedRules = [...rules].sort((a: any, b: any) => b.minDays - a.minDays);
+      const matchedRule = sortedRules.find((r: any) => rentalDays >= r.minDays);
+      if (matchedRule) {
+        basePrice = matchedRule.price;
+      }
       const discount = setting.discount !== undefined ? setting.discount : (wifi.discount || 0);
       return { basePrice: basePrice || wifi.price || 0, discount };
     }
@@ -1395,15 +1401,15 @@ export default function DestinasiClient({
                                     if (end >= start) {
                                       const diffTime = Math.abs(end.getTime() - start.getTime());
                                       const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                                      rentalDays = diffDays === 0 ? 1 : diffDays;
+                                      if (selectedDriverOption === "driver") {
+                                        rentalDays = diffDays + 1;
+                                      } else {
+                                        rentalDays = diffDays === 0 ? 1 : diffDays;
+                                      }
                                     }
                                   }
                                   basePrice = singlePrice * rentalDays;
                                 } else if (isWifi) {
-                                  const wifiPriceObj = getWifiPriceDetails(selectedItem.data, selectedVehLocation);
-                                  singlePrice = wifiPriceObj.basePrice;
-                                  discount = wifiPriceObj.discount;
-                                  
                                   let rentalDays = 1;
                                   if (bookingStartDate && bookingEndDate) {
                                     const start = new Date(bookingStartDate);
@@ -1414,6 +1420,9 @@ export default function DestinasiClient({
                                       rentalDays = diffDays === 0 ? 1 : diffDays;
                                     }
                                   }
+                                  const wifiPriceObj = getWifiPriceDetails(selectedItem.data, selectedVehLocation, rentalDays);
+                                  singlePrice = wifiPriceObj.basePrice;
+                                  discount = wifiPriceObj.discount;
                                   basePrice = singlePrice * rentalDays;
                                 } else if (isPackage) {
                                   let packagePrice = selectedItem.data.price || 0;
@@ -1458,7 +1467,29 @@ export default function DestinasiClient({
                                 const originalTotalAfterPerc = (originalPricePerItem * guestsCount) - ((originalPricePerItem * guestsCount) * discount / 100);
                                 const discountedTotal = basePrice - (basePrice * discount / 100);
                                 const discountedSingle = singlePrice - (singlePrice * discount / 100);
-                                const savingsAmount = originalTotalAfterPerc - discountedTotal;
+                                
+                                let savingsAmount = originalTotalAfterPerc - discountedTotal;
+                                let crossPrice = originalTotalAfterPerc;
+                                if (isWifi) {
+                                  let rentalDays = 1;
+                                  if (bookingStartDate && bookingEndDate) {
+                                    const start = new Date(bookingStartDate);
+                                    const end = new Date(bookingEndDate);
+                                    if (end >= start) {
+                                      const diffTime = Math.abs(end.getTime() - start.getTime());
+                                      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                                      rentalDays = diffDays === 0 ? 1 : diffDays;
+                                    }
+                                  }
+                                  const standardPriceObj = getWifiPriceDetails(selectedItem.data, selectedVehLocation, 1);
+                                  const stdSingle = standardPriceObj.basePrice;
+                                  const stdSingleDiscounted = stdSingle - (stdSingle * discount / 100);
+                                  const standardWifiTotal = stdSingleDiscounted * rentalDays;
+                                  if (standardWifiTotal > discountedTotal) {
+                                    crossPrice = standardWifiTotal;
+                                    savingsAmount = standardWifiTotal - discountedTotal;
+                                  }
+                                }
 
                                 return (
                                   <div className="flex flex-col gap-0.5">
@@ -1471,12 +1502,12 @@ export default function DestinasiClient({
                                       <span className="text-lg md:text-xl font-extrabold text-[#40B5AD] notranslate" translate="no">
                                         {formatRupiah(discountedTotal)}
                                       </span>
-                                      {isPackage && savingsAmount > 0 ? (
+                                      {(isPackage || isWifi) && savingsAmount > 0 ? (
                                         <>
                                           <span className="text-xs text-slate-400 line-through">
-                                            {formatRupiah(originalTotalAfterPerc)}
+                                            {formatRupiah(crossPrice)}
                                           </span>
-                                          <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold ml-1">
+                                          <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold ml-1 animate-pulse">
                                             Hemat {formatRupiah(savingsAmount)}
                                           </span>
                                         </>
@@ -1529,7 +1560,11 @@ export default function DestinasiClient({
                                 if (end >= start) {
                                   const diffTime = Math.abs(end.getTime() - start.getTime());
                                   const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                                  rentalDays = diffDays === 0 ? 1 : diffDays;
+                                  if (selectedItem.type === "vehicle" && selectedDriverOption === "driver") {
+                                    rentalDays = diffDays + 1;
+                                  } else {
+                                    rentalDays = diffDays === 0 ? 1 : diffDays;
+                                  }
                                 }
                                 return `untuk ${rentalDays} hari`;
                               }
@@ -1609,7 +1644,11 @@ export default function DestinasiClient({
                               if (end >= start) {
                                 const diffTime = Math.abs(end.getTime() - start.getTime());
                                 const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                                rentalDays = diffDays === 0 ? 1 : diffDays;
+                                if (selectedDriverOption === "driver") {
+                                  rentalDays = diffDays + 1;
+                                } else {
+                                  rentalDays = diffDays === 0 ? 1 : diffDays;
+                                }
                               }
                               dateInfo = `\n📅 *Tanggal Sewa:* ${bookingStartDate} s/d ${bookingEndDate} (${rentalDays} Hari)`;
                             }
@@ -1617,9 +1656,6 @@ export default function DestinasiClient({
                             const finalPrice = singlePrice * rentalDays;
                             text = `Halo tim Infinity Go,\n\nSaya ingin menyewa kendaraan berikut:\n\n🚗 *Nama:* ${selectedItem.data.name}\n📍 *Lokasi:* ${selectedVehLocation}\n🔧 *Opsi:* ${selectedDriverOption === "driver" ? "Dengan Driver" : "Lepas Kunci"}${dateInfo}\n👥 *Kapasitas:* ${selectedItem.data.capacity} Orang\n💰 *Total Harga:* ${formatRupiah(finalPrice)}${rentalDays > 1 ? ` (${rentalDays} Hari)` : ""}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
                           } else if (selectedItem.type === "wifi") {
-                            const { basePrice, discount } = getWifiPriceDetails(selectedItem.data, selectedVehLocation);
-                            const singlePrice = basePrice - (basePrice * discount / 100);
-                            
                             let rentalDays = 1;
                             let dateInfo = "";
                             if (bookingStartDate && bookingEndDate) {
@@ -1633,6 +1669,8 @@ export default function DestinasiClient({
                               dateInfo = `\n📅 *Tanggal Sewa:* ${bookingStartDate} s/d ${bookingEndDate} (${rentalDays} Hari)`;
                             }
                             
+                            const { basePrice, discount } = getWifiPriceDetails(selectedItem.data, selectedVehLocation, rentalDays);
+                            const singlePrice = basePrice - (basePrice * discount / 100);
                             const finalPrice = singlePrice * rentalDays;
                             text = `Halo tim Infinity Go,\n\nSaya ingin menyewa layanan Wifi berikut:\n\n📶 *Nama:* ${selectedItem.data.name}\n🏷 *Tipe:* ${selectedItem.data.type}\n📍 *Lokasi:* ${selectedVehLocation}${dateInfo}\n💰 *Total Harga:* ${formatRupiah(finalPrice)}${rentalDays > 1 ? ` (${rentalDays} Hari)` : ""}\n\nMohon konfirmasi ketersediaannya. Terima kasih!`;
                           } else if (selectedItem.type === "mice") {

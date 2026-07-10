@@ -160,6 +160,7 @@ export default function BundleClient({
       if (saved && !editing) {
         setItems((prev) => prev.map((item) => (item.id === tempId ? saved : item)));
       }
+      alert("Promo bundling berhasil disimpan!");
     } catch (error: any) {
       alert(error.message || "Gagal menyimpan data");
       window.location.reload();
@@ -173,6 +174,7 @@ export default function BundleClient({
     setDeleteId(null);
     try {
       await deleteBundle(idToDelete);
+      alert("Promo bundling berhasil dihapus!");
     } catch (error: any) {
       alert(error.message || "Gagal menghapus data");
       window.location.reload();

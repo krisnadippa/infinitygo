@@ -115,6 +115,7 @@ export default function MiceClient({ initialData }: { initialData: any[] }) {
     
     try {
       await saveMice(mice);
+      alert("Layanan MICE berhasil disimpan!");
     } catch (error: any) {
       alert(error.message || "Gagal menyimpan data");
       window.location.reload();
@@ -126,7 +127,13 @@ export default function MiceClient({ initialData }: { initialData: any[] }) {
     const idToDelete = deleteId;
     setItems((p) => p.filter((mice) => mice.id !== idToDelete));
     setDeleteId(null);
-    await deleteMice(idToDelete);
+    try {
+      await deleteMice(idToDelete);
+      alert("Layanan MICE berhasil dihapus!");
+    } catch (e: any) {
+      alert("Gagal menghapus layanan MICE");
+      window.location.reload();
+    }
   };
 
   return (

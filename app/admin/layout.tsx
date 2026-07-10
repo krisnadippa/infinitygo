@@ -3,13 +3,15 @@
 import { useState } from "react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminTopbar from "@/components/admin/AdminTopbar";
+import { ToastProvider } from "@/components/admin/Toast";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white flex print:bg-white print:block print:min-h-0">
+    <ToastProvider>
+      <div className="min-h-screen bg-white flex print:bg-white print:block print:min-h-0">
       {/* Sidebar */}
       <div className="print:hidden">
         <AdminSidebar
@@ -42,5 +44,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <main className="flex-1 p-4 lg:p-6 xl:p-8 print:p-0 print:block">{children}</main>
       </div>
     </div>
+    </ToastProvider>
   );
 }

@@ -165,7 +165,13 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
     else setItems((prev) => [{ ...veh, id: tempId }, ...prev]);
     
     setModalOpen(false);
-    await saveVehicle(veh as Vehicle);
+    try {
+      await saveVehicle(veh as Vehicle);
+      alert("Data kendaraan berhasil disimpan!");
+    } catch (e: any) {
+      alert(e.message || "Gagal menyimpan data kendaraan");
+      window.location.reload();
+    }
   };
 
   const handleDelete = async () => {
@@ -173,7 +179,13 @@ export default function VehiclesClient({ initialData }: { initialData: any[] }) 
     const idToDelete = deleteId;
     setItems((p) => p.filter((v) => v.id !== idToDelete));
     setDeleteId(null);
-    await deleteVehicle(idToDelete);
+    try {
+      await deleteVehicle(idToDelete);
+      alert("Data kendaraan berhasil dihapus!");
+    } catch (e: any) {
+      alert("Gagal menghapus data kendaraan");
+      window.location.reload();
+    }
   };
 
   return (
