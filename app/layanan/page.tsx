@@ -35,7 +35,7 @@ const servicesData = [
     title: "Agen Tour",
     description:
       "Pilihan perjalanan wisata terbaik di Bali. Nikmati pengalaman liburan tanpa repot dengan paket tour lengkap kami, dipandu oleh tim profesional.",
-    image: "/images/layanan1.png",
+    image: "/images/pakettur.png",
     icon: <IconMapSearch size={28} className="text-white" />,
     features: [
       "Pemandu Profesional",
@@ -55,7 +55,7 @@ const servicesData = [
     title: "Reservasi Villa & Hotel",
     description:
       "Temukan akomodasi impian untuk liburan Anda. Kami bekerja sama dengan properti terbaik di Bali untuk memastikan kenyamanan Anda.",
-    image: "/images/layanan2.png",
+    image: "/images/akomodasi.png",
     icon: <IconHome size={28} className="text-white" />,
     features: [
       "Harga Rate Terbaik",
@@ -75,7 +75,7 @@ const servicesData = [
     title: "Transportasi",
     description:
       "Solusi mobilitas yang aman dan nyaman selama di Bali. Tersedia sewa mobil dengan sopir atau lepas kunci.",
-    image: "/images/layanan3.png",
+    image: "/images/transsport.png",
     icon: <IconCar size={28} className="text-white" />,
     features: [
       "Armada Terawat",
@@ -95,7 +95,7 @@ const servicesData = [
     title: "Wifi Portabel",
     description:
       "Pastikan Anda selalu terhubung dengan internet kecepatan tinggi di mana pun Anda berada selama menjelajahi Bali.",
-    image: "/images/layanan4.png",
+    image: "/images/wifi.jpeg",
     icon: <IconWifi size={28} className="text-white" />,
     features: [
       "Koneksi Stabil 4G/5G",
@@ -115,7 +115,7 @@ const servicesData = [
     title: "MICE",
     description:
       "Solusi profesional untuk kebutuhan Meeting, Incentive, Convention, dan Exhibition instansi atau perusahaan Anda di Bali.",
-    image: "/images/layanan5.png",
+    image: "/images/mice.png",
     icon: <IconUsers size={28} className="text-white" />,
     features: [
       "Perencanaan Matang",
@@ -292,7 +292,7 @@ export default function LayananPage() {
                     className="w-full md:w-1/2"
                   >
                     <a href={targetUrl} className="block group">
-                      <div className="relative aspect-video rounded-[2rem] overflow-hidden bg-slate-200 shadow-sm group-hover:shadow-md transition-shadow duration-300">
+                      <div className="relative aspect-[3/2] rounded-[2rem] overflow-hidden bg-slate-100 shadow-sm group-hover:shadow-md transition-shadow duration-300">
                         <Image
                           src={service.image}
                           alt={service.title}
