@@ -275,7 +275,7 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
     city: "Kabupaten Badung, Bali 80361",
     website: "www.infinitygotravel.com",
     email: "infinitygo.travel@gmail.com",
-    phone: "+62 812 3456 7890",
+    phone: "+62811367008",
   };
 
   // Construct absolute URL for the logo, safe for both client and server rendering
