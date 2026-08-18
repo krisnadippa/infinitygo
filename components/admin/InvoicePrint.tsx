@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Invoice, formatRupiah, formatDate } from "@/lib/admin-data";
+import { Invoice, formatRupiah, formatCurrency, formatDate } from "@/lib/admin-data";
 
 interface InvoicePrintProps {
   invoice: Invoice;
@@ -206,10 +206,10 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
                 {item.quantity}
               </td>
               <td className="px-4 py-3 text-right border-b border-slate-200 text-slate-700">
-                {formatRupiah(item.price)}
+                {formatCurrency(item.price, invoice.currency)}
               </td>
               <td className="px-4 py-3 text-right border-b border-slate-200 font-semibold text-slate-800">
-                {formatRupiah(item.subtotal)}
+                {formatCurrency(item.subtotal, invoice.currency)}
               </td>
             </tr>
           ))}
@@ -221,24 +221,24 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
         <div className="w-72 space-y-1.5">
           <div className="flex justify-between py-1.5 border-b border-slate-200">
             <span className="text-slate-500">Subtotal</span>
-            <span className="font-medium text-slate-800">{formatRupiah(invoice.subtotal)}</span>
+            <span className="font-medium text-slate-800">{formatCurrency(invoice.subtotal, invoice.currency)}</span>
           </div>
           {invoice.discount > 0 && (
             <div className="flex justify-between py-1.5 border-b border-slate-200">
               <span className="text-slate-500">Discount</span>
-              <span className="font-medium text-red-500">- {formatRupiah(invoice.discount)}</span>
+              <span className="font-medium text-red-500">- {formatCurrency(invoice.discount, invoice.currency)}</span>
             </div>
           )}
           {invoice.tax > 0 && (
             <div className="flex justify-between py-1.5 border-b border-slate-200">
               <span className="text-slate-500">Tax</span>
-              <span className="font-medium text-slate-800">{formatRupiah(invoice.tax)}</span>
+              <span className="font-medium text-slate-800">{formatCurrency(invoice.tax, invoice.currency)}</span>
             </div>
           )}
           <div className="flex justify-between py-2.5 border-b-2 border-slate-800 mt-2">
             <span className="font-bold text-slate-800 text-[14px]">Total</span>
             <span className="font-black text-slate-900 text-[15px]">
-              {formatRupiah(invoice.grandTotal)}
+              {formatCurrency(invoice.grandTotal, invoice.currency)}
             </span>
           </div>
 
@@ -253,7 +253,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
                   )}
                 </span>
                 <span className="font-bold text-blue-700">
-                  - {formatRupiah(invoice.dpAmount)}
+                  - {formatCurrency(invoice.dpAmount, invoice.currency)}
                 </span>
               </div>
               {invoice.paidFull && (
@@ -265,7 +265,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
                     )}
                   </span>
                   <span className="font-bold text-green-700">
-                    - {formatRupiah(invoice.paidRemainingAmount ?? invoice.remainingAmount)}
+                    - {formatCurrency(invoice.paidRemainingAmount ?? invoice.remainingAmount, invoice.currency)}
                   </span>
                 </div>
               )}
@@ -278,7 +278,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
                     invoice.paidFull ? "text-green-600" : "text-red-600"
                   }`}
                 >
-                  {invoice.paidFull ? "Rp 0" : formatRupiah(invoice.remainingAmount)}
+                  {invoice.paidFull ? formatCurrency(0, invoice.currency) : formatCurrency(invoice.remainingAmount, invoice.currency)}
                 </span>
               </div>
               {invoice.paidFull && (
@@ -295,13 +295,13 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
           {invoice.paymentType === "Full" && invoice.status === "Paid" && (
             <div className="flex justify-between py-1.5">
               <span className="text-slate-500">Amount Paid</span>
-              <span className="font-bold text-green-600">{formatRupiah(invoice.grandTotal)}</span>
+              <span className="font-bold text-green-600">{formatCurrency(invoice.grandTotal, invoice.currency)}</span>
             </div>
           )}
           {invoice.paymentType === "Full" && invoice.status !== "Paid" && (
             <div className="flex justify-between py-1.5">
               <span className="font-bold text-slate-800">Balance Due</span>
-              <span className="font-black text-red-600">{formatRupiah(invoice.grandTotal)}</span>
+              <span className="font-black text-red-600">{formatCurrency(invoice.grandTotal, invoice.currency)}</span>
             </div>
           )}
         </div>
@@ -339,7 +339,7 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
                   </td>
                   <td className="px-3 py-2.5 border-b border-slate-100 text-[12px] text-slate-500">{formatDate(exp.date)}</td>
                   <td className="px-3 py-2.5 border-b border-slate-100 text-right font-semibold text-slate-700">
-                    {formatRupiah(exp.amount)}
+                    {formatCurrency(exp.amount, invoice.currency)}
                   </td>
                 </tr>
               ))}
@@ -348,11 +348,11 @@ export default function InvoicePrint({ invoice, showExpense = false }: InvoicePr
           {/* Expense summary row */}
           <div className="flex justify-end mt-3 gap-12 pr-3">
             <span className="text-[12px] text-slate-500 font-medium">Total Operational Expenses</span>
-            <span className="text-[13px] font-bold text-amber-700">{formatRupiah(invoice.totalExpense)}</span>
+            <span className="text-[13px] font-bold text-amber-700">{formatCurrency(invoice.totalExpense, invoice.currency)}</span>
           </div>
           <div className="flex justify-end mt-1.5 gap-12 pr-3 pb-3 border-b-2 border-slate-700">
             <span className="text-[12px] text-slate-500 font-medium">Net Profit</span>
-            <span className="text-[13px] font-bold text-green-700">{formatRupiah(invoice.netProfit)}</span>
+            <span className="text-[13px] font-bold text-green-700">{formatCurrency(invoice.netProfit, invoice.currency)}</span>
           </div>
         </div>
       )}

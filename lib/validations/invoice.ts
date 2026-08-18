@@ -28,6 +28,7 @@ export const InvoiceSchema = z.object({
   dueDate: optionalDateSchema,
   status: z.enum(["DRAFT", "PENDING", "PAID", "CANCELLED", "Draft", "Pending", "Paid", "Cancelled", "Lunas", "DP", "Dibatalkan"]), // Comprehensive list of allowed statuses
   paymentMethod: z.string().optional(),
+  currency: z.string().default("IDR"),
   discount: z.number().nonnegative().default(0),
   tax: z.number().nonnegative().default(0),
   dpAmount: z.number().nonnegative().optional().default(0),

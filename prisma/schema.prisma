@@ -18,6 +18,7 @@ model Invoice {
   status              String
   paymentMethod       String
   paymentType         String
+  currency            String        @default("IDR")
   dpAmount            Float         @default(0)
   dpDate              DateTime?
   remainingAmount     Float         @default(0)

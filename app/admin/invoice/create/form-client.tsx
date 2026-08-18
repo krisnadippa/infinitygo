@@ -7,9 +7,18 @@ import Button from "@/components/admin/Button";
 import Modal from "@/components/admin/Modal";
 import StatusModal from "@/components/admin/StatusModal";
 import InvoicePrint from "@/components/admin/InvoicePrint";
-import { InvoiceItem, ItemType, PaymentMethod, PaymentType, Invoice, formatRupiah } from "@/lib/admin-data";
+import { InvoiceItem, ItemType, PaymentMethod, PaymentType, Invoice, formatRupiah, formatCurrency } from "@/lib/admin-data";
 import { saveInvoice, getInvoiceById } from "../../actions";
 import { useRouter } from "next/navigation";
+
+const currencyOptions = [
+  { value: "IDR", label: "IDR (Rp)" },
+  { value: "USD", label: "USD ($)" },
+  { value: "EUR", label: "EUR (€)" },
+  { value: "AUD", label: "AUD ($)" },
+  { value: "SGD", label: "SGD ($)" },
+  { value: "MYR", label: "MYR (RM)" },
+];
 
 function generateId() { return Math.random().toString(36).slice(2, 9); }
 
@@ -67,6 +76,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
   ]);
   const [discount, setDiscount] = useState(0);
   const [tax, setTax] = useState(0);
+  const [currency, setCurrency] = useState("IDR");
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean;
     type: "success" | "error";
@@ -105,6 +115,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
           })));
           setDiscount(inv.discount);
           setTax(inv.tax);
+          setCurrency((inv as any).currency || "IDR");
         }
       };
       loadInvoice();
@@ -174,6 +185,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
     expenses: [],
     totalExpense: 0,
     netProfit: 0,
+    currency,
   });
 
   const handleSave = async () => {
@@ -260,6 +272,7 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                 <Input label="Due Date" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} id="due-date" />
                 <Select label="Payment Method" id="payment-method" options={paymentOptions} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)} />
                 <Select label="Status" id="invoice-status" options={statusOptions} value={status} onChange={(e) => setStatus(e.target.value as Invoice["status"])} />
+                <Select label="Currency" id="invoice-currency" options={currencyOptions} value={currency} onChange={(e) => setCurrency(e.target.value)} />
                 <div className="sm:col-span-2">
                   <Textarea label="Notes" placeholder="Additional notes for customer..." rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} id="invoice-notes" />
                 </div>
@@ -309,13 +322,13 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                           className="w-full px-3 py-2.5 text-[13px] border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400" />
                       </div>
                       <div>
-                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Price (Rp)</label>
-                        <CurrencyInput value={item.price || 0} onChange={(val) => updateItem(item.id, "price", val)} />
+                        <label className="block text-[12.5px] font-medium text-slate-700 mb-1">Price ({currency})</label>
+                        <CurrencyInput value={item.price || 0} onChange={(val) => updateItem(item.id, "price", val)} currency={currency} />
                       </div>
                     </div>
                     <div className="flex justify-end">
                       <p className="text-[13px] font-semibold text-slate-700">
-                        Subtotal: <span className="text-blue-600">{formatRupiah(item.subtotal)}</span>
+                        Subtotal: <span className="text-blue-600">{formatCurrency(item.subtotal, currency)}</span>
                       </p>
                     </div>
                   </div>
@@ -368,9 +381,10 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                 <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                   <div>
                     <CurrencyInput
-                      label="Deposit Amount (Rp)"
+                      label={`Deposit Amount (${currency})`}
                       value={dpAmount || 0}
                       onChange={(val) => setDpAmount(val)}
+                      currency={currency}
                       placeholder="Enter deposit amount"
                       className="border-amber-300 bg-amber-50 focus:border-amber-400"
                     />
@@ -380,15 +394,15 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
                     <div className="col-span-2 bg-amber-50 border border-amber-200 rounded-xl p-3 grid grid-cols-3 gap-3">
                       <div className="text-center">
                         <p className="text-[10.5px] text-amber-600 font-medium uppercase tracking-wide mb-0.5">Total Invoice</p>
-                        <p className="text-[13px] font-bold text-amber-800">{formatRupiah(grandTotal)}</p>
+                        <p className="text-[13px] font-bold text-amber-800">{formatCurrency(grandTotal, currency)}</p>
                       </div>
                       <div className="text-center border-x border-amber-200">
                         <p className="text-[10.5px] text-amber-600 font-medium uppercase tracking-wide mb-0.5">Deposit Paid</p>
-                        <p className="text-[13px] font-bold text-blue-700">{formatRupiah(dpAmount)}</p>
+                        <p className="text-[13px] font-bold text-blue-700">{formatCurrency(dpAmount, currency)}</p>
                       </div>
                       <div className="text-center">
                         <p className="text-[10.5px] text-amber-600 font-medium uppercase tracking-wide mb-0.5">Balance Due</p>
-                        <p className="text-[13px] font-bold text-red-600">{formatRupiah(remainingAmount)}</p>
+                        <p className="text-[13px] font-bold text-red-600">{formatCurrency(remainingAmount, currency)}</p>
                       </div>
                     </div>
                   )}
@@ -403,36 +417,36 @@ export default function InvoiceForm({ editId }: { editId: string | null }) {
               <div className="space-y-2">
                 <div className="flex justify-between items-center py-2 border-b border-slate-100">
                   <span className="text-[13px] text-slate-500">Subtotal</span>
-                  <span className="text-[13px] font-semibold text-slate-800">{formatRupiah(subtotal)}</span>
+                  <span className="text-[13px] font-semibold text-slate-800">{formatCurrency(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-slate-100">
                   <span className="text-[13px] text-slate-500">Discount</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[12px] text-slate-400">Rp</span>
-                    <CurrencyInput value={discount || 0} onChange={(val) => setDiscount(val)} className="w-28 text-right" />
+                    <span className="text-[12px] text-slate-400">{currency}</span>
+                    <CurrencyInput value={discount || 0} onChange={(val) => setDiscount(val)} currency={currency} className="w-28 text-right" />
                   </div>
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                  <span className="text-[13px] text-slate-500">Tax (Rp)</span>
+                  <span className="text-[13px] text-slate-500">Tax ({currency})</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[12px] text-slate-400">Rp</span>
-                    <CurrencyInput value={tax || 0} onChange={(val) => setTax(val)} className="w-28 text-right" />
+                    <span className="text-[12px] text-slate-400">{currency}</span>
+                    <CurrencyInput value={tax || 0} onChange={(val) => setTax(val)} currency={currency} className="w-28 text-right" />
                   </div>
                 </div>
                 <div className="flex justify-between items-center pt-2">
                   <span className="text-[14px] font-bold text-slate-800">Grand Total</span>
-                  <span className="text-[16px] font-bold text-blue-600">{formatRupiah(grandTotal)}</span>
+                  <span className="text-[16px] font-bold text-blue-600">{formatCurrency(grandTotal, currency)}</span>
                 </div>
  
                 {paymentType === "DP" && (
                   <div className="border-t border-slate-100 pt-3 mt-1 space-y-2">
                     <div className="flex justify-between items-center py-1.5 bg-blue-50 rounded-lg px-2">
                       <span className="text-[12.5px] text-blue-700 font-medium">Deposit Paid</span>
-                      <span className="text-[12.5px] font-bold text-blue-700">- {formatRupiah(dpAmount)}</span>
+                      <span className="text-[12.5px] font-bold text-blue-700">- {formatCurrency(dpAmount, currency)}</span>
                     </div>
                     <div className="flex justify-between items-center py-1.5 bg-red-50 rounded-lg px-2">
                       <span className="text-[12.5px] text-red-600 font-medium">Balance Due</span>
-                      <span className="text-[13px] font-bold text-red-600">{formatRupiah(remainingAmount)}</span>
+                      <span className="text-[13px] font-bold text-red-600">{formatCurrency(remainingAmount, currency)}</span>
                     </div>
                   </div>
                 )}

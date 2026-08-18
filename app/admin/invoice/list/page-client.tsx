@@ -5,7 +5,7 @@ import { Search, Eye, Edit2, Trash2, Download, PlusCircle, ChevronUp, ChevronDow
 import { StatusBadge } from "@/components/admin/Badge";
 import Button from "@/components/admin/Button";
 import StatusModal from "@/components/admin/StatusModal";
-import { formatRupiah, Invoice, formatDate } from "@/lib/admin-data";
+import { formatRupiah, formatCurrency, Invoice, formatDate } from "@/lib/admin-data";
 import Link from "next/link";
 import { deleteInvoice } from "../../actions";
 
@@ -18,7 +18,7 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
-  const perPage = 5;
+  const perPage = 10;
   
   // Modals state
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -182,7 +182,7 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
                         <p className="text-[11.5px] text-slate-400">{inv.paymentMethod}</p>
                         {inv.paymentType === "DP" && (
                           <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full border border-amber-200 font-medium">
-                            {inv.paidFull ? "Paid" : `Balance Due ${formatRupiah(inv.remainingAmount)}`}
+                            {inv.paidFull ? "Paid" : `Balance Due ${formatCurrency(inv.remainingAmount, inv.currency)}`}
                           </span>
                         )}
                       </div>
@@ -193,16 +193,16 @@ export default function InvoiceListClient({ initialData }: { initialData: any[] 
                     </td>
                     <td className="px-5 py-3.5 text-[13px] text-slate-600 whitespace-nowrap">{formatDate(inv.invoiceDate)}</td>
                     <td className="px-5 py-3.5">
-                      <p className="text-[13px] font-semibold text-slate-800">{formatRupiah(inv.grandTotal)}</p>
+                      <p className="text-[13px] font-semibold text-slate-800">{formatCurrency(inv.grandTotal, inv.currency)}</p>
                     </td>
                     <td className="px-5 py-3.5">
                       <p className="text-[13px] text-rose-600 font-medium">
-                        {inv.totalExpense > 0 ? formatRupiah(inv.totalExpense) : "—"}
+                        {inv.totalExpense > 0 ? formatCurrency(inv.totalExpense, inv.currency) : "—"}
                       </p>
                     </td>
                     <td className="px-5 py-3.5">
                       <p className={`text-[13px] font-semibold ${inv.netProfit > 0 ? "text-green-600" : "text-slate-400"}`}>
-                        {inv.netProfit > 0 ? formatRupiah(inv.netProfit) : "—"}
+                        {inv.netProfit > 0 ? formatCurrency(inv.netProfit, inv.currency) : "—"}
                       </p>
                     </td>
                     <td className="px-5 py-3.5">

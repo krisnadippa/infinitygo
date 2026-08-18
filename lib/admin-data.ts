@@ -44,6 +44,7 @@ export interface Invoice {
   dueDate: string;
   status: InvoiceStatus;
   paymentMethod: PaymentMethod;
+  currency: string;
   paymentType: PaymentType;
   dpAmount: number;           // jumlah DP dibayar (0 jika Full)
   dpDate: string;             // tanggal DP dibayar
@@ -181,6 +182,7 @@ export const dummyInvoices: Invoice[] = [
     status: "Paid",
     paymentMethod: "Bank Transfer",
     paymentType: "Full",
+    currency: "IDR",
     dpAmount: 0,
     dpDate: "",
     remainingAmount: 0,
@@ -229,6 +231,7 @@ export const dummyInvoices: Invoice[] = [
     status: "Paid",
     paymentMethod: "Cash",
     paymentType: "Full",
+    currency: "IDR",
     dpAmount: 0,
     dpDate: "",
     remainingAmount: 0,
@@ -260,6 +263,7 @@ export const dummyInvoices: Invoice[] = [
     status: "DP",
     paymentMethod: "Bank Transfer",
     paymentType: "DP",
+    currency: "IDR",
     dpAmount: 5000000,
     dpDate: "2026-05-05",
     remainingAmount: 9000000,
@@ -288,6 +292,7 @@ export const dummyInvoices: Invoice[] = [
     status: "Paid",
     paymentMethod: "E-Wallet",
     paymentType: "Full",
+    currency: "IDR",
     dpAmount: 0,
     dpDate: "",
     remainingAmount: 0,
@@ -317,6 +322,7 @@ export const dummyInvoices: Invoice[] = [
     status: "Pending",
     paymentMethod: "Bank Transfer",
     paymentType: "Full",
+    currency: "IDR",
     dpAmount: 0,
     dpDate: "",
     remainingAmount: 0,
@@ -345,6 +351,7 @@ export const dummyInvoices: Invoice[] = [
     status: "DP",
     paymentMethod: "Credit Card",
     paymentType: "DP",
+    currency: "IDR",
     dpAmount: 15000000,
     dpDate: "2026-05-10",
     remainingAmount: 25000000,
@@ -467,6 +474,19 @@ export const formatRupiah = (amount: number): string => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+};
+
+export const formatCurrency = (amount: number, currency: string = "IDR"): string => {
+  try {
+    return new Intl.NumberFormat(currency === "IDR" ? "id-ID" : "en-US", {
+      style: "currency",
+      currency: currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: currency === "IDR" ? 0 : 2,
+    }).format(amount);
+  } catch (e) {
+    return `${currency} ${amount.toLocaleString()}`;
+  }
 };
 
 export const formatNumber = (n: number): string =>

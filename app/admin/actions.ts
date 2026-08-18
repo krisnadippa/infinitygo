@@ -220,6 +220,7 @@ export async function saveInvoice(rawData: any) {
       dueDate: data.dueDate ? new Date(data.dueDate) : new Date(),
       status: data.status,
       paymentMethod: data.paymentMethod || "",
+      currency: data.currency || "IDR",
       paymentType: rawData.paymentType || "Full Payment",
       dpAmount: data.dpAmount || 0,
       dpDate: data.dpDate ? new Date(data.dpDate) : null,

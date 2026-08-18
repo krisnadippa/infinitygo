@@ -1,6 +1,6 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Image, Font } from '@react-pdf/renderer';
-import { Invoice, formatRupiah, formatDate } from "@/lib/admin-data";
+import { Invoice, formatRupiah, formatCurrency, formatDate } from "@/lib/admin-data";
 
 // Create styles
 const styles = StyleSheet.create({
@@ -356,8 +356,8 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
                 </View>
               </View>
               <Text style={[styles.tdNum, styles.tableColQty]}>{item.quantity}</Text>
-              <Text style={[styles.tdNum, styles.tableColPrice]}>{formatRupiah(item.price)}</Text>
-              <Text style={[styles.tdTotal, styles.tableColTotal]}>{formatRupiah(item.subtotal)}</Text>
+              <Text style={[styles.tdNum, styles.tableColPrice]}>{formatCurrency(item.price, invoice.currency)}</Text>
+              <Text style={[styles.tdTotal, styles.tableColTotal]}>{formatCurrency(item.subtotal, invoice.currency)}</Text>
             </View>
           ))}
         </View>
@@ -367,41 +367,41 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
           <View style={styles.summaryBox}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>{formatRupiah(invoice.subtotal)}</Text>
+              <Text style={styles.summaryValue}>{formatCurrency(invoice.subtotal, invoice.currency)}</Text>
             </View>
             {invoice.discount > 0 && (
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Discount</Text>
-                <Text style={{ ...styles.summaryValue, color: '#ef4444' }}>- {formatRupiah(invoice.discount)}</Text>
+                <Text style={{ ...styles.summaryValue, color: '#ef4444' }}>- {formatCurrency(invoice.discount, invoice.currency)}</Text>
               </View>
             )}
             {invoice.tax > 0 && (
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Tax</Text>
-                <Text style={styles.summaryValue}>{formatRupiah(invoice.tax)}</Text>
+                <Text style={styles.summaryValue}>{formatCurrency(invoice.tax, invoice.currency)}</Text>
               </View>
             )}
             <View style={styles.summaryTotalRow}>
               <Text style={styles.summaryTotalLabel}>Total</Text>
-              <Text style={styles.summaryTotalValue}>{formatRupiah(invoice.grandTotal)}</Text>
+              <Text style={styles.summaryTotalValue}>{formatCurrency(invoice.grandTotal, invoice.currency)}</Text>
             </View>
 
             {invoice.paymentType === "DP" && (
               <View>
                 <View style={styles.dpRow}>
                   <Text style={{ color: '#1d4ed8' }}>Deposit Paid {invoice.dpDate ? `(${formatDate(invoice.dpDate)})` : ''}</Text>
-                  <Text style={{ color: '#1d4ed8', fontWeight: 'bold' }}>- {formatRupiah(invoice.dpAmount)}</Text>
+                  <Text style={{ color: '#1d4ed8', fontWeight: 'bold' }}>- {formatCurrency(invoice.dpAmount, invoice.currency)}</Text>
                 </View>
                 {invoice.paidFull && (
                   <View style={styles.paidFullRow}>
                     <Text style={{ color: '#15803d' }}>Remaining Balance Paid</Text>
-                    <Text style={{ color: '#15803d', fontWeight: 'bold' }}>- {formatRupiah(invoice.paidRemainingAmount ?? invoice.remainingAmount)}</Text>
+                    <Text style={{ color: '#15803d', fontWeight: 'bold' }}>- {formatCurrency(invoice.paidRemainingAmount ?? invoice.remainingAmount, invoice.currency)}</Text>
                   </View>
                 )}
                 <View style={styles.balanceRow}>
                   <Text style={{ fontWeight: 'bold' }}>Balance Due</Text>
                   <Text style={{ fontWeight: 'bold', color: invoice.paidFull ? '#16a34a' : '#dc2626' }}>
-                    {invoice.paidFull ? "Rp 0" : formatRupiah(invoice.remainingAmount)}
+                    {invoice.paidFull ? formatCurrency(0, invoice.currency) : formatCurrency(invoice.remainingAmount, invoice.currency)}
                   </Text>
                 </View>
                 {invoice.paidFull && (
@@ -415,13 +415,13 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
             {invoice.paymentType === "Full" && invoice.status === "Paid" && (
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Amount Paid</Text>
-                <Text style={{ ...styles.summaryValue, color: '#16a34a' }}>{formatRupiah(invoice.grandTotal)}</Text>
+                <Text style={{ ...styles.summaryValue, color: '#16a34a' }}>{formatCurrency(invoice.grandTotal, invoice.currency)}</Text>
               </View>
             )}
             {invoice.paymentType === "Full" && invoice.status !== "Paid" && (
               <View style={styles.summaryRow}>
                 <Text style={{ fontWeight: 'bold', color: '#1e293b' }}>Balance Due</Text>
-                <Text style={{ fontWeight: 'bold', color: '#dc2626' }}>{formatRupiah(invoice.grandTotal)}</Text>
+                <Text style={{ fontWeight: 'bold', color: '#dc2626' }}>{formatCurrency(invoice.grandTotal, invoice.currency)}</Text>
               </View>
             )}
           </View>
@@ -450,17 +450,17 @@ export default function InvoicePDF({ invoice, showExpense = false }: InvoicePDFP
                     </View>
                   </View>
                   <Text style={[styles.tdNum, { width: '20%' }]}>{formatDate(exp.date)}</Text>
-                  <Text style={[styles.tdTotal, { width: '20%', textAlign: 'right' }]}>{formatRupiah(exp.amount)}</Text>
+                  <Text style={[styles.tdTotal, { width: '20%', textAlign: 'right' }]}>{formatCurrency(exp.amount, invoice.currency)}</Text>
                 </View>
               ))}
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 12 }}>
               <Text style={{ color: '#64748b', marginRight: 48, fontSize: 10 }}>Total Operational Expenses</Text>
-              <Text style={{ fontWeight: 'bold', color: '#b45309', fontSize: 11 }}>{formatRupiah(invoice.totalExpense)}</Text>
+              <Text style={{ fontWeight: 'bold', color: '#b45309', fontSize: 11 }}>{formatCurrency(invoice.totalExpense, invoice.currency)}</Text>
             </View>
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 8, borderBottomWidth: 2, borderBottomColor: '#334155', paddingBottom: 12 }}>
               <Text style={{ color: '#64748b', marginRight: 48, fontSize: 10 }}>Net Profit</Text>
-              <Text style={{ fontWeight: 'bold', color: '#15803d', fontSize: 11 }}>{formatRupiah(invoice.netProfit)}</Text>
+              <Text style={{ fontWeight: 'bold', color: '#15803d', fontSize: 11 }}>{formatCurrency(invoice.netProfit, invoice.currency)}</Text>
             </View>
           </View>
         )}

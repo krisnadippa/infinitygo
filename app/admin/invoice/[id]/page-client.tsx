@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { formatRupiah, Invoice, formatDate } from "@/lib/admin-data";
+import { formatRupiah, formatCurrency, Invoice, formatDate } from "@/lib/admin-data";
 import InvoicePrint from "@/components/admin/InvoicePrint";
 import Button from "@/components/admin/Button";
 import { StatusBadge } from "@/components/admin/Badge";
@@ -80,6 +80,40 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
     }
   };
 
+  const handlePayPending = async () => {
+    setLoading(true);
+    try {
+      const today = new Date().toISOString().split("T")[0];
+      const updated = {
+        ...invoice,
+        status: "Paid" as const,
+        paidFull: true,
+        remainingAmount: 0,
+        paidRemainingDate: today,
+        paidRemainingAmount: invoice.grandTotal,
+      };
+      
+      await saveInvoice(updated);
+      setInvoice(updated);
+      
+      setStatusModal({
+        isOpen: true,
+        type: "success",
+        title: "Pembayaran Berhasil",
+        message: `Invoice ${invoice.invoiceNumber} telah berhasil ditandai sebagai Lunas.`
+      });
+    } catch (error: any) {
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Pembayaran Gagal",
+        message: error.message || "Terjadi kesalahan saat memproses pembayaran."
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [loadingPDF, setLoadingPDF] = useState(false);
 
   const handleDownloadPDF = async () => {
@@ -138,7 +172,19 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
               icon={<CheckCircle size={15} />}
               onClick={openConfirmLunas}
             >
-              Settle Balance ({formatRupiah(invoice.remainingAmount)})
+              Settle Balance ({formatCurrency(invoice.remainingAmount, invoice.currency)})
+            </Button>
+          )}
+
+          {/* Pay Invoice button — only appears if status is Pending */}
+          {invoice.status === "Pending" && (
+            <Button
+              variant="primary"
+              icon={<CheckCircle size={15} />}
+              onClick={handlePayPending}
+              loading={loading}
+            >
+              Bayar Lunas ({formatCurrency(invoice.grandTotal, invoice.currency)})
             </Button>
           )}
 
@@ -193,24 +239,25 @@ export default function InvoiceDetailClient({ initialData }: { initialData: any 
           <div className="bg-slate-50 rounded-xl p-3 space-y-1.5">
             <div className="flex justify-between text-[12.5px]">
               <span className="text-slate-500">Total Invoice</span>
-              <span className="font-semibold text-slate-700">{formatRupiah(invoice.grandTotal)}</span>
+              <span className="font-semibold text-slate-700">{formatCurrency(invoice.grandTotal, invoice.currency)}</span>
             </div>
             <div className="flex justify-between text-[12.5px]">
               <span className="text-slate-500">Down Payment Paid</span>
-              <span className="font-semibold text-blue-600">- {formatRupiah(invoice.dpAmount)}</span>
+              <span className="font-semibold text-blue-600">- {formatCurrency(invoice.dpAmount, invoice.currency)}</span>
             </div>
             <div className="flex justify-between text-[13px] border-t border-slate-200 pt-1.5 mt-1">
               <span className="font-bold text-slate-800">Balance Due</span>
-              <span className="font-bold text-red-600">{formatRupiah(invoice.remainingAmount)}</span>
+              <span className="font-bold text-red-600">{formatCurrency(invoice.remainingAmount, invoice.currency)}</span>
             </div>
           </div>
 
           <div className="space-y-3 pt-1">
             <div>
               <CurrencyInput
-                label="Settle Amount (Rp)"
+                label={`Settle Amount (${invoice.currency})`}
                 value={settleAmount || 0}
                 onChange={(val) => setSettleAmount(val)}
+                currency={invoice.currency}
               />
             </div>
             <div>

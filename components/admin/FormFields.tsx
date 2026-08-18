@@ -108,15 +108,16 @@ interface CurrencyInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>,
   helper?: string;
   value: number;
   onChange: (value: number) => void;
+  currency?: string;
 }
 
-export function CurrencyInput({ label, error, icon, helper, className = "", id, value, onChange, ...props }: CurrencyInputProps) {
+export function CurrencyInput({ label, error, icon, helper, className = "", id, value, onChange, currency = "IDR", ...props }: CurrencyInputProps) {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, "-");
   
   // Format to string with thousand separators
   const formatValue = (val: number) => {
     if (val === 0 || isNaN(val)) return "";
-    return new Intl.NumberFormat("id-ID").format(val);
+    return new Intl.NumberFormat(currency === "IDR" ? "id-ID" : "en-US").format(val);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -12,6 +12,7 @@ import {
   Expense,
   ExpenseCategory,
   formatRupiah,
+  formatCurrency,
   Invoice,
   formatDate,
   formatDateInput,
@@ -101,7 +102,7 @@ function InvoicePickerModal({ isOpen, onClose, invoices, onSelect }: InvoicePick
                       <StatusBadge status={inv.status} />
                       {inv.paymentType === "DP" && !inv.paidFull && (
                         <span className="text-[10.5px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 font-medium">
-                          Remaining: {formatRupiah(inv.remainingAmount)}
+                          Remaining: {formatCurrency(inv.remainingAmount, inv.currency)}
                         </span>
                       )}
                     </div>
@@ -113,7 +114,7 @@ function InvoicePickerModal({ isOpen, onClose, invoices, onSelect }: InvoicePick
                   </div>
                 </div>
                 <div className="text-right flex-shrink-0 ml-4">
-                  <p className="text-[13px] font-bold text-slate-800">{formatRupiah(inv.grandTotal)}</p>
+                  <p className="text-[13px] font-bold text-slate-800">{formatCurrency(inv.grandTotal, inv.currency)}</p>
                   <p className="text-[11px] text-slate-400">{inv.items.length} items</p>
                   <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-400 ml-auto mt-1 transition-colors" />
                 </div>
@@ -338,7 +339,7 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
                     <StatusBadge status={selectedInvoice.status} />
                     {selectedInvoice.paymentType === "DP" && !selectedInvoice.paidFull && (
                       <span className="text-[11px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200 font-medium">
-                        DP — Balance {formatRupiah(selectedInvoice.remainingAmount)}
+                        DP — Balance {formatCurrency(selectedInvoice.remainingAmount, selectedInvoice.currency)}
                       </span>
                     )}
                   </div>
@@ -366,12 +367,12 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
                 {(selectedInvoice.items as any[]).map((item: any) => (
                   <div key={item.id} className="flex justify-between items-center text-[12.5px]">
                     <span className="text-slate-600">{item.name} <span className="text-slate-400">x{item.quantity}</span></span>
-                    <span className="font-semibold text-slate-700">{formatRupiah(item.subtotal)}</span>
+                    <span className="font-semibold text-slate-700">{formatCurrency(item.subtotal, selectedInvoice.currency)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between items-center text-[13px] border-t border-slate-200 pt-2 mt-1">
                   <span className="font-bold text-slate-700">Total Revenue</span>
-                  <span className="font-bold text-green-600">{formatRupiah(selectedInvoice.grandTotal)}</span>
+                  <span className="font-bold text-green-600">{formatCurrency(selectedInvoice.grandTotal, selectedInvoice.currency)}</span>
                 </div>
               </div>
             </div>
@@ -417,7 +418,7 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
                           <span className="text-[12px] bg-blue-50 text-blue-700 px-2.5 py-0.5 rounded-full border border-blue-200">{exp.category}</span>
                         </td>
                         <td className="px-5 py-3.5">
-                          <p className="text-[13px] font-semibold text-slate-800">{formatRupiah(exp.amount)}</p>
+                          <p className="text-[13px] font-semibold text-slate-800">{formatCurrency(exp.amount, selectedInvoice.currency)}</p>
                         </td>
                         <td className="px-5 py-3.5 text-[13px] text-slate-600">{formatDate(exp.date)}</td>
                         <td className="px-5 py-3.5">
@@ -441,15 +442,15 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
               <div className="space-y-3">
                 <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border border-green-100">
                   <span className="text-[13px] text-green-700 font-medium">Invoice Revenue</span>
-                  <span className="text-[13px] font-bold text-green-700">{formatRupiah(revenue)}</span>
+                  <span className="text-[13px] font-bold text-green-700">{formatCurrency(revenue, selectedInvoice.currency)}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-red-50 rounded-xl border border-red-100">
                   <span className="text-[13px] text-red-600 font-medium">Total Expense</span>
-                  <span className="text-[13px] font-bold text-red-600">{formatRupiah(totalExpense)}</span>
+                  <span className="text-[13px] font-bold text-red-600">{formatCurrency(totalExpense, selectedInvoice.currency)}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-blue-50 rounded-xl border border-blue-100">
                   <span className="text-[13px] text-blue-700 font-medium">Net Profit</span>
-                  <span className={`text-[13px] font-bold ${netProfit >= 0 ? "text-blue-700" : "text-red-600"}`}>{formatRupiah(netProfit)}</span>
+                  <span className={`text-[13px] font-bold ${netProfit >= 0 ? "text-blue-700" : "text-red-600"}`}>{formatCurrency(netProfit, selectedInvoice.currency)}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-purple-50 rounded-xl border border-purple-100">
                   <span className="text-[13px] text-purple-700 font-medium">Profit Margin</span>
@@ -470,7 +471,7 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
                 ).map(([cat, amt]: [string, number]) => (
                   <div key={cat} className="flex justify-between items-center py-2 border-b border-slate-100 last:border-0">
                     <p className="text-[12.5px] text-slate-600">{cat}</p>
-                    <p className="text-[12.5px] font-semibold text-slate-700">{formatRupiah(amt)}</p>
+                    <p className="text-[12.5px] font-semibold text-slate-700">{formatCurrency(amt, selectedInvoice.currency)}</p>
                   </div>
                 ))}
               </div>
@@ -492,7 +493,7 @@ export default function ExpenseClient({ initialInvoices }: { initialInvoices: an
         <div className="space-y-4">
           <Input label="Expense Name" placeholder="Expense or cost name" value={form.name || ""} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} id="expense-name" />
           <Select label="Category" options={categoryOptions} value={form.category || "Tour Cost"} onChange={(e) => setForm((p) => ({ ...p, category: e.target.value as ExpenseCategory }))} id="expense-category" />
-          <CurrencyInput label="Amount (Rp)" value={form.amount || 0} onChange={(val) => setForm((p) => ({ ...p, amount: val }))} id="expense-amount" />
+          <CurrencyInput label={`Amount (${selectedInvoice?.currency || "IDR"})`} value={form.amount || 0} onChange={(val) => setForm((p) => ({ ...p, amount: val }))} currency={selectedInvoice?.currency || "IDR"} id="expense-amount" />
           <Input label="Date" type="date" value={formatDateInput(form.date || "")} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} id="expense-date" />
           <Textarea label="Notes" placeholder="Additional notes..." rows={3} value={form.notes || ""} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} id="expense-notes" />
           <div className="flex gap-3 pt-2">
